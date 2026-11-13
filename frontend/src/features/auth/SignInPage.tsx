@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { ApiClientError } from '@/api/client'
-import { Button, Card, ErrorNote, Field, Input } from '@/components/ui'
+import { Button, Card, ErrorNote, Field, Input, PageBand } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
 
 export default function SignInPage() {
@@ -47,12 +47,16 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="container-page flex justify-center py-12">
-      <div className="w-full max-w-md">
-        <Card className="p-6">
-          <h1 className="font-display text-2xl font-extrabold text-ink-900">Welcome back</h1>
-          <p className="mt-1 text-sm text-ink-500">Sign in to check out and see your keys.</p>
+    <div>
+      <PageBand
+        eyebrow="Your account"
+        title="Sign in"
+        subtitle="Sign in to check out and see your keys."
+      />
 
+      <div className="container-page flex justify-center py-12">
+        <div className="w-full max-w-md">
+          <Card className="p-6">
           <form onSubmit={submit} className="mt-6 space-y-4">
             <Field label="E-mail">
               <Input
@@ -97,6 +101,7 @@ export default function SignInPage() {
           </div>
         </Card>
       </div>
+    </div>
     </div>
   )
 }

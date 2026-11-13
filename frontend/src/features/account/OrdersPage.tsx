@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 import { orderApi } from '@/api/endpoints'
 import type { Order } from '@/api/types'
-import { Badge, Button, Card, EmptyState, Skeleton } from '@/components/ui'
+import { Badge, Button, Card, EmptyState, PageBand, Skeleton } from '@/components/ui'
 import { KeyPanel } from '@/features/account/KeyPanel'
 import { useAuth } from '@/features/auth/AuthContext'
 import { formatMoney } from '@/lib/format'
@@ -34,19 +34,28 @@ export default function OrdersPage() {
 
   if (!user) {
     return (
-      <div className="container-page py-16">
-        <EmptyState
-          title="Sign in to see your library"
-          description="Your purchased keys live here."
-          action={<Link to="/sign-in?next=/account/orders"><Button>Sign in</Button></Link>}
-        />
+      <div>
+        <PageBand eyebrow="Your account" title="Your library" subtitle="Sign in to see your purchased keys." />
+        <div className="container-page py-16">
+          <EmptyState
+            title="Sign in to see your library"
+            description="Your purchased keys live here."
+            action={<Link to="/sign-in?next=/account/orders"><Button>Sign in</Button></Link>}
+          />
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="container-page py-8">
-      <h1 className="mb-6 font-display text-2xl font-extrabold text-brand-900">Your library</h1>
+    <div>
+      <PageBand
+        eyebrow="Your account"
+        title="Your library"
+        subtitle="Every purchase, with its keys hidden until you ask for them."
+      />
+
+      <div className="container-page py-8">
 
       {loading ? (
         <div className="space-y-3">
@@ -67,6 +76,7 @@ export default function OrdersPage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   )
 }

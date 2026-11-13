@@ -121,13 +121,54 @@ export function Select({ className = '', ...rest }: SelectHTMLAttributes<HTMLSel
   return <select {...rest} className={`${controlClass} ${className}`} />
 }
 
+/** Purple page band used at the top of every full page, so section headers read
+ *  the same across store, cart, checkout, account and back-office. */
+export function PageBand({
+  eyebrow,
+  title,
+  subtitle,
+  children,
+}: {
+  eyebrow?: string
+  title: string
+  subtitle?: ReactNode
+  children?: ReactNode
+}) {
+  return (
+    <header className="bg-brand-600 py-8 text-white">
+      <div className="container-page">
+        {eyebrow && <p className="label-caps text-brand-200">{eyebrow}</p>}
+        <h1 className="mt-1 font-display text-2xl font-extrabold sm:text-[2rem]">{title}</h1>
+        {subtitle && <p className="mt-1 text-sm font-medium text-brand-100">{subtitle}</p>}
+        {children}
+      </div>
+    </header>
+  )
+}
+
+/** One notice component for every status message, so success/warning/error never
+ *  drift into ad-hoc colour classes. */
+export function Notice({
+  tone = 'info',
+  children,
+}: {
+  tone?: 'info' | 'success' | 'warning' | 'danger'
+  children: ReactNode
+}) {
+  const tones = {
+    info: 'border-brand-200 bg-brand-50 text-brand-800',
+    success: 'border-mint-400/60 bg-mint-100 text-[#0b7a5e]',
+    warning: 'border-accent-600/40 bg-accent-300/25 text-[#6b5100]',
+    danger: 'border-danger/30 bg-red-50 text-danger',
+  }
+  return (
+    <p className={`rounded-[2px] border px-3.5 py-2.5 text-sm font-semibold ${tones[tone]}`}>{children}</p>
+  )
+}
+
 export function ErrorNote({ message }: { message: string | null }) {
   if (!message) return null
-  return (
-    <p role="alert" className="rounded-[2px] border border-danger/30 bg-red-50 px-3.5 py-2.5 text-sm font-semibold text-danger">
-      {message}
-    </p>
-  )
+  return <Notice tone="danger">{message}</Notice>
 }
 
 export function EmptyState({

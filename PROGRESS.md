@@ -29,6 +29,32 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Merchant portal | Stats, own offers, create/update listing, bulk key upload, catalog title requests. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, homepage block CRUD. |
 
+### Coherent page chrome and the SQL injection audit (session 5)
+
+Every page now opens with the same purple `PageBand` (Store, Cart, Checkout, order confirmation, Library,
+Support, Sign in/up, Verify, Admin, Merchant) and every status message goes through one `Notice`
+component with info/success/warning/danger tones built on the brand, mint and danger tokens — the
+amber/emerald/red one-offs are gone. The important fix was the early returns: empty carts, guest
+views and "sign in to see this" screens used to bypass the band entirely and render as bare white
+pages. `ErrorNote` now delegates to `Notice`, so an error looks identical everywhere.
+
+SQL injection review of the backend:
+
+| Surface | Finding |
+|---|---|
+| Query construction | No user input is concatenated into SQL. Every query uses bind parameters (`$1`, `@named`), and array inputs use `= ANY($1)` rather than a built `IN (...)` list |
+| `fmt.Sprintf` into SQL | Two sites, both audited: `catalog.go` interpolates only the CTE constant and a sort clause taken from a whitelist map (unknown keys fall back to `popular`); `seed.go` interpolates table/column identifiers, now additionally quoted through `pgx.Identifier{}.Sanitize()` |
+| Search and filters | `ILIKE '%' || @term || '%'`, trigram and initialism predicates are all parameterised; the initialism is computed in SQL from the title, never from input |
+| Numbers and paths | `minPriceCents`, `page`, `offerId`, order/item ids, quantity are parsed with `strconv`/typed JSON and rejected with 400 before touching SQL |
+| Stored payloads | A ticket subject of `'); DROP TABLE support_tickets;--` is stored verbatim and displayed literally in the admin queue |
+
+Probe evidence (local API against the test branch): payloads `' OR 1=1--`, `'; DROP TABLE products;--`,
+`' UNION SELECT … FROM users--`, `'); DROP TABLE orders;--` and a hostile `Idempotency-Key` sent
+through sort, `q`, platform, region, genre, price, page, search, slug, login e-mail, cart `offerId`,
+ticket body, order path and admin search. Every one either returned a normal result, a validation
+400/401/404, or was stored as text — no 500s, and afterwards products were still 80, homepage blocks
+7, and orders/users/tickets readable.
+
 ### Key disclosure and refunds (session 4)
 
 Keys are not part of any page payload. `GET /api/orders` and the checkout response describe keys by

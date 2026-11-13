@@ -59,34 +59,39 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="container-page py-8">
-      <header className="mb-6">
-        <h1 className="font-display text-2xl font-extrabold text-ink-900 sm:text-3xl">Back-office</h1>
-        <p className="mt-1 text-sm text-ink-500">
-          Signed in as {user.displayName} ({user.email})
-        </p>
-      </header>
+    <div>
+      <div className="bg-brand-600 text-white">
+        <div className="container-page pt-8">
+          <p className="label-caps text-brand-200">Back-office</p>
+          <h1 className="mt-1 font-display text-2xl font-extrabold sm:text-[2rem]">Keyforge admin</h1>
+          <p className="mt-1 text-sm font-medium text-brand-100">
+            Signed in as {user.displayName} ({user.email})
+          </p>
 
-      <nav aria-label="Back-office sections" className="mb-7 flex flex-wrap gap-1.5 border-b border-line pb-3">
-        {TABS.map((tab) => (
-          <NavLink
-            key={tab.to}
-            to={tab.to}
-            end={tab.end}
-            className={({ isActive }) =>
-              `rounded-[2px] px-3.5 py-2 text-sm font-bold transition ${
-                isActive
-                  ? 'bg-brand-600 text-white shadow-card'
-                  : 'text-ink-700 hover:bg-brand-50 hover:text-brand-700'
-              }`
-            }
-          >
-            {tab.label}
-          </NavLink>
-        ))}
-      </nav>
+          <nav aria-label="Back-office sections" className="mt-5 flex flex-wrap gap-1.5">
+            {TABS.map((tab) => (
+              <NavLink
+                key={tab.to}
+                to={tab.to}
+                end={tab.end}
+                className={({ isActive }) =>
+                  `rounded-[2px] px-3.5 py-2 text-sm font-extrabold transition ${
+                    isActive
+                      ? 'bg-accent-500 text-ink-900'
+                      : 'text-brand-100 hover:bg-brand-700 hover:text-white'
+                  }`
+                }
+              >
+                {tab.label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
+      </div>
 
-      <Outlet />
+      <div className="container-page py-8">
+        <Outlet />
+      </div>
     </div>
   )
 }

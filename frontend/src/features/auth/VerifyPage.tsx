@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { ApiClientError } from '@/api/client'
 import { authApi } from '@/api/endpoints'
-import { Badge, Button, Card, ErrorNote, Field, Input } from '@/components/ui'
+import { Badge, Button, Card, ErrorNote, Field, Input, Notice, PageBand } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
 
 /**
@@ -78,14 +78,16 @@ export default function VerifyPage() {
   }
 
   return (
-    <div className="container-page flex justify-center py-12">
+    <div>
+      <PageBand
+        eyebrow="Your account"
+        title="Confirm your e-mail"
+        subtitle={`We sent a 6-digit code to ${email}.`}
+      />
+
+      <div className="container-page flex justify-center py-12">
       <div className="w-full max-w-md">
         <Card className="p-6">
-          <h1 className="font-display text-2xl font-extrabold text-ink-900">Confirm your e-mail</h1>
-          <p className="mt-1 text-sm text-ink-500">
-            We sent a 6-digit code to <span className="font-semibold text-ink-900">{email}</span>.
-          </p>
-
           {devCode && (
             <div className="mt-4 rounded-[2px] border border-brand-200 bg-brand-50 px-4 py-3">
               <div className="flex items-center gap-2">
@@ -110,11 +112,7 @@ export default function VerifyPage() {
               />
             </Field>
             <ErrorNote message={error} />
-            {notice && (
-              <p className="rounded-[2px] border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm text-success">
-                {notice}
-              </p>
-            )}
+            {notice && <Notice tone="success">{notice}</Notice>}
             <Button type="submit" size="lg" className="w-full" loading={submitting} disabled={code.length !== 6}>
               Confirm and continue
             </Button>
@@ -125,6 +123,7 @@ export default function VerifyPage() {
           </button>
         </Card>
       </div>
+    </div>
     </div>
   )
 }

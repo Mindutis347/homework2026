@@ -53,35 +53,35 @@ export default function MerchantLayout() {
   const storeName = user.storeName ?? user.displayName
 
   return (
-    <div className="container-page py-8">
-      <header>
-        <p className="text-xs font-bold uppercase tracking-wide text-brand-700">Seller tools</p>
-        <h1 className="mt-1 font-display text-2xl font-extrabold text-ink-900 sm:text-3xl">
-          Merchant portal
-        </h1>
-        <p className="mt-1 text-sm text-ink-500">{storeName}</p>
+    <div>
+      <div className="bg-brand-600 text-white">
+        <div className="container-page pt-8">
+          <p className="label-caps text-brand-200">Seller tools</p>
+          <h1 className="mt-1 font-display text-2xl font-extrabold sm:text-[2rem]">Merchant portal</h1>
+          <p className="mt-1 text-sm font-medium text-brand-100">{storeName}</p>
 
-        <nav className="mt-6 flex gap-6 overflow-x-auto border-b border-line" aria-label="Merchant sections">
-          {TABS.map((tab) => (
-            <NavLink
-              key={tab.to}
-              to={tab.to}
-              end={tab.end}
-              className={({ isActive }) =>
-                `-mb-px whitespace-nowrap border-b-2 pb-3 text-sm font-semibold transition ${
-                  isActive
-                    ? 'border-brand-600 text-brand-700'
-                    : 'border-transparent text-ink-500 hover:border-brand-200 hover:text-ink-900'
-                }`
-              }
-            >
-              {tab.label}
-            </NavLink>
-          ))}
-        </nav>
-      </header>
+          <nav className="mt-5 flex flex-wrap gap-1.5" aria-label="Merchant sections">
+            {TABS.map((tab) => (
+              <NavLink
+                key={tab.to}
+                to={tab.to}
+                end={tab.end}
+                className={({ isActive }) =>
+                  `rounded-[2px] px-3.5 py-2 text-sm font-extrabold transition ${
+                    isActive
+                      ? 'bg-accent-500 text-ink-900'
+                      : 'text-brand-100 hover:bg-brand-700 hover:text-white'
+                  }`
+                }
+              >
+                {tab.label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
+      </div>
 
-      <div className="pt-8">
+      <div className="container-page py-8">
         <Outlet />
       </div>
     </div>

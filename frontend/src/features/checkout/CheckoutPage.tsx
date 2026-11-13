@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { orderApi } from '@/api/endpoints'
 import { ApiClientError } from '@/api/client'
 import type { Order } from '@/api/types'
-import { Badge, Button, Card, EmptyState, ErrorNote, Field, Input } from '@/components/ui'
+import { Badge, Button, Card, EmptyState, ErrorNote, Field, Input, Notice, PageBand } from '@/components/ui'
 import { KeyPanel } from '@/features/account/KeyPanel'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
@@ -61,106 +61,127 @@ export default function CheckoutPage() {
     return <OrderConfirmation order={order} onOrderChange={setOrder} />
   }
 
-  if (!user) return null
+  if (!user) {
+    return (
+      <div>
+        <PageBand eyebrow="Checkout" title="Payment" subtitle="Sign in to complete your purchase." />
+        <div className="container-page py-16">
+          <EmptyState
+            title="Sign in to check out"
+            description="Your cart and your keys are tied to your account."
+            action={<Link to="/sign-in?next=/checkout"><Button>Sign in</Button></Link>}
+          />
+        </div>
+      </div>
+    )
+  }
 
   if (cart.items.length === 0) {
     return (
-      <div className="container-page py-16">
-        <EmptyState
-          title="Nothing to check out"
-          description="Your cart is empty."
-          action={<Link to="/store"><Button>Browse the store</Button></Link>}
-        />
+      <div>
+        <PageBand eyebrow="Checkout" title="Payment" subtitle="Your cart is empty, so there is nothing to pay for." />
+        <div className="container-page py-16">
+          <EmptyState
+            title="Nothing to check out"
+            description="Your cart is empty."
+            action={<Link to="/store"><Button>Browse the store</Button></Link>}
+          />
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="container-page py-8">
-      <h1 className="mb-6 font-display text-2xl font-extrabold text-ink-900">Checkout</h1>
+    <div>
+      <PageBand
+        eyebrow="Checkout"
+        title="Payment"
+        subtitle="Simulated payment · keys are assigned inside one database transaction"
+      />
 
-      {!user.isVerified && (
-        <Card className="mb-5 border-amber-300 bg-amber-50 p-4">
-          <p className="text-sm font-semibold text-ink-900">Confirm your e-mail to complete the purchase</p>
-          <p className="mt-1 text-sm text-ink-700">
-            We sent a 6-digit code to {user.email}.{' '}
-            <Link to={`/verify?email=${encodeURIComponent(user.email)}`} className="font-semibold text-brand-700 underline">
-              Enter it here
-            </Link>
-            .
-          </p>
-        </Card>
-      )}
+      <div className="container-page py-8">
+        {!user.isVerified && (
+          <div className="mb-5">
+            <Notice tone="warning">
+              Confirm your e-mail to complete the purchase. We sent a 6-digit code to {user.email}.{' '}
+              <Link to={`/verify?email=${encodeURIComponent(user.email)}`} className="underline">
+                Enter it here
+              </Link>
+              .
+            </Notice>
+          </div>
+        )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-        <form onSubmit={pay} className="space-y-4">
-          <Card className="space-y-4 p-5">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display text-lg font-bold text-ink-900">Payment</h2>
-              <Badge tone="neutral">Simulated</Badge>
-            </div>
-            <Field label="Cardholder name">
-              <Input
-                value={cardName}
-                onChange={(e) => setCardName(e.target.value)}
-                placeholder="Demo Buyer"
-                autoComplete="name"
-              />
-            </Field>
-            <Field
-              label="Card number"
-              hint="Test mode: any number succeeds. Use a number ending in 0002 to see the decline path."
-            >
-              <Input
-                value={cardNumber}
-                onChange={(e) => setCardNumber(e.target.value)}
-                inputMode="numeric"
-                autoComplete="cc-number"
-                required
-              />
-            </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Expiry">
-                <Input defaultValue="12 / 30" autoComplete="cc-exp" />
-              </Field>
-              <Field label="CVC">
-                <Input defaultValue="123" inputMode="numeric" autoComplete="cc-csc" />
-              </Field>
-            </div>
-            <ErrorNote message={error} />
-            <Button type="submit" size="lg" className="w-full" loading={submitting} disabled={!user.isVerified}>
-              {user.isVerified ? `Pay ${formatMoney(cart.subtotalCents)}` : 'Verify your e-mail first'}
-            </Button>
-          </Card>
-        </form>
-
-        <Card className="h-fit space-y-4 p-5 lg:sticky lg:top-20">
-          <h2 className="font-display text-lg font-bold text-ink-900">Order summary</h2>
-          <div className="space-y-3">
-            {cart.items.map((item) => (
-              <div key={item.offerId} className="flex gap-3">
-                <img src={item.coverUrl} alt="" className="h-14 w-10 rounded object-cover" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-ink-900">{item.title}</p>
-                  <p className="text-xs text-ink-500">
-                    {item.platformName} · {item.regionCode} × {item.quantity}
-                  </p>
-                </div>
-                <p className="text-sm font-semibold">{formatMoney(item.lineTotalCents)}</p>
+        <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+          <form onSubmit={pay} className="space-y-4">
+            <Card className="space-y-4 p-5">
+              <div className="flex items-center justify-between">
+                <h2 className="font-display text-lg font-extrabold text-brand-900">Card details</h2>
+                <Badge tone="neutral">Simulated</Badge>
               </div>
-            ))}
-          </div>
-          <div className="border-t border-line pt-3">
-            <div className="flex justify-between font-display text-base font-bold text-ink-900">
-              <span>Total</span>
-              <span>{formatMoney(cart.subtotalCents)}</span>
+              <Field label="Cardholder name">
+                <Input
+                  value={cardName}
+                  onChange={(e) => setCardName(e.target.value)}
+                  placeholder="Demo Buyer"
+                  autoComplete="name"
+                />
+              </Field>
+              <Field
+                label="Card number"
+                hint="Test mode: any number succeeds. Use a number ending in 0002 to see the decline path."
+              >
+                <Input
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(e.target.value)}
+                  inputMode="numeric"
+                  autoComplete="cc-number"
+                  required
+                />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Expiry">
+                  <Input defaultValue="12 / 30" autoComplete="cc-exp" />
+                </Field>
+                <Field label="CVC">
+                  <Input defaultValue="123" inputMode="numeric" autoComplete="cc-csc" />
+                </Field>
+              </div>
+              <ErrorNote message={error} />
+              <Button type="submit" size="lg" className="w-full" loading={submitting} disabled={!user.isVerified}>
+                {user.isVerified ? `Pay ${formatMoney(cart.subtotalCents)}` : 'Verify your e-mail first'}
+              </Button>
+            </Card>
+          </form>
+
+          <Card className="h-fit space-y-4 p-5 lg:sticky lg:top-32">
+            <h2 className="font-display text-lg font-extrabold text-brand-900">Order summary</h2>
+            <div className="space-y-3">
+              {cart.items.map((item) => (
+                <div key={item.offerId} className="flex gap-3">
+                  <img src={item.coverUrl} alt="" className="h-14 w-10 rounded-[2px] object-cover" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-brand-900">{item.title}</p>
+                    <p className="text-xs text-ink-500">
+                      {item.platformName} · {item.regionCode} × {item.quantity}
+                    </p>
+                  </div>
+                  <p className="text-sm font-bold">{formatMoney(item.lineTotalCents)}</p>
+                </div>
+              ))}
             </div>
-          </div>
-          <p className="text-xs text-ink-500">
-            Keys are reserved and assigned inside a single database transaction. If any key runs out,
-            nothing is charged and your cart is kept.
-          </p>
-        </Card>
+            <div className="border-t border-line pt-3">
+              <div className="flex justify-between font-display text-base font-extrabold text-brand-900">
+                <span>Total</span>
+                <span>{formatMoney(cart.subtotalCents)}</span>
+              </div>
+            </div>
+            <p className="text-xs text-ink-500">
+              Keys are reserved and assigned inside a single database transaction. If any key runs out,
+              nothing is charged and your cart is kept.
+            </p>
+          </Card>
+        </div>
       </div>
     </div>
   )
@@ -169,41 +190,39 @@ export default function CheckoutPage() {
 function OrderConfirmation({ order, onOrderChange }: { order: Order; onOrderChange: (order: Order) => void }) {
   const outstanding = order.items.filter((item) => !item.refunded)
   return (
-    <div className="container-page py-10">
-      <Card className="mx-auto max-w-2xl p-6">
-        <div className="flex items-center gap-3">
-          <span className="grid size-11 place-items-center rounded-[2px] bg-mint-100 text-xl text-success">✓</span>
-          <div>
-            <h1 className="font-display text-xl font-extrabold text-brand-900">Payment complete</h1>
-            <p className="text-sm text-ink-500">
-              Order {order.reference} · {formatMoney(order.totalCents)}
-            </p>
+    <div>
+      <PageBand
+        eyebrow="Order confirmed"
+        title="Payment complete"
+        subtitle={`Order ${order.reference} · ${formatMoney(order.totalCents)}`}
+      />
+
+      <div className="container-page py-8">
+        <Card className="mx-auto max-w-2xl p-6">
+          <Notice tone="success">
+            Your {outstanding.length === 1 ? 'key is' : 'keys are'} reserved and hidden. Display a key when you are
+            ready to use it — after that the purchase can no longer be refunded.
+          </Notice>
+
+          <div className="mt-6 space-y-4">
+            {order.items.map((item) => (
+              <div key={item.id} className="rounded-[2px] border border-line p-4">
+                <p className="font-bold text-brand-900">{item.productTitle}</p>
+                <p className="text-xs text-ink-500">
+                  {item.platformName} · {item.regionCode} · from {item.sellerStore} ·{' '}
+                  {formatMoney(item.unitPriceCents * item.quantity)}
+                </p>
+                <KeyPanel orderId={order.id} item={item} onOrderChange={onOrderChange} />
+              </div>
+            ))}
           </div>
-        </div>
 
-        <p className="mt-4 text-sm text-ink-700">
-          Your {outstanding.length === 1 ? 'key is' : 'keys are'} reserved and hidden. Display a key when you are
-          ready to use it — after that the purchase can no longer be refunded.
-        </p>
-
-        <div className="mt-6 space-y-4">
-          {order.items.map((item) => (
-            <div key={item.id} className="rounded-[2px] border border-line p-4">
-              <p className="font-bold text-brand-900">{item.productTitle}</p>
-              <p className="text-xs text-ink-500">
-                {item.platformName} · {item.regionCode} · from {item.sellerStore} ·{' '}
-                {formatMoney(item.unitPriceCents * item.quantity)}
-              </p>
-              <KeyPanel orderId={order.id} item={item} onOrderChange={onOrderChange} />
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link to="/account/orders"><Button>View order history</Button></Link>
-          <Link to="/store"><Button variant="ghost">Keep shopping</Button></Link>
-        </div>
-      </Card>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link to="/account/orders"><Button>View order history</Button></Link>
+            <Link to="/store"><Button variant="ghost">Keep shopping</Button></Link>
+          </div>
+        </Card>
+      </div>
     </div>
   )
 }

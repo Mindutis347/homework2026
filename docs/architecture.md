@@ -148,6 +148,11 @@ Handlers return `*httpx.APIError`; `WriteError` also maps `repo.ErrNotFound` to
   and a small retry for reads that hit a cold-starting free instance.
 - Context providers for auth and cart; everything else is local state.
 - The store keeps filters in the URL, so any view is shareable and Back works.
+- SQL is built from bind parameters only. The two places that interpolate text are
+  both bounded: the store's `ORDER BY` comes from a whitelist map (`sortClauses`)
+  with a fallback, and the seeder's table/column names are quoted with
+  `pgx.Identifier{}.Sanitize()`. Filters, search terms, ids and pagination all
+  travel as parameters, and numeric input is parsed before it reaches a query.
 - Key values never travel in an order payload. A line's code is fetched by
   `POST /api/orders/{id}/items/{itemId}/reveal`, which also stamps
   `inventory_keys.displayed_at`; a refund is refused once that stamp exists, so a

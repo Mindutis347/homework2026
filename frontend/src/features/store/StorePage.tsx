@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { catalogApi } from '@/api/endpoints'
 import type { Meta, ProductCard as ProductCardType } from '@/api/types'
 import { ProductGrid } from '@/components/ProductCard'
-import { Badge, Button, Card, EmptyState, Select, Skeleton } from '@/components/ui'
+import { Badge, Button, Card, EmptyState, PageBand, Select, Skeleton } from '@/components/ui'
 import { formatMoney } from '@/lib/format'
 
 const SORT_OPTIONS = [
@@ -88,15 +88,11 @@ export default function StorePage() {
 
   return (
     <div>
-      <header className="bg-brand-600 py-8 text-white">
-        <div className="container-page">
-          <p className="label-caps text-brand-200">Catalogue</p>
-          <h1 className="mt-1 font-display text-3xl font-extrabold sm:text-[2rem]">Store</h1>
-          <p className="mt-1 text-sm font-medium text-brand-100">
-            {loading ? 'Loading catalogue…' : `${total} game${total === 1 ? '' : 's'} with live offers`}
-          </p>
-        </div>
-      </header>
+      <PageBand
+        eyebrow="Catalogue"
+        title="Store"
+        subtitle={loading ? 'Loading catalogue…' : `${total} game${total === 1 ? '' : 's'} with live offers`}
+      />
 
       <div className="container-page py-8">
         <div className="grid gap-6 lg:grid-cols-[240px_1fr]">

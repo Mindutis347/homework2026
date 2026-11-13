@@ -227,7 +227,7 @@ export default function MerchantOffers() {
       />
 
       {notice && (
-        <p className="mb-4 rounded-[2px] border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-success">
+        <p className="mb-4 rounded-[2px] border border-mint-400/60 bg-mint-100 px-4 py-2.5 text-sm text-[#0b7a5e]">
           {notice}
         </p>
       )}
@@ -476,7 +476,7 @@ export default function MerchantOffers() {
 
                             <ErrorNote message={keyError} />
                             {keyFeedback && (
-                              <p className="rounded-[2px] border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm text-success">
+                              <p className="rounded-[2px] border border-mint-400/60 bg-mint-100 px-3.5 py-2.5 text-sm text-[#0b7a5e]">
                                 Upload complete — {keyFeedback}.
                               </p>
                             )}

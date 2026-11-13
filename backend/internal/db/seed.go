@@ -314,6 +314,12 @@ func insertLookup(
 	pair func(int) (string, string), n int, sortFn func(int) int16,
 ) (map[string]int16, error) {
 	out := make(map[string]int16, n)
+	// Table and column names cannot be bind parameters, so they are quoted as
+	// identifiers. The callers only ever pass literals, but this keeps the one
+	// interpolated statement in the codebase safe by construction.
+	table = pgx.Identifier{table}.Sanitize()
+	keyCol = pgx.Identifier{keyCol}.Sanitize()
+	nameCol = pgx.Identifier{nameCol}.Sanitize()
 	for i := 0; i < n; i++ {
 		key, name := pair(i)
 		var id int16

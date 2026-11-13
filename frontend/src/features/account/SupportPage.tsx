@@ -11,6 +11,8 @@ import {
   ErrorNote,
   Field,
   Input,
+  Notice,
+  PageBand,
   SectionHeading,
   Select,
   Skeleton,
@@ -108,26 +110,36 @@ export default function SupportPage() {
 
   if (!user) {
     return (
-      <div className="container-page py-16">
-        <EmptyState
-          title="Sign in to contact support"
-          description="Support tickets are tied to your account and its orders."
-          action={<Link to="/sign-in?next=/account/support"><Button>Sign in</Button></Link>}
-        />
+      <div>
+        <PageBand eyebrow="Your account" title="Support" subtitle="Sign in to contact support about an order." />
+        <div className="container-page py-16">
+          <EmptyState
+            title="Sign in to contact support"
+            description="Support tickets are tied to your account and its orders."
+            action={<Link to="/sign-in?next=/account/support"><Button>Sign in</Button></Link>}
+          />
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="container-page py-8">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <h1 className="font-display text-2xl font-extrabold text-ink-900">Support</h1>
-        <Link to="/account/orders" className="text-sm font-semibold text-brand-700 hover:underline">
+    <div>
+      <PageBand
+        eyebrow="Your account"
+        title="Support"
+        subtitle="File a request against an order and follow its status here."
+      >
+        <Link
+          to="/account/orders"
+          className="mt-4 inline-block rounded-[2px] border border-white/40 px-4 py-2 text-xs font-extrabold uppercase tracking-wide text-white hover:border-accent-500 hover:text-accent-500"
+        >
           Back to your library
         </Link>
-      </div>
+      </PageBand>
 
-      {error && <div className="mb-4"><ErrorNote message={error} /></div>}
+      <div className="container-page py-8">
+        {error && <div className="mb-4"><ErrorNote message={error} /></div>}
 
       {!user.isVerified && (
         <div className="mb-6">
@@ -198,9 +210,9 @@ export default function SupportPage() {
 
               {formError && <ErrorNote message={formError} />}
               {sent && (
-                <p className="rounded-[2px] border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm text-success">
+                <Notice tone="success">
                   Request sent — it is listed below with its current status.
-                </p>
+                </Notice>
               )}
 
               <Button type="submit" loading={sending} disabled={!user.isVerified}>
@@ -247,6 +259,7 @@ export default function SupportPage() {
             </div>
           )}
         </section>
+      </div>
       </div>
     </div>
   )

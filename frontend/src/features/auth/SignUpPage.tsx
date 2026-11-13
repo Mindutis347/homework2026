@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { ApiClientError } from '@/api/client'
 import { authApi } from '@/api/endpoints'
-import { Button, Card, ErrorNote, Field, Input } from '@/components/ui'
+import { Button, Card, ErrorNote, Field, Input, PageBand } from '@/components/ui'
 
 export default function SignUpPage() {
   const navigate = useNavigate()
@@ -45,14 +45,16 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="container-page flex justify-center py-12">
+    <div>
+      <PageBand
+        eyebrow="Your account"
+        title="Create your account"
+        subtitle="You start as a customer. Sellers are promoted by an administrator."
+      />
+
+      <div className="container-page flex justify-center py-12">
       <div className="w-full max-w-md">
         <Card className="p-6">
-          <h1 className="font-display text-2xl font-extrabold text-ink-900">Create your account</h1>
-          <p className="mt-1 text-sm text-ink-500">
-            You start as a customer. Sellers are promoted by an administrator.
-          </p>
-
           <form onSubmit={submit} className="mt-6 space-y-4">
             <Field label="Display name">
               <Input
@@ -97,6 +99,7 @@ export default function SignUpPage() {
           </p>
         </Card>
       </div>
+    </div>
     </div>
   )
 }

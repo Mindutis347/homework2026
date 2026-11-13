@@ -76,12 +76,16 @@ func splitCSV(s string) []string {
 	return out
 }
 
-// LoadDotEnv reads KEY=VALUE pairs from the first .env file it finds. Real
+// LoadDotEnv merges KEY=VALUE pairs from the env files it finds. Real
 // environment variables always win, so Render/Neon injected config is never
-// overridden by a stale local file. This keeps the deployment dependency-free:
-// no dotenv library is needed for a single file format.
+// overridden by a stale local file. `.env.local` is read first because tools
+// like the Neon CLI write connection strings there, while `.env` holds the rest.
 func LoadDotEnv() {
-	for _, path := range []string{".env", "../.env", "../../.env"} {
+	paths := []string{
+		".env.local", "../.env.local", "../../.env.local",
+		".env", "../.env", "../../.env",
+	}
+	for _, path := range paths {
 		data, err := os.ReadFile(path)
 		if err != nil {
 			continue
@@ -101,6 +105,5 @@ func LoadDotEnv() {
 				_ = os.Setenv(key, value)
 			}
 		}
-		return
 	}
 }

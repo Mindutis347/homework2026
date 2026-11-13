@@ -179,7 +179,9 @@ func TestEndToEndPurchaseFlow(t *testing.T) {
 		t.Fatal("new account should start unverified")
 	}
 
-	// Checkout must be blocked before verification.
+	// Signing in before verifying must be possible, but checkout must be blocked.
+	postJSON(t, client, server.URL+"/api/auth/login",
+		map[string]string{"email": email, "password": "TestPassword#1"}, http.StatusOK, nil)
 	postJSON(t, client, server.URL+"/api/checkout", map[string]string{},
 		http.StatusForbidden, nil)
 

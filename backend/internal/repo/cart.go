@@ -70,9 +70,9 @@ func (c *Cart) Add(ctx context.Context, userID, offerID int64, quantity int) err
 	}
 	tag, err := c.pool.Exec(ctx, `
 		INSERT INTO cart_items (user_id, offer_id, quantity)
-		SELECT $1, o.id, $3
+		SELECT $1, o.id, $3::smallint
 		FROM offers o
-		WHERE o.id = $2 AND o.is_active AND o.stock >= $3
+		WHERE o.id = $2 AND o.is_active AND o.stock >= $3::smallint
 		ON CONFLICT (user_id, offer_id)
 		DO UPDATE SET quantity = EXCLUDED.quantity, added_at = now()`,
 		userID, offerID, quantity)
@@ -91,9 +91,9 @@ func (c *Cart) SetQuantity(ctx context.Context, userID, offerID int64, quantity 
 	}
 	tag, err := c.pool.Exec(ctx, `
 		UPDATE cart_items ci
-		SET quantity = $3, added_at = now()
+		SET quantity = $3::smallint, added_at = now()
 		FROM offers o
-		WHERE ci.user_id = $1 AND ci.offer_id = $2 AND o.id = ci.offer_id AND o.stock >= $3`,
+		WHERE ci.user_id = $1 AND ci.offer_id = $2 AND o.id = ci.offer_id AND o.stock >= $3::smallint`,
 		userID, offerID, quantity)
 	if err != nil {
 		return fmt.Errorf("update cart quantity: %w", err)

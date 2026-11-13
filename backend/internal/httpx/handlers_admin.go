@@ -51,6 +51,11 @@ func (a *App) handleAdminSetRole(w http.ResponseWriter, r *http.Request) {
 		WriteError(w, ErrNotFound)
 		return
 	}
+	if errors.Is(err, repo.ErrUnverified) {
+		WriteError(w, Errorf(http.StatusConflict, "email_unverified",
+			"only verified accounts can be promoted to merchant"))
+		return
+	}
 	if err != nil {
 		WriteError(w, err)
 		return

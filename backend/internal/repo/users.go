@@ -19,6 +19,9 @@ var ErrEmailTaken = errors.New("email already registered")
 // ErrConflict marks a state conflict, e.g. reviewing an already-reviewed request.
 var ErrConflict = errors.New("conflict")
 
+// ErrUnverified means the action requires a verified e-mail address.
+var ErrUnverified = errors.New("account is not verified")
+
 // Users owns account reads and writes.
 type Users struct {
 	pool *pgxpool.Pool

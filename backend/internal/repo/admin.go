@@ -84,12 +84,22 @@ func (a *Admin) SetRole(ctx context.Context, userID int64, role string) (models.
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	var displayName, email string
+	var isVerified bool
 	err = tx.QueryRow(ctx, `
 		UPDATE users SET role = $2, updated_at = now()
-		WHERE id = $1
-		RETURNING display_name, email`, userID, role).Scan(&displayName, &email)
+		WHERE id = $1 AND ($2 <> 'merchant' OR is_verified)
+		RETURNING display_name, email, is_verified`, userID, role).Scan(&displayName, &email, &isVerified)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return models.AdminUser{}, ErrNotFound
+		// Either the account does not exist, or it is unverified and is being
+		// promoted to merchant (sellers must be verified accounts).
+		var exists bool
+		if e := tx.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)`, userID).Scan(&exists); e != nil {
+			return models.AdminUser{}, e
+		}
+		if !exists {
+			return models.AdminUser{}, ErrNotFound
+		}
+		return models.AdminUser{}, ErrUnverified
 	}
 	if err != nil {
 		return models.AdminUser{}, fmt.Errorf("set role: %w", err)
@@ -102,9 +112,9 @@ func (a *Admin) SetRole(ctx context.Context, userID int64, role string) (models.
 		// merchant being promoted twice.
 		if _, err := tx.Exec(ctx, `
 			INSERT INTO seller_profiles (user_id, store_name)
-			SELECT $1,
+			SELECT $1::bigint,
 			       CASE WHEN EXISTS (SELECT 1 FROM seller_profiles WHERE store_name = $2)
-			            THEN left($2, 48) || ' #' || $1
+			            THEN left($2, 48) || ' #' || $1::text
 			            ELSE $2 END
 			ON CONFLICT (user_id) DO NOTHING`, userID, displayName); err != nil {
 			return models.AdminUser{}, fmt.Errorf("create seller profile: %w", err)
@@ -115,9 +125,36 @@ func (a *Admin) SetRole(ctx context.Context, userID int64, role string) (models.
 		return models.AdminUser{}, err
 	}
 
-	return models.AdminUser{
-		ID: userID, Email: email, DisplayName: displayName, Role: role,
-	}, nil
+	// Re-read so the response carries real counters and timestamps instead of a
+	// half-filled struct.
+	updated, err := a.adminUserByID(ctx, userID)
+	if err != nil {
+		return models.AdminUser{}, err
+	}
+	return updated, nil
+}
+
+// adminUserByID loads one account with the same shape (and activity counters)
+// the list endpoint returns.
+func (a *Admin) adminUserByID(ctx context.Context, userID int64) (models.AdminUser, error) {
+	var u models.AdminUser
+	err := a.pool.QueryRow(ctx, `
+		SELECT u.id, u.email, u.display_name, u.role, u.is_verified, u.created_at,
+		       COALESCE(sp.store_name, ''),
+		       COALESCE(o.cnt, 0), COALESCE(o.spent, 0)
+		FROM users u
+		LEFT JOIN seller_profiles sp ON sp.user_id = u.id
+		LEFT JOIN (
+			SELECT user_id, COUNT(*) AS cnt, SUM(total_cents) AS spent
+			FROM orders WHERE status = 'paid' GROUP BY user_id
+		) o ON o.user_id = u.id
+		WHERE u.id = $1`, userID,
+	).Scan(&u.ID, &u.Email, &u.DisplayName, &u.Role, &u.IsVerified, &u.CreatedAt,
+		&u.StoreName, &u.Orders, &u.SpentCents)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return u, ErrNotFound
+	}
+	return u, err
 }
 
 // Requests lists catalog proposals, optionally filtered by status.

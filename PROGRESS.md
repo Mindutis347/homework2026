@@ -54,6 +54,15 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 - `backend/internal/httpx/e2e_test.go` walks the whole purchase path against a real database; runs when `TEST_DATABASE_URL` is set (use a Neon branch, not production).
 - `npm run build` + `tsc -p tsconfig.app.json --noEmit` clean.
 - Live audit: 95 checks across catalog, routing, auth, cart, checkout, RBAC, merchant, admin — **95/95 pass**.
+- Session 2 live audit after deploying: **48/48 pass** over the deployed API and SPA — public catalog and
+  typo search, 404/405 handling, auth, order history with keys, merchant and admin RBAC boundaries,
+  every admin collection arriving as an array (the class of bug behind the blank Homepage tab), and
+  the support flow end to end: the seller attaching the buyer's order → 404, the retired field → 400,
+  a real ticket → 201 with its order reference in the buyer's list, then resolved via the admin PATCH.
+- Headless Chrome render check of production, 13 routes, **zero runtime exceptions**: all six admin
+  tabs, three merchant tabs, `/account/orders`, `/account/support`, `/cart`, `/checkout`. The admin
+  Homepage tab renders 3,659 characters and its Product IDs inputs come prefilled
+  (`1`, `1, 3, 2, 6, 4, 5, 8, 50, 7, 11`, …), which is the data-loss half of that bug confirmed fixed.
 - Ticket changes exercised over HTTP against the `e2e-test` Neon branch: a foreign order id → 404, a
   nonexistent order id → 404, your own order → 201 with the order reference resolved, `category=refund`
   → `refundRequested = true`, the retired `refundRequested` field → 400, anonymous `GET /api/tickets`
@@ -61,8 +70,8 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 
 ### Repository
 
-`github.com/Mindutis347/homework2026`, branch `main`, 10 commits, 98 tracked files.
-Latest: `feat: customer support form with owned-order ticket guard`.
+`github.com/Mindutis347/homework2026`, branch `main`, 11 commits, 98 tracked files.
+Latest: `fix(admin): blank homepage tab and product detach on save`. Deployed and verified in session 2.
 
 ---
 
@@ -139,23 +148,21 @@ Known limitations, deliberately accepted and documented in `docs/architecture.md
   thread: an admin cannot reply in-app beyond moving the status, and the buyer sees only that status.
 - Four keys from deleted audit orders remain marked `sold` with a null `order_item_id`; harmless,
   not visible in any UI.
+- One production row is audit debris: a support ticket filed by the session-2 buyer (`demo@keyforge.dev`)
+  with subject "Live smoke test — support form", left in `resolved`. It exists because verifying the
+  support flow end to end needs a real ticket; it is only visible in the back-office queue.
 
 ---
 
 ## 4. Exact next step
 
-The submission log is merged and committed, so only deployment and rotation are left:
+Both Vercel and Render are live and verified, so the only open item is housekeeping:
 
 ```bash
-# 1. Revoke the Render API key (Render → Account Settings → API Keys)
-# 2. Ship the support feature: Render redeploys the API on push to main,
-git push origin main
-cd frontend && vercel deploy --prod --yes   # Vercel does not auto-deploy from this repo
+# Revoke the Render API key (Render → Account Settings → API Keys). Still open.
 ```
 
-Then check one ticket in the browser as `demo@keyforge.dev`: `/account/support`, file a request
-against an order, and confirm it appears in `/admin/tickets` for `admin@keyforge.dev`.
-
-The assignment deliverables are otherwise complete: repo, public URL, demo accounts, architecture
-notes, API reference, and the chat history. If build time remains, the highest-value work is rate
-limiting on `/api/auth/*` — the one gap flagged before real traffic.
+The assignment deliverables are complete: repo, public URL, demo accounts, architecture notes, API
+reference, and the chat history. If build time remains, the highest-value work is rate limiting on
+`/api/auth/*` — the one gap flagged before real traffic. After that, ticket message threads (the one
+deliberate limitation left in the support feature).

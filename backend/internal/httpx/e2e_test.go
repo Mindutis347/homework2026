@@ -217,7 +217,13 @@ func TestEndToEndPurchaseFlow(t *testing.T) {
 			Status     string `json:"status"`
 			TotalCents int    `json:"totalCents"`
 			Items      []struct {
-				Keys []string `json:"keys"`
+				ID          int64      `json:"id"`
+				Refundable  bool       `json:"refundable"`
+				DisplayedAt *time.Time `json:"displayedAt"`
+				Keys        []struct {
+					ID          int64      `json:"id"`
+					DisplayedAt *time.Time `json:"displayedAt"`
+				} `json:"keys"`
 			} `json:"items"`
 		} `json:"order"`
 		Replayed bool `json:"replayed"`
@@ -235,9 +241,9 @@ func TestEndToEndPurchaseFlow(t *testing.T) {
 	if checkout.Order.TotalCents != offer.PriceCents {
 		t.Fatalf("order total %d != offer price %d", checkout.Order.TotalCents, offer.PriceCents)
 	}
-	key := checkout.Order.Items[0].Keys[0]
-	if !strings.Contains(key, "-") {
-		t.Fatalf("delivered key %q does not look like a key", key)
+	item := checkout.Order.Items[0]
+	if !item.Refundable || item.DisplayedAt != nil || item.Keys[0].DisplayedAt != nil {
+		t.Fatalf("a fresh purchase must be refundable and undisclosed: %+v", item)
 	}
 
 	// Replaying the same idempotency key must not create a second order.
@@ -260,28 +266,118 @@ func TestEndToEndPurchaseFlow(t *testing.T) {
 		"cardNumber": "4242 4242 4242 4242",
 	}, "e2e-empty-"+idempotencyKey, http.StatusBadRequest, nil)
 
-	// --- order history & inventory invariants -------------------------------
+	// --- key disclosure ------------------------------------------------------
+	// A key value must not appear in any order payload; the codes arrive only when
+	// the buyer explicitly asks, which is what stops a page-level sniff of them.
+	var revealed struct {
+		Keys        []string   `json:"keys"`
+		DisplayedAt *time.Time `json:"displayedAt"`
+	}
+	postJSON(t, client, fmt.Sprintf("%s/api/orders/%d/items/%d/reveal", server.URL, checkout.Order.ID, item.ID),
+		nil, http.StatusOK, &revealed)
+	if len(revealed.Keys) != 1 || !strings.Contains(revealed.Keys[0], "-") {
+		t.Fatalf("reveal did not return exactly one key: %+v", revealed)
+	}
+	if revealed.DisplayedAt == nil {
+		t.Fatalf("reveal did not record a display timestamp")
+	}
+	key := revealed.Keys[0]
+
+	historyResp, err := client.Get(server.URL + "/api/orders")
+	if err != nil {
+		t.Fatalf("GET /api/orders: %v", err)
+	}
+	historyBody, _ := io.ReadAll(historyResp.Body)
+	historyResp.Body.Close()
+	if strings.Contains(string(historyBody), key) {
+		t.Fatalf("order history leaked the key value %q in its payload", key)
+	}
+	if !strings.Contains(string(historyBody), `"displayedAt"`) {
+		t.Fatalf("order history does not describe key display state: %s", historyBody)
+	}
+
+	// Once shown, the line can no longer be refunded.
+	refundURL := fmt.Sprintf("%s/api/orders/%d/items/%d/refund", server.URL, checkout.Order.ID, item.ID)
+	postJSON(t, client, refundURL, nil, http.StatusConflict, nil)
+
+	var soldKeys int
+	var displayedSold bool
+	if err := pool.QueryRow(ctx, `
+		SELECT count(*), bool_and(displayed_at IS NOT NULL)
+		FROM inventory_keys WHERE key_code = $1 AND status = 'sold'`, key,
+	).Scan(&soldKeys, &displayedSold); err != nil {
+		t.Fatalf("query key state: %v", err)
+	}
+	if soldKeys != 1 || !displayedSold {
+		t.Fatalf("key should be sold and stamped as displayed (sold=%d displayed=%v)", soldKeys, displayedSold)
+	}
+
+	// --- refunding an undisclosed line ---------------------------------------
+	var stockBefore int
+	if err := pool.QueryRow(ctx, `SELECT stock FROM offers WHERE id = $1`, offer.ID).Scan(&stockBefore); err != nil {
+		t.Fatalf("query stock: %v", err)
+	}
+	postJSON(t, client, server.URL+"/api/cart",
+		map[string]any{"offerId": offer.ID, "quantity": 1}, http.StatusOK, nil)
+
+	var second struct {
+		Order struct {
+			ID    int64 `json:"id"`
+			Items []struct {
+				ID int64 `json:"id"`
+			} `json:"items"`
+		} `json:"order"`
+	}
+	postJSONWithKey(t, client, server.URL+"/api/checkout", map[string]string{
+		"cardNumber": "4242 4242 4242 4242",
+	}, "e2e-refund-"+idempotencyKey, http.StatusCreated, &second)
+	secondItemID := second.Order.Items[0].ID
+
+	var refunded struct {
+		Order struct {
+			Status     string `json:"status"`
+			TotalCents int    `json:"totalCents"`
+			Items      []struct {
+				Refunded   bool `json:"refunded"`
+				Refundable bool `json:"refundable"`
+				Keys       []struct {
+					ID int64 `json:"id"`
+				} `json:"keys"`
+			} `json:"items"`
+		} `json:"order"`
+	}
+	postJSON(t, client,
+		fmt.Sprintf("%s/api/orders/%d/items/%d/refund", server.URL, second.Order.ID, secondItemID),
+		nil, http.StatusOK, &refunded)
+	if refunded.Order.Status != "refunded" || refunded.Order.TotalCents != 0 {
+		t.Fatalf("fully refunded order should be zeroed: %+v", refunded.Order)
+	}
+	if !refunded.Order.Items[0].Refunded || refunded.Order.Items[0].Refundable || len(refunded.Order.Items[0].Keys) != 0 {
+		t.Fatalf("refunded line still looks active: %+v", refunded.Order.Items[0])
+	}
+
+	var stockAfter, keysHeld int
+	if err := pool.QueryRow(ctx, `SELECT stock FROM offers WHERE id = $1`, offer.ID).Scan(&stockAfter); err != nil {
+		t.Fatalf("query stock: %v", err)
+	}
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM inventory_keys WHERE order_item_id = $1`, secondItemID).Scan(&keysHeld); err != nil {
+		t.Fatalf("query released keys: %v", err)
+	}
+	if stockAfter != stockBefore || keysHeld != 0 {
+		t.Fatalf("refund did not return the key to stock (stock %d -> %d, keys still held %d)",
+			stockBefore, stockAfter, keysHeld)
+	}
+
+	// --- history & cart invariants ------------------------------------------
 	var history struct {
 		Orders []struct {
 			Reference string `json:"reference"`
-			Items     []struct {
-				Keys []string `json:"keys"`
-			} `json:"items"`
 		} `json:"orders"`
 	}
 	getJSON(t, client, server.URL+"/api/orders", &history)
-	if len(history.Orders) != 1 || history.Orders[0].Reference != checkout.Order.Reference {
-		t.Fatalf("order history does not contain the purchase: %+v", history.Orders)
-	}
-
-	var soldKeys int
-	if err := pool.QueryRow(ctx,
-		`SELECT count(*) FROM inventory_keys WHERE key_code = $1 AND status = 'sold'`, key,
-	).Scan(&soldKeys); err != nil {
-		t.Fatalf("query key state: %v", err)
-	}
-	if soldKeys != 1 {
-		t.Fatalf("delivered key is not marked sold in the database")
+	if len(history.Orders) != 2 {
+		t.Fatalf("order history should hold both purchases: %+v", history.Orders)
 	}
 
 	var cartRows int

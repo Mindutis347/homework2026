@@ -109,6 +109,13 @@ export type CartItem = {
 
 export type Cart = { items: CartItem[]; itemCount: number; subtotalCents: number }
 
+/** A delivered key as the API describes it: the code itself is only ever sent by
+ *  the reveal endpoint, so list payloads carry metadata and nothing else. */
+export type OrderKey = {
+  id: number
+  displayedAt: string | null
+}
+
 export type OrderItem = {
   id: number
   productId: number
@@ -122,7 +129,10 @@ export type OrderItem = {
   quantity: number
   commissionCents: number
   sellerPayoutCents: number
-  keys: string[]
+  keys: OrderKey[]
+  refunded: boolean
+  refundable: boolean
+  displayedAt: string | null
 }
 
 export type Order = {

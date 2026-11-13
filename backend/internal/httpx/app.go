@@ -81,6 +81,8 @@ func (a *App) Routes() http.Handler {
 	mux.Handle("POST /api/checkout", verifiedUser(a.handleCheckout))
 	mux.Handle("GET /api/orders", authUser(a.handleListOrders))
 	mux.Handle("GET /api/orders/{id}", authUser(a.handleGetOrder))
+	mux.Handle("POST /api/orders/{id}/items/{itemId}/reveal", authUser(a.handleRevealKeys))
+	mux.Handle("POST /api/orders/{id}/items/{itemId}/refund", authUser(a.handleRefundItem))
 	mux.Handle("POST /api/tickets", verifiedUser(a.handleCreateTicket))
 	mux.Handle("GET /api/tickets", verifiedUser(a.handleMyTickets))
 

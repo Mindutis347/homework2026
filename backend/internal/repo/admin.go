@@ -284,7 +284,7 @@ func (a *Admin) Summary(ctx context.Context) (models.SalesSummary, error) {
 		       COALESCE(SUM(oi.seller_payout_cents), 0)
 		FROM order_items oi
 		JOIN orders od ON od.id = oi.order_id
-		WHERE od.status = 'paid'`).Scan(&s.UnitsSold, &s.CommissionCents, &s.PayoutCents)
+		WHERE od.status = 'paid' AND oi.status = 'paid'`).Scan(&s.UnitsSold, &s.CommissionCents, &s.PayoutCents)
 	if err != nil {
 		return s, err
 	}
@@ -295,7 +295,7 @@ func (a *Admin) Summary(ctx context.Context) (models.SalesSummary, error) {
 	err = a.pool.QueryRow(ctx, `
 		SELECT COUNT(DISTINCT oi.seller_id)
 		FROM order_items oi JOIN orders od ON od.id = oi.order_id
-		WHERE od.status = 'paid'`).Scan(&s.ActiveSellers)
+		WHERE od.status = 'paid' AND oi.status = 'paid'`).Scan(&s.ActiveSellers)
 	if err != nil {
 		return s, err
 	}
@@ -308,7 +308,7 @@ func (a *Admin) Summary(ctx context.Context) (models.SalesSummary, error) {
 		JOIN orders od ON od.id = oi.order_id
 		JOIN users u   ON u.id = oi.seller_id
 		LEFT JOIN seller_profiles sp ON sp.user_id = u.id
-		WHERE od.status = 'paid'
+		WHERE od.status = 'paid' AND oi.status = 'paid'
 		GROUP BY 1
 		ORDER BY 2 DESC
 		LIMIT 5`)
@@ -352,7 +352,7 @@ func (a *Admin) Orders(ctx context.Context, limit int) ([]models.AdminOrder, err
 	}
 	rows, err := a.pool.Query(ctx, `
 		SELECT od.reference, u.email, od.status, od.total_cents,
-		       COALESCE(SUM(oi.quantity), 0)::int, od.created_at
+		       COALESCE(SUM(oi.quantity) FILTER (WHERE oi.status = 'paid'), 0)::int, od.created_at
 		FROM orders od
 		JOIN users u ON u.id = od.user_id
 		LEFT JOIN order_items oi ON oi.order_id = od.id

@@ -51,8 +51,10 @@ is required from the browser.
 | Method | Path | Notes |
 |---|---|---|
 | POST | `/api/checkout` | verified users only. Header `Idempotency-Key`. Body `{cardNumber?, method?}`. 201 new order, 200 replayed, 402 decline, 409 out of stock |
-| GET | `/api/orders` | own order history with keys |
+| GET | `/api/orders` | own order history. Items carry key **metadata** (`id`, `displayedAt`) and never a key value |
 | GET | `/api/orders/{id}` | one order (404 unless you own it) |
+| POST | `/api/orders/{id}/items/{itemId}/reveal` | returns `{keys, displayedAt}` for that line and stamps the first display. The only response that carries a key value |
+| POST | `/api/orders/{id}/items/{itemId}/refund` | refunds an undisplayed line, returns the recomputed order. 409 once a key has been displayed |
 | POST | `/api/tickets` | verified users only. `{subject, body, category, orderId?}`; `category` is one of `refund`, `delivery`, `account`, `other` and drives the refund flag. 404 when `orderId` is not one of your own orders |
 | GET | `/api/tickets` | your own support tickets with their status, newest first |
 

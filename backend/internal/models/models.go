@@ -152,20 +152,30 @@ type Cart struct {
 
 // OrderItem is an immutable snapshot of what was bought, including the keys
 // once paid for.
+// OrderKey is a delivered key without its value. The code itself is only sent in
+// response to an explicit reveal, so a page payload never carries it.
+type OrderKey struct {
+	ID          int64      `json:"id"`
+	DisplayedAt *time.Time `json:"displayedAt"`
+}
+
 type OrderItem struct {
-	ID                int64    `json:"id"`
-	ProductID         int64    `json:"productId"`
-	ProductSlug       string   `json:"productSlug"`
-	ProductTitle      string   `json:"productTitle"`
-	CoverURL          string   `json:"coverUrl"`
-	PlatformName      string   `json:"platformName"`
-	RegionCode        string   `json:"regionCode"`
-	SellerStore       string   `json:"sellerStore"`
-	UnitPriceCents    int      `json:"unitPriceCents"`
-	Quantity          int      `json:"quantity"`
-	CommissionCents   int      `json:"commissionCents"`
-	SellerPayoutCents int      `json:"sellerPayoutCents"`
-	Keys              []string `json:"keys"`
+	ID                int64      `json:"id"`
+	ProductID         int64      `json:"productId"`
+	ProductSlug       string     `json:"productSlug"`
+	ProductTitle      string     `json:"productTitle"`
+	CoverURL          string     `json:"coverUrl"`
+	PlatformName      string     `json:"platformName"`
+	RegionCode        string     `json:"regionCode"`
+	SellerStore       string     `json:"sellerStore"`
+	UnitPriceCents    int        `json:"unitPriceCents"`
+	Quantity          int        `json:"quantity"`
+	CommissionCents   int        `json:"commissionCents"`
+	SellerPayoutCents int        `json:"sellerPayoutCents"`
+	Keys              []OrderKey `json:"keys"`
+	Refunded          bool       `json:"refunded"`
+	Refundable        bool       `json:"refundable"`
+	DisplayedAt       *time.Time `json:"displayedAt"`
 }
 
 // Order is the buyer-facing purchase record.

@@ -5,6 +5,7 @@ import { orderApi } from '@/api/endpoints'
 import { ApiClientError } from '@/api/client'
 import type { Order } from '@/api/types'
 import { Badge, Button, Card, EmptyState, ErrorNote, Field, Input } from '@/components/ui'
+import { KeyPanel } from '@/features/account/KeyPanel'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
 import { formatMoney } from '@/lib/format'
@@ -57,7 +58,7 @@ export default function CheckoutPage() {
   }
 
   if (order) {
-    return <OrderConfirmation order={order} />
+    return <OrderConfirmation order={order} onOrderChange={setOrder} />
   }
 
   if (!user) return null
@@ -165,37 +166,35 @@ export default function CheckoutPage() {
   )
 }
 
-function OrderConfirmation({ order }: { order: Order }) {
+function OrderConfirmation({ order, onOrderChange }: { order: Order; onOrderChange: (order: Order) => void }) {
+  const outstanding = order.items.filter((item) => !item.refunded)
   return (
     <div className="container-page py-10">
       <Card className="mx-auto max-w-2xl p-6">
         <div className="flex items-center gap-3">
-          <span className="grid size-11 place-items-center rounded-[2px] bg-emerald-50 text-xl text-success">✓</span>
+          <span className="grid size-11 place-items-center rounded-[2px] bg-mint-100 text-xl text-success">✓</span>
           <div>
-            <h1 className="font-display text-xl font-extrabold text-ink-900">Payment complete</h1>
+            <h1 className="font-display text-xl font-extrabold text-brand-900">Payment complete</h1>
             <p className="text-sm text-ink-500">
               Order {order.reference} · {formatMoney(order.totalCents)}
             </p>
           </div>
         </div>
 
+        <p className="mt-4 text-sm text-ink-700">
+          Your {outstanding.length === 1 ? 'key is' : 'keys are'} reserved and hidden. Display a key when you are
+          ready to use it — after that the purchase can no longer be refunded.
+        </p>
+
         <div className="mt-6 space-y-4">
           {order.items.map((item) => (
             <div key={item.id} className="rounded-[2px] border border-line p-4">
-              <p className="font-semibold text-ink-900">{item.productTitle}</p>
+              <p className="font-bold text-brand-900">{item.productTitle}</p>
               <p className="text-xs text-ink-500">
-                {item.platformName} · {item.regionCode} · from {item.sellerStore}
+                {item.platformName} · {item.regionCode} · from {item.sellerStore} ·{' '}
+                {formatMoney(item.unitPriceCents * item.quantity)}
               </p>
-              <div className="mt-3 space-y-1">
-                {item.keys.map((key) => (
-                  <code
-                    key={key}
-                    className="block rounded-[2px] bg-canvas px-3 py-2 font-mono text-sm tracking-widest text-ink-900"
-                  >
-                    {key}
-                  </code>
-                ))}
-              </div>
+              <KeyPanel orderId={order.id} item={item} onOrderChange={onOrderChange} />
             </div>
           ))}
         </div>

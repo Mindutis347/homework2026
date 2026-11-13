@@ -4,10 +4,11 @@ import { Link } from 'react-router-dom'
 import { orderApi } from '@/api/endpoints'
 import type { Order } from '@/api/types'
 import { Badge, Button, Card, EmptyState, Skeleton } from '@/components/ui'
+import { KeyPanel } from '@/features/account/KeyPanel'
 import { useAuth } from '@/features/auth/AuthContext'
 import { formatMoney } from '@/lib/format'
 
-/** Order history / game library: every purchase with its delivered keys. */
+/** Order history / game library: every purchase with its revealable keys. */
 export default function OrdersPage() {
   const { user } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
@@ -26,6 +27,11 @@ export default function OrdersPage() {
       .finally(() => setLoading(false))
   }, [user])
 
+  // Revealing a key or refunding a line changes the order, so swap in the fresh copy.
+  function replaceOrder(updated: Order) {
+    setOrders((prev) => prev.map((order) => (order.id === updated.id ? updated : order)))
+  }
+
   if (!user) {
     return (
       <div className="container-page py-16">
@@ -40,7 +46,7 @@ export default function OrdersPage() {
 
   return (
     <div className="container-page py-8">
-      <h1 className="mb-6 font-display text-2xl font-extrabold text-ink-900">Your library</h1>
+      <h1 className="mb-6 font-display text-2xl font-extrabold text-brand-900">Your library</h1>
 
       {loading ? (
         <div className="space-y-3">
@@ -56,32 +62,21 @@ export default function OrdersPage() {
         />
       ) : (
         <div className="space-y-4">
-          {orders.map((order) => <OrderCard key={order.id} order={order} />)}
+          {orders.map((order) => (
+            <OrderCard key={order.id} order={order} onOrderChange={replaceOrder} />
+          ))}
         </div>
       )}
     </div>
   )
 }
 
-function OrderCard({ order }: { order: Order }) {
-  const [revealed, setRevealed] = useState<Record<number, boolean>>({})
-  const [copied, setCopied] = useState<string | null>(null)
-
-  async function copyKey(key: string) {
-    try {
-      await navigator.clipboard.writeText(key)
-      setCopied(key)
-      window.setTimeout(() => setCopied(null), 1500)
-    } catch {
-      setCopied(null)
-    }
-  }
-
+function OrderCard({ order, onOrderChange }: { order: Order; onOrderChange: (order: Order) => void }) {
   return (
     <Card className="p-5">
       <div className="flex flex-wrap items-center gap-3 border-b border-line pb-3">
         <div>
-          <p className="font-display font-bold text-ink-900">{order.reference}</p>
+          <p className="font-display font-bold text-brand-900">{order.reference}</p>
           <p className="text-xs text-ink-500">
             {new Date(order.createdAt).toLocaleString()} · {order.paymentMethod}
           </p>
@@ -95,45 +90,26 @@ function OrderCard({ order }: { order: Order }) {
         <Badge tone={order.status === 'paid' ? 'success' : order.status === 'refunded' ? 'danger' : 'neutral'}>
           {order.status}
         </Badge>
-        <p className="ml-auto font-display text-lg font-bold text-ink-900">{formatMoney(order.totalCents)}</p>
+        <p className="ml-auto font-display text-lg font-extrabold text-brand-900">{formatMoney(order.totalCents)}</p>
       </div>
 
       <div className="mt-4 space-y-4">
         {order.items.map((item) => (
           <div key={item.id} className="flex flex-wrap gap-4">
-            <img src={item.coverUrl} alt="" className="h-20 w-15 rounded object-cover" />
+            <img src={item.coverUrl} alt="" className="h-20 w-15 rounded-[2px] object-cover" />
             <div className="min-w-0 flex-1">
-              <Link to={`/products/${item.productSlug}`} className="font-semibold text-ink-900 hover:text-brand-700">
+              <Link to={`/products/${item.productSlug}`} className="font-bold text-brand-900 hover:text-brand-700">
                 {item.productTitle}
               </Link>
               <p className="text-xs text-ink-500">
                 {item.platformName} · {item.regionCode} · {item.sellerStore} · qty {item.quantity}
               </p>
 
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                {revealed[item.id] ? (
-                  item.keys.map((key) => (
-                    <button
-                      key={key}
-                      onClick={() => void copyKey(key)}
-                      title="Copy key"
-                      className="rounded-[2px] bg-canvas px-3 py-1.5 font-mono text-sm tracking-widest text-ink-900 hover:bg-brand-50"
-                    >
-                      {copied === key ? 'Copied!' : key}
-                    </button>
-                  ))
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setRevealed((prev) => ({ ...prev, [item.id]: true }))}
-                  >
-                    Reveal {item.keys.length} key{item.keys.length === 1 ? '' : 's'}
-                  </Button>
-                )}
-              </div>
+              <KeyPanel orderId={order.id} item={item} onOrderChange={onOrderChange} />
             </div>
-            <p className="font-semibold text-ink-900">{formatMoney(item.unitPriceCents * item.quantity)}</p>
+            <p className={`font-bold ${item.refunded ? 'text-ink-300 line-through' : 'text-brand-900'}`}>
+              {formatMoney(item.unitPriceCents * item.quantity)}
+            </p>
           </div>
         ))}
       </div>

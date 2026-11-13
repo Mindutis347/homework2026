@@ -45,7 +45,7 @@ func (m *Merchant) Stats(ctx context.Context, sellerID int64) (models.MerchantSt
 		       COALESCE(SUM(oi.seller_payout_cents), 0)
 		FROM order_items oi
 		JOIN orders od ON od.id = oi.order_id
-		WHERE oi.seller_id = $1 AND od.status = 'paid'`, sellerID,
+		WHERE oi.seller_id = $1 AND od.status = 'paid' AND oi.status = 'paid'`, sellerID,
 	).Scan(&s.RevenueCents, &s.PayoutCents)
 	return s, err
 }
@@ -185,7 +185,7 @@ func (m *Merchant) Sales(ctx context.Context, sellerID int64, limit int) ([]mode
 		       oi.seller_payout_cents, COALESCE(od.paid_at, od.created_at)
 		FROM order_items oi
 		JOIN orders od ON od.id = oi.order_id
-		WHERE oi.seller_id = $1
+		WHERE oi.seller_id = $1 AND oi.status = 'paid'
 		ORDER BY od.created_at DESC
 		LIMIT $2`, sellerID, limit)
 	if err != nil {

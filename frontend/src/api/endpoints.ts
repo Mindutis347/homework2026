@@ -69,6 +69,14 @@ export const orderApi = {
     }),
   list: () => api.get<{ orders: Order[] }>('/api/orders'),
   get: (id: number) => api.get<Order>(`/api/orders/${id}`),
+  // Keys are disclosed one line at a time, on the buyer's explicit request.
+  revealKeys: (orderId: number, itemId: number) =>
+    api.post<{ keys: string[]; displayedAt: string | null }>(
+      `/api/orders/${orderId}/items/${itemId}/reveal`,
+      {},
+    ),
+  refundItem: (orderId: number, itemId: number) =>
+    api.post<{ order: Order }>(`/api/orders/${orderId}/items/${itemId}/refund`, {}),
 }
 
 export const merchantApi = {

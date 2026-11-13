@@ -23,11 +23,23 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Product page | Game details, genres, developer/publisher, competing offers from several sellers with platform/region chips, cheapest-offer highlighting, stock. |
 | Cart | Add, change quantity (1–10), remove, clear; totals always re-read from live offers, never cached prices. |
 | Checkout | Simulated payment, single transaction: idempotency replay, `FOR UPDATE` on offers, `SKIP LOCKED` key allocation, guarded stock decrement, 8% commission recorded per line. Decline path via card ending `0002`. |
-| Library | `/account/orders` lists purchases with revealable, copyable keys. |
+| Library | `/account/orders` lists purchases with per-line key panels: a key is hidden until "Display key" is pressed, which stamps the display time and permanently withdraws the refund option. Undisplayed lines can be refunded and returned to stock. |
 | Support | `/account/support` files a ticket (subject, reason, optional link to one of your orders) and lists your own tickets with their live status. Reaching it from an order ("Get help with this order") prefills that order. A linked order must belong to the caller, enforced in the insert itself. |
 | Auth | Register → 6-digit code (HMAC'd, 15 min TTL) → verify → login; bcrypt cost 12; httpOnly JWT cookie; unverified users blocked from checkout and merchant tools. |
 | Merchant portal | Stats, own offers, create/update listing, bulk key upload, catalog title requests. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, homepage block CRUD. |
+
+### Key disclosure and refunds (session 4)
+
+Keys are not part of any page payload. `GET /api/orders` and the checkout response describe keys by
+id and display time only; the code arrives from `POST /api/orders/{id}/items/{itemId}/reveal`, which
+also stamps `inventory_keys.displayed_at` the first time. That closes the obvious hole in a "show
+the key immediately" flow: with values in the initial JSON, anyone could read them from devtools or a
+cached response before deciding to ask for a refund. A refund is therefore only possible while a line
+is undisclosed, and it is a real reversal rather than a label: the line becomes `refunded`, its keys
+return to the offer's pool, `offers.stock` goes back up, and the order totals are recomputed (a fully
+refunded order flips to `refunded`). Refunded lines are excluded from the admin ledger, merchant
+sales and item counts, so the accounting cannot claim money that went back.
 
 ### Visual design (session 3)
 

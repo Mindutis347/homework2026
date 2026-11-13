@@ -148,6 +148,11 @@ Handlers return `*httpx.APIError`; `WriteError` also maps `repo.ErrNotFound` to
   and a small retry for reads that hit a cold-starting free instance.
 - Context providers for auth and cart; everything else is local state.
 - The store keeps filters in the URL, so any view is shareable and Back works.
+- Key values never travel in an order payload. A line's code is fetched by
+  `POST /api/orders/{id}/items/{itemId}/reveal`, which also stamps
+  `inventory_keys.displayed_at`; a refund is refused once that stamp exists, so a
+  buyer cannot read a key and then return it. Undisplayed refunds release the keys
+  back to the offer's stock and recompute the order totals.
 - Design tokens live once in `src/index.css` under `@theme`; components consume
   token classes only. They were sampled from eneba.com's rendered styles: brand
   `#4618AC`, deep surface `#1F0A4D`, CTA yellow `#FAD318`, mint `#63E3C2`, 2px

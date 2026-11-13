@@ -76,6 +76,8 @@ styles, so the palette (`#4618AC` chrome, `#1F0A4D` deep surface, `#FAD318` CTA,
   tabs, three merchant tabs, `/account/orders`, `/account/support`, `/cart`, `/checkout`. The admin
   Homepage tab renders 3,659 characters and its Product IDs inputs come prefilled
   (`1`, `1, 3, 2, 6, 4, 5, 8, 50, 7, 11`, …), which is the data-loss half of that bug confirmed fixed.
+- After the session-3 redesign the same check was re-run on production: 12 routes render with **zero
+  runtime exceptions**, and the mobile layout (390 px) was screenshotted for the homepage and the store.
 - Ticket changes exercised over HTTP against the `e2e-test` Neon branch: a foreign order id → 404, a
   nonexistent order id → 404, your own order → 201 with the order reference resolved, `category=refund`
   → `refundRequested = true`, the retired `refundRequested` field → 400, anonymous `GET /api/tickets`

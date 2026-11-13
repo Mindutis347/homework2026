@@ -1,5 +1,6 @@
 import { api, queryString } from '@/api/client'
 import type {
+  AdminBlock,
   AdminOrder,
   AdminUser,
   Cart,
@@ -112,7 +113,7 @@ export const adminApi = {
   tickets: (status = '') => api.get<{ tickets: Ticket[] }>(`/api/admin/tickets${queryString({ status })}`),
   setTicketStatus: (id: number, status: string) =>
     api.patch<{ status: string }>(`/api/admin/tickets/${id}`, { status }),
-  blocks: () => api.get<{ blocks: HomepageBlock[] }>('/api/admin/blocks'),
+  blocks: () => api.get<{ blocks: AdminBlock[] }>('/api/admin/blocks'),
   updateBlock: (
     id: number,
     payload: {
@@ -125,7 +126,7 @@ export const adminApi = {
       isVisible: boolean
       productIds: number[]
     },
-  ) => api.patch<{ block: HomepageBlock }>(`/api/admin/blocks/${id}`, payload),
+  ) => api.patch<{ block: AdminBlock }>(`/api/admin/blocks/${id}`, payload),
   createBlock: (payload: {
     key: string
     type: string
@@ -135,7 +136,7 @@ export const adminApi = {
     position: number
     isVisible: boolean
     productIds: number[]
-  }) => api.post<{ block: HomepageBlock }>('/api/admin/blocks', payload),
+  }) => api.post<{ block: AdminBlock }>('/api/admin/blocks', payload),
   deleteBlock: (id: number) => api.delete<void>(`/api/admin/blocks/${id}`),
 }
 

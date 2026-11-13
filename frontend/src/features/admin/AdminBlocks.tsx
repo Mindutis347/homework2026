@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { adminApi } from '@/api/endpoints'
-import type { HomepageBlock } from '@/api/types'
+import type { AdminBlock } from '@/api/types'
 import {
   Badge,
   Button,
@@ -15,7 +15,7 @@ import {
   Skeleton,
 } from '@/components/ui'
 
-const BLOCK_TYPES: HomepageBlock['type'][] = [
+const BLOCK_TYPES: AdminBlock['type'][] = [
   'hero',
   'product_carousel',
   'category_tiles',
@@ -42,7 +42,7 @@ const textareaClass =
 /** Marketing block manager. The homepage renders whatever is visible, ordered
  *  by position, so this screen is the only thing that decides its layout. */
 export default function AdminBlocks() {
-  const [blocks, setBlocks] = useState<HomepageBlock[]>([])
+  const [blocks, setBlocks] = useState<AdminBlock[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [createToken, setCreateToken] = useState(0)
@@ -80,7 +80,7 @@ export default function AdminBlocks() {
     setCreateToken((token) => token + 1)
   }
 
-  async function deleteBlock(block: HomepageBlock) {
+  async function deleteBlock(block: AdminBlock) {
     if (!window.confirm(`Delete the "${block.key}" block? The homepage will stop rendering it.`)) return
     setError(null)
     try {
@@ -125,9 +125,9 @@ export default function AdminBlocks() {
                     {block.isVisible ? 'visible' : 'hidden'}
                   </Badge>
                   <span className="text-xs text-ink-500">position {block.position}</span>
-                  {block.products.length > 0 && (
+                  {block.productIds.length > 0 && (
                     <span className="text-xs text-ink-500">
-                      {block.products.length} product{block.products.length === 1 ? '' : 's'} attached
+                      {block.productIds.length} product{block.productIds.length === 1 ? '' : 's'} attached
                     </span>
                   )}
                 </div>
@@ -318,7 +318,7 @@ function BlockEditor({
   )
 }
 
-function draftFromBlock(block: HomepageBlock): BlockDraft {
+function draftFromBlock(block: AdminBlock): BlockDraft {
   return {
     key: block.key,
     type: block.type,
@@ -326,7 +326,7 @@ function draftFromBlock(block: HomepageBlock): BlockDraft {
     subtitle: block.subtitle,
     position: String(block.position),
     isVisible: block.isVisible,
-    productIds: block.products.map((product) => product.id).join(', '),
+    productIds: block.productIds.join(', '),
     config: JSON.stringify(block.config, null, 2),
   }
 }
@@ -377,7 +377,7 @@ function buildPayload(draft: BlockDraft, config: Record<string, unknown>): Block
   }
 }
 
-function sortBlocks(blocks: HomepageBlock[]): HomepageBlock[] {
+function sortBlocks(blocks: AdminBlock[]): AdminBlock[] {
   return [...blocks].sort((a, b) => a.position - b.position || a.id - b.id)
 }
 

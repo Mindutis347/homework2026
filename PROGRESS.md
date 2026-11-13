@@ -104,6 +104,13 @@ gives non-default branches a 7-day TTL, so it self-expires.
 **No known functional bugs.** The four issues found by the deployment audit and two found while
 reading the code are fixed and covered by the 95 checks.
 
+Session 2 added the support feature and fixed two bugs found with it:
+
+| Bug | Cause | Fix |
+|---|---|---|
+| Admin → Homepage was a blank page | `AdminBlocks` read `block.products.length`, but `GET /api/admin/blocks` returns `productIds` with `products: null` (the editor never needs hydrated cards) — a render-time TypeError unmounted the route | A separate `AdminBlock` type exposing `productIds`, plus the backend normalising `products` to `[]` |
+| Saving a homepage block would detach its products | Same field: the editor's "Product IDs" input was built from `block.products`, so it rendered empty and saved `productIds: []` | Editor now seeds that input from `block.productIds` |
+
 Pending, in order of importance:
 
 1. **Rotate the Render API key.** It was pasted into the agent chat, and that chat is a submission

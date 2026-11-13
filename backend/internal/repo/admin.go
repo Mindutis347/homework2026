@@ -487,7 +487,10 @@ func (a *Admin) Blocks(ctx context.Context) ([]models.HomepageBlock, error) {
 				return nil, err
 			}
 		}
+		// The back-office editor works from ids; hydrated cards are added only by
+		// the public homepage query. An empty slice keeps this an array, never null.
 		b.ProductIDs = productIDs
+		b.Products = []models.ProductCard{}
 		out = append(out, b)
 	}
 	return out, rows.Err()
@@ -622,6 +625,7 @@ func (a *Admin) blockByID(ctx context.Context, id int64) (models.HomepageBlock, 
 		}
 	}
 	b.ProductIDs = productIDs
+	b.Products = []models.ProductCard{}
 	return b, nil
 }
 

@@ -46,7 +46,7 @@ export default function CartPage() {
       </div>
 
       {error && (
-        <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-danger">{error}</p>
+        <p className="mb-4 rounded-[2px] border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-danger">{error}</p>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
@@ -64,10 +64,10 @@ export default function CartPage() {
                 <p className="mt-1 text-sm font-semibold text-brand-700">{formatMoney(item.unitPriceCents)}</p>
               </div>
 
-              <div className="flex items-center gap-1 rounded-full border border-line">
+              <div className="flex items-center gap-1 rounded-[2px] border border-line">
                 <button
                   aria-label="Decrease quantity"
-                  className="size-8 rounded-full text-lg leading-none text-ink-700 hover:bg-canvas disabled:opacity-40"
+                  className="size-8 rounded-[2px] text-lg leading-none text-ink-700 hover:bg-canvas disabled:opacity-40"
                   disabled={item.quantity <= 1}
                   onClick={() => void setQuantity(item.offerId, item.quantity - 1)}
                 >
@@ -76,7 +76,7 @@ export default function CartPage() {
                 <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
                 <button
                   aria-label="Increase quantity"
-                  className="size-8 rounded-full text-lg leading-none text-ink-700 hover:bg-canvas disabled:opacity-40"
+                  className="size-8 rounded-[2px] text-lg leading-none text-ink-700 hover:bg-canvas disabled:opacity-40"
                   disabled={item.quantity >= item.stock}
                   onClick={() => void setQuantity(item.offerId, item.quantity + 1)}
                 >

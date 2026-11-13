@@ -29,6 +29,19 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Merchant portal | Stats, own offers, create/update listing, bulk key upload, catalog title requests. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, homepage block CRUD. |
 
+### Visual design (session 3)
+
+Recreated from eneba.com itself, not from memory: I captured the live site and read its computed
+styles, so the palette (`#4618AC` chrome, `#1F0A4D` deep surface, `#FAD318` CTA, `#63E3C2` mint),
+2px corner radius and 800-weight type are measured values.
+
+| Piece | Detail |
+|---|---|
+| Tokens | One `@theme` block in `src/index.css`. Metropolis is Eneba's typeface but not freely licensed, so the stack falls back to Figtree (same geometric skeleton, 400–900). |
+| Chrome | Two-row purple header — logo, white search, EU·EUR, cart, Log in/Register, then a darker catalogue row whose platform links come from `/api/meta`. Dark violet footer with link columns. |
+| Homepage | Full-bleed promo hero, purple platform strip, white slices of dark navy product tiles with a yellow action bar. Block order stays database-owned; positions were patched through the admin API (hero → platform strip → rows). |
+| Components | Yellow uppercase primary buttons, square inputs, 2px cards, small-caps badges, mint "best price" highlight. Every radius in the app was swept from 8–16px down to 2px, keeping circles only for spinners, the avatar and the cart count. |
+
 ### Backend
 
 - Go with stdlib `net/http` (Go 1.22 method+path routing), `pgx/v5`, hand-written SQL. Three dependencies total: `pgx`, `golang-jwt`, `x/crypto`.

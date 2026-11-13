@@ -74,7 +74,7 @@ export default function AdminLayout() {
             to={tab.to}
             end={tab.end}
             className={({ isActive }) =>
-              `rounded-full px-3.5 py-2 text-sm font-semibold transition ${
+              `rounded-[2px] px-3.5 py-2 text-sm font-bold transition ${
                 isActive
                   ? 'bg-brand-600 text-white shadow-card'
                   : 'text-ink-700 hover:bg-brand-50 hover:text-brand-700'

@@ -3,20 +3,21 @@ import { Link } from 'react-router-dom'
 import type { ProductCard as ProductCardType } from '@/api/types'
 import { discountPercent, formatMoney } from '@/lib/format'
 
-/** Grid card used on the homepage carousels, the store and search results. */
+/** Grid card used on the homepage rows, the store and search results. Dark navy
+ *  tile with a yellow action bar, following eneba.com's product tile. */
 export function ProductCard({ product, eager = false }: { product: ProductCardType; eager?: boolean }) {
   const discount = discountPercent(product.minPriceCents, product.maxPriceCents)
   return (
     <Link
       to={`/products/${product.slug}`}
-      className="group relative flex flex-col overflow-hidden rounded-card border border-line bg-surface shadow-card transition hover:-translate-y-0.5 hover:shadow-raised"
+      className="group relative flex flex-col overflow-hidden rounded-[2px] bg-brand-900 text-white transition hover:bg-brand-800"
     >
       {product.bestDiscountPercent > 0 && (
-        <span className="absolute left-2 top-2 z-10 rounded-full bg-accent-500 px-2 py-0.5 text-xs font-bold text-ink-900">
+        <span className="absolute left-0 top-0 z-10 bg-accent-500 px-2 py-0.5 text-xs font-extrabold text-ink-900">
           -{product.bestDiscountPercent}%
         </span>
       )}
-      <div className="aspect-[3/4] overflow-hidden bg-canvas">
+      <div className="aspect-[3/4] overflow-hidden bg-brand-800">
         <img
           src={product.coverUrl}
           alt={product.title}
@@ -24,23 +25,26 @@ export function ProductCard({ product, eager = false }: { product: ProductCardTy
           className="size-full object-cover transition duration-300 group-hover:scale-[1.03]"
         />
       </div>
-      <div className="flex flex-1 flex-col gap-1.5 p-3">
-        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-ink-900 group-hover:text-brand-700">
+
+      <div className="flex flex-1 flex-col gap-1 p-3">
+        <p className="label-caps truncate text-brand-200">{product.platforms.map(platformLabel).join(' · ')}</p>
+        <h3 className="line-clamp-2 text-sm font-bold leading-snug group-hover:text-accent-300">
           {product.title}
         </h3>
-        <div className="mt-auto flex items-baseline gap-2">
-          <span className="font-display text-base font-bold text-brand-700">
+        <div className="mt-auto flex items-baseline gap-1.5 pt-1.5">
+          <span className="font-display text-base font-extrabold text-accent-500">
             {formatMoney(product.minPriceCents)}
           </span>
           {discount !== null && (
-            <span className="text-xs text-ink-300 line-through">{formatMoney(product.maxPriceCents)}</span>
+            <span className="text-[0.7rem] text-brand-300 line-through">{formatMoney(product.maxPriceCents)}</span>
           )}
         </div>
-        <div className="flex items-center gap-1.5 text-[0.7rem] text-ink-500">
-          <span className="truncate">{product.platforms.map(platformLabel).join(' · ')}</span>
-          {product.offerCount > 1 && <span className="ml-auto shrink-0">{product.offerCount} offers</span>}
-        </div>
       </div>
+
+      <span className="flex items-center justify-between bg-accent-500 px-3 py-2 text-[0.7rem] font-extrabold uppercase tracking-wide text-ink-900 transition group-hover:bg-accent-400">
+        View offers
+        {product.offerCount > 1 && <span className="font-bold">{product.offerCount}</span>}
+      </span>
     </Link>
   )
 }

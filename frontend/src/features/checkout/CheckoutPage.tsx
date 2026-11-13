@@ -170,7 +170,7 @@ function OrderConfirmation({ order }: { order: Order }) {
     <div className="container-page py-10">
       <Card className="mx-auto max-w-2xl p-6">
         <div className="flex items-center gap-3">
-          <span className="grid size-11 place-items-center rounded-full bg-emerald-50 text-xl text-success">✓</span>
+          <span className="grid size-11 place-items-center rounded-[2px] bg-emerald-50 text-xl text-success">✓</span>
           <div>
             <h1 className="font-display text-xl font-extrabold text-ink-900">Payment complete</h1>
             <p className="text-sm text-ink-500">
@@ -181,7 +181,7 @@ function OrderConfirmation({ order }: { order: Order }) {
 
         <div className="mt-6 space-y-4">
           {order.items.map((item) => (
-            <div key={item.id} className="rounded-xl border border-line p-4">
+            <div key={item.id} className="rounded-[2px] border border-line p-4">
               <p className="font-semibold text-ink-900">{item.productTitle}</p>
               <p className="text-xs text-ink-500">
                 {item.platformName} · {item.regionCode} · from {item.sellerStore}
@@ -190,7 +190,7 @@ function OrderConfirmation({ order }: { order: Order }) {
                 {item.keys.map((key) => (
                   <code
                     key={key}
-                    className="block rounded-lg bg-canvas px-3 py-2 font-mono text-sm tracking-widest text-ink-900"
+                    className="block rounded-[2px] bg-canvas px-3 py-2 font-mono text-sm tracking-widest text-ink-900"
                   >
                     {key}
                   </code>

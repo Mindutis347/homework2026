@@ -87,7 +87,7 @@ export default function VerifyPage() {
           </p>
 
           {devCode && (
-            <div className="mt-4 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3">
+            <div className="mt-4 rounded-[2px] border border-brand-200 bg-brand-50 px-4 py-3">
               <div className="flex items-center gap-2">
                 <Badge tone="brand">Simulated inbox</Badge>
                 <span className="font-mono text-lg font-bold tracking-widest text-brand-800">{devCode}</span>
@@ -111,7 +111,7 @@ export default function VerifyPage() {
             </Field>
             <ErrorNote message={error} />
             {notice && (
-              <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm text-success">
+              <p className="rounded-[2px] border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm text-success">
                 {notice}
               </p>
             )}

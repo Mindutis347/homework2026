@@ -80,8 +80,8 @@ export function SearchBar({ initialValue = '' }: { initialValue?: string }) {
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <div className="flex items-center gap-2 rounded-full border border-line bg-canvas px-4 py-2.5 focus-within:border-brand-400 focus-within:bg-surface">
-        <svg aria-hidden viewBox="0 0 24 24" className="size-4 shrink-0 text-ink-300" fill="none" stroke="currentColor" strokeWidth="2">
+      <div className="flex items-center gap-2 rounded-[2px] bg-white px-3.5 py-2.5 ring-1 ring-transparent focus-within:ring-2 focus-within:ring-accent-500">
+        <svg aria-hidden viewBox="0 0 24 24" className="size-4 shrink-0 text-ink-500" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" />
         </svg>
@@ -94,15 +94,15 @@ export function SearchBar({ initialValue = '' }: { initialValue?: string }) {
           onFocus={() => items.length > 0 && setOpen(true)}
           onKeyDown={onKeyDown}
           type="search"
-          placeholder="Search games, platforms, regions…"
+          placeholder="Search for games, platforms and more"
           aria-label="Search products"
-          className="w-full bg-transparent text-sm text-ink-900 placeholder:text-ink-500 focus:outline-none"
+          className="w-full bg-transparent text-sm font-medium text-ink-900 placeholder:text-ink-500 focus:outline-none"
         />
         {searching && <span className="size-3.5 animate-spin rounded-full border-2 border-brand-400 border-t-transparent" />}
       </div>
 
       {open && term.trim().length >= 2 && (
-        <div className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-card border border-line bg-surface shadow-raised">
+        <div className="absolute inset-x-0 top-full z-50 mt-1.5 overflow-hidden rounded-[2px] border border-line bg-surface text-ink-900 shadow-raised">
           {items.length === 0 ? (
             <p className="px-4 py-5 text-sm text-ink-500">
               No games match “{term.trim()}”. Try a shorter spelling.

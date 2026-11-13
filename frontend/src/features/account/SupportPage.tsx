@@ -186,19 +186,19 @@ export default function SupportPage() {
                   maxLength={4000}
                   onChange={(event) => setMessage(event.target.value)}
                   placeholder="What happened, and what did you expect?"
-                  className="w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200"
+                  className="w-full rounded-[2px] border border-line bg-surface px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200"
                 />
               </Field>
 
               {category === 'refund' && (
-                <p className="rounded-xl bg-canvas px-3.5 py-2.5 text-xs text-ink-700">
+                <p className="rounded-[2px] bg-canvas px-3.5 py-2.5 text-xs text-ink-700">
                   This will be flagged as a refund request for the support team.
                 </p>
               )}
 
               {formError && <ErrorNote message={formError} />}
               {sent && (
-                <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm text-success">
+                <p className="rounded-[2px] border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm text-success">
                   Request sent — it is listed below with its current status.
                 </p>
               )}

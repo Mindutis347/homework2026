@@ -37,7 +37,7 @@ type BlockDraft = {
 type BlockPayload = Parameters<typeof adminApi.updateBlock>[1]
 
 const textareaClass =
-  'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200'
+  'w-full rounded-[2px] border border-line bg-surface px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200'
 
 /** Marketing block manager. The homepage renders whatever is visible, ordered
  *  by position, so this screen is the only thing that decides its layout. */

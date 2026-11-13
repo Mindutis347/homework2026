@@ -21,7 +21,7 @@ const STATUS_TONE: Record<ProductRequest['status'], 'accent' | 'success' | 'dang
 }
 
 const textareaClass =
-  'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200'
+  'w-full rounded-[2px] border border-line bg-surface px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200'
 
 /** Merchant catalogue submissions. Approving one creates the catalog product,
  *  which is why the consequence is spelled out above the buttons. */
@@ -87,7 +87,7 @@ export default function AdminRequests() {
             key={filter.value || 'all'}
             type="button"
             onClick={() => setStatus(filter.value)}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+            className={`rounded-[2px] px-3 py-1.5 text-xs font-bold transition ${
               status === filter.value
                 ? 'bg-brand-600 text-white'
                 : 'bg-canvas text-ink-700 hover:bg-brand-50 hover:text-brand-700'
@@ -122,10 +122,10 @@ export default function AdminRequests() {
                     <img
                       src={request.coverUrl}
                       alt=""
-                      className="h-28 w-21 shrink-0 rounded-lg object-cover"
+                      className="h-28 w-21 shrink-0 rounded-[2px] object-cover"
                     />
                   ) : (
-                    <div className="grid h-28 w-21 shrink-0 place-items-center rounded-lg bg-canvas text-xs text-ink-300">
+                    <div className="grid h-28 w-21 shrink-0 place-items-center rounded-[2px] bg-canvas text-xs text-ink-300">
                       No cover
                     </div>
                   )}
@@ -143,7 +143,7 @@ export default function AdminRequests() {
                     <p className="mt-2 text-sm text-ink-700">{request.description}</p>
 
                     {request.adminNote && (
-                      <p className="mt-2 rounded-lg bg-canvas px-3 py-2 text-xs text-ink-700">
+                      <p className="mt-2 rounded-[2px] bg-canvas px-3 py-2 text-xs text-ink-700">
                         <span className="font-semibold text-ink-900">Admin note:</span>{' '}
                         {request.adminNote}
                       </p>

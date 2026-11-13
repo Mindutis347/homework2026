@@ -13,7 +13,7 @@ export function Layout() {
   }, [pathname])
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-surface">
       <Header />
       <main className="flex-1">
         <Outlet />
@@ -23,52 +23,66 @@ export function Layout() {
   )
 }
 
+/** Dark violet footer, matching the eneba.com chrome: link columns on the
+ *  brand's deepest surface, then a thin legal bar. */
 function Footer() {
   const platforms = ['steam', 'playstation', 'xbox', 'nintendo', 'epic', 'gog']
 
   return (
-    <footer className="mt-12 border-t border-line bg-surface">
-      <div className="container-page grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="mt-16 bg-brand-900 text-white">
+      <div className="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.2fr]">
         <div>
-          <p className="font-display text-lg font-extrabold text-brand-600">keyforge</p>
-          <p className="mt-2 max-w-xs text-sm text-ink-500">
+          <p className="font-display text-xl font-extrabold lowercase tracking-tight">
+            keyforge<span className="text-accent-500">.</span>
+          </p>
+          <p className="mt-3 max-w-xs text-sm text-brand-200">
             Digital game keys from verified sellers. Instant delivery, buyer protection and no
             regional guesswork.
           </p>
+          <p className="mt-4 inline-flex rounded-[2px] bg-mint-400/15 px-2.5 py-1 text-[0.6875rem] font-extrabold uppercase tracking-wide text-mint-400">
+            Instant e-mail delivery
+          </p>
         </div>
+
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-ink-500">Browse</p>
-          <ul className="mt-3 space-y-1.5 text-sm text-ink-700">
-            {platforms.map((slug) => (
+          <p className="label-caps text-brand-300">Browse</p>
+          <ul className="mt-3 space-y-2 text-sm font-semibold text-brand-100">
+            <li><Link to="/store" className="hover:text-accent-500">All games</Link></li>
+            <li><Link to="/store?sort=discount" className="hover:text-accent-500">Best deals</Link></li>
+            {platforms.slice(0, 4).map((slug) => (
               <li key={slug}>
-                <Link to={`/store?platform=${slug}`} className="hover:text-brand-700">
+                <Link to={`/store?platform=${slug}`} className="hover:text-accent-500">
                   {platformLabel(slug)}
                 </Link>
               </li>
             ))}
           </ul>
         </div>
+
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-ink-500">Account</p>
-          <ul className="mt-3 space-y-1.5 text-sm text-ink-700">
-            <li><Link to="/account/orders" className="hover:text-brand-700">Your library</Link></li>
-            <li><Link to="/cart" className="hover:text-brand-700">Cart</Link></li>
-            <li><Link to="/sign-in" className="hover:text-brand-700">Sign in</Link></li>
-            <li><Link to="/sign-up" className="hover:text-brand-700">Create account</Link></li>
+          <p className="label-caps text-brand-300">Account</p>
+          <ul className="mt-3 space-y-2 text-sm font-semibold text-brand-100">
+            <li><Link to="/account/orders" className="hover:text-accent-500">Your library</Link></li>
+            <li><Link to="/account/support" className="hover:text-accent-500">Support</Link></li>
+            <li><Link to="/cart" className="hover:text-accent-500">Cart</Link></li>
+            <li><Link to="/sign-in" className="hover:text-accent-500">Sign in</Link></li>
           </ul>
         </div>
+
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-ink-500">This is a demo</p>
-          <p className="mt-3 text-sm text-ink-500">
+          <p className="label-caps text-brand-300">This is a demo</p>
+          <p className="mt-3 text-sm text-brand-200">
             Payments are simulated and every key is a placeholder. Built for the Eneba internship
-            assignment.
+            assignment, styled after eneba.com.
           </p>
         </div>
       </div>
-      <div className="border-t border-line py-4">
-        <div className="container-page flex flex-wrap items-center justify-between gap-2 text-xs text-ink-500">
+
+      <div className="border-t border-white/10">
+        <div className="container-page flex flex-wrap items-center justify-between gap-3 py-4 text-xs font-semibold text-brand-300">
           <span>© {new Date().getFullYear()} Keyforge</span>
-          <span>SIMULATED KEYS ONLY · NO REAL PAYMENTS</span>
+          <span className="label-caps text-accent-500">Simulated keys · no real payments</span>
+          <span>EU · EUR</span>
         </div>
       </div>
     </footer>

@@ -116,7 +116,7 @@ function DemoRow({
     <button
       type="button"
       onClick={() => onFill(email, password)}
-      className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left hover:bg-canvas"
+      className="flex w-full items-center justify-between rounded-[2px] px-2 py-1.5 text-left hover:bg-canvas"
     >
       <span>
         <span className="font-semibold text-ink-900">{label}</span>

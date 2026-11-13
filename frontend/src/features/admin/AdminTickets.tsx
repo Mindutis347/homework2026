@@ -76,7 +76,7 @@ export default function AdminTickets() {
             key={filter.value || 'all'}
             type="button"
             onClick={() => setStatus(filter.value)}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+            className={`rounded-[2px] px-3 py-1.5 text-xs font-bold transition ${
               status === filter.value
                 ? 'bg-brand-600 text-white'
                 : 'bg-canvas text-ink-700 hover:bg-brand-50 hover:text-brand-700'

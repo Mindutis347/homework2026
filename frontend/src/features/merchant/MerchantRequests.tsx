@@ -18,7 +18,7 @@ import {
 import { formatDate } from '@/lib/format'
 
 const textareaClass =
-  'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200'
+  'w-full rounded-[2px] border border-line bg-surface px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200'
 
 const STATUS_TONE = {
   pending: 'accent',
@@ -151,7 +151,7 @@ export default function MerchantRequests() {
                   )}
 
                   {request.adminNote && (
-                    <p className="mt-3 rounded-xl bg-canvas px-3 py-2 text-sm text-ink-700">
+                    <p className="mt-3 rounded-[2px] bg-canvas px-3 py-2 text-sm text-ink-700">
                       <span className="font-semibold text-ink-900">Admin note: </span>
                       {request.adminNote}
                     </p>
@@ -175,7 +175,7 @@ export default function MerchantRequests() {
           </p>
 
           {notice && (
-            <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm text-success">
+            <p className="mt-4 rounded-[2px] border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm text-success">
               {notice}
             </p>
           )}

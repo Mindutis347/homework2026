@@ -160,7 +160,7 @@ export default function ProductPage() {
           <p className="mt-5 max-w-2xl text-sm leading-relaxed text-ink-700">{product.description}</p>
 
           {feedback && (
-            <p className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-success">
+            <p className="mt-5 rounded-[2px] border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-success">
               {feedback}
             </p>
           )}
@@ -174,7 +174,7 @@ export default function ProductPage() {
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as 'price' | 'rating')}
-                  className="rounded-lg border border-line bg-surface px-2 py-1.5 text-xs font-semibold"
+                  className="rounded-[2px] border border-line bg-surface px-2 py-1.5 text-xs font-semibold"
                   aria-label="Sort offers"
                 >
                   <option value="price">Cheapest first</option>
@@ -203,12 +203,12 @@ export default function ProductPage() {
                 return (
                   <Card
                     key={offer.id}
-                    className={`flex flex-wrap items-center gap-4 p-4 ${isBest ? 'border-brand-300 ring-1 ring-brand-200' : ''}`}
+                    className={`flex flex-wrap items-center gap-4 p-4 ${isBest ? 'border-mint-500 ring-1 ring-mint-500/40' : ''}`}
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-semibold text-ink-900">{offer.seller.storeName}</span>
-                        {isBest && <Badge tone="accent">Best price</Badge>}
+                        {isBest && <Badge tone="success">Best price</Badge>}
                         <Badge tone="neutral">{offer.platformName}</Badge>
                         <Badge tone="neutral">{offer.regionCode}</Badge>
                       </div>
@@ -258,7 +258,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
   return (
     <button
       onClick={onClick}
-      className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${
+      className={`rounded-[2px] px-2.5 py-1 text-xs font-bold transition ${
         active ? 'bg-brand-600 text-white' : 'bg-canvas text-ink-700 hover:bg-brand-50'
       }`}
     >

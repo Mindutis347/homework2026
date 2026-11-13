@@ -87,17 +87,21 @@ export default function StorePage() {
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
-    <div className="container-page py-8">
-      <header className="mb-6">
-        <h1 className="font-display text-2xl font-extrabold text-ink-900 sm:text-3xl">Store</h1>
-        <p className="mt-1 text-sm text-ink-500">
-          {loading ? 'Loading catalogue…' : `${total} game${total === 1 ? '' : 's'} with live offers`}
-        </p>
+    <div>
+      <header className="bg-brand-600 py-8 text-white">
+        <div className="container-page">
+          <p className="label-caps text-brand-200">Catalogue</p>
+          <h1 className="mt-1 font-display text-3xl font-extrabold sm:text-[2rem]">Store</h1>
+          <p className="mt-1 text-sm font-medium text-brand-100">
+            {loading ? 'Loading catalogue…' : `${total} game${total === 1 ? '' : 's'} with live offers`}
+          </p>
+        </div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
+      <div className="container-page py-8">
+        <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
         <aside className={`${showFilters ? 'block' : 'hidden'} lg:block`}>
-          <Card className="sticky top-20 space-y-6 p-4">
+          <Card className="sticky top-32 space-y-6 p-4">
             <FilterGroup title="Platform">
               <div className="flex flex-wrap gap-1.5">
                 <FilterChip active={!query.platform} onClick={() => update({ platform: '' })}>
@@ -194,7 +198,7 @@ export default function StorePage() {
                 <button
                   key={filter.key}
                   onClick={() => update({ [filter.key]: '' })}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 hover:bg-brand-100"
+                  className="inline-flex items-center gap-1.5 rounded-[2px] border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700 hover:bg-brand-100"
                 >
                   {filter.label}
                   <span aria-hidden>×</span>
@@ -246,6 +250,7 @@ export default function StorePage() {
             </>
           )}
         </section>
+        </div>
       </div>
     </div>
   )
@@ -254,7 +259,7 @@ export default function StorePage() {
 function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h2 className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-500">{title}</h2>
+      <h2 className="mb-2 label-caps text-ink-500">{title}</h2>
       {children}
     </div>
   )
@@ -272,8 +277,10 @@ function FilterChip({
   return (
     <button
       onClick={onClick}
-      className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${
-        active ? 'bg-brand-600 text-white' : 'bg-canvas text-ink-700 hover:bg-brand-50 hover:text-brand-700'
+      className={`rounded-[2px] border px-2.5 py-1.5 text-xs font-bold uppercase tracking-wide transition ${
+        active
+          ? 'border-brand-600 bg-brand-600 text-white'
+          : 'border-line bg-surface text-ink-700 hover:border-brand-400 hover:text-brand-700'
       }`}
     >
       {children}

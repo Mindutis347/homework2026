@@ -19,7 +19,7 @@ import {
 import { formatMoney } from '@/lib/format'
 
 const textareaClass =
-  'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 font-mono text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200'
+  'w-full rounded-[2px] border border-line bg-surface px-3.5 py-2.5 font-mono text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200'
 
 type PickedProduct = { id: number; title: string; coverUrl: string }
 
@@ -227,7 +227,7 @@ export default function MerchantOffers() {
       />
 
       {notice && (
-        <p className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-success">
+        <p className="mb-4 rounded-[2px] border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-success">
           {notice}
         </p>
       )}
@@ -251,7 +251,7 @@ export default function MerchantOffers() {
               hint={picked ? undefined : 'Search the catalog by title — typos are tolerated.'}
             >
               {picked ? (
-                <div className="flex items-center gap-3 rounded-xl border border-line bg-canvas px-3 py-2">
+                <div className="flex items-center gap-3 rounded-[2px] border border-line bg-canvas px-3 py-2">
                   <img src={picked.coverUrl} alt="" className="h-12 w-9 rounded object-cover" />
                   <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink-900">
                     {picked.title}
@@ -271,7 +271,7 @@ export default function MerchantOffers() {
             </Field>
 
             {!picked && (searching || results.length > 0 || searchError) && (
-              <div className="rounded-xl border border-line">
+              <div className="rounded-[2px] border border-line">
                 {searching && (
                   <div className="space-y-2 p-3">
                     <Skeleton className="h-10 w-full" />
@@ -476,7 +476,7 @@ export default function MerchantOffers() {
 
                             <ErrorNote message={keyError} />
                             {keyFeedback && (
-                              <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm text-success">
+                              <p className="rounded-[2px] border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm text-success">
                                 Upload complete — {keyFeedback}.
                               </p>
                             )}

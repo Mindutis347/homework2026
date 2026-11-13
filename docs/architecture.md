@@ -148,8 +148,17 @@ Handlers return `*httpx.APIError`; `WriteError` also maps `repo.ErrNotFound` to
   and a small retry for reads that hit a cold-starting free instance.
 - Context providers for auth and cart; everything else is local state.
 - The store keeps filters in the URL, so any view is shareable and Back works.
-- Design tokens (`#4618AC` violet, `#FAD318` CTA yellow) live once in
-  `src/index.css` under `@theme`; components consume token classes only.
+- Design tokens live once in `src/index.css` under `@theme`; components consume
+  token classes only. They were sampled from eneba.com's rendered styles: brand
+  `#4618AC`, deep surface `#1F0A4D`, CTA yellow `#FAD318`, mint `#63E3C2`, 2px
+  corners and an 800-weight geometric sans. Metropolis is Eneba's real typeface
+  but is not freely licensed, so the stack falls back to Figtree, chosen for the
+  same geometric skeleton and full 400–900 weight range.
+- The chrome follows Eneba's layout: a brand-purple utility row (logo, search,
+  account) above a darker catalogue row whose platform links come from
+  `/api/meta`, a full-bleed promo hero, a purple platform strip, then white
+  slices of dark product tiles with yellow action bars. Homepage block order is
+  database-owned; changing the layout means editing block positions, not code.
 
 ## Deployment topology (and the cookie trap)
 

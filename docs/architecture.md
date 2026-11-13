@@ -144,11 +144,41 @@ Handlers return `*httpx.APIError`; `WriteError` also maps `repo.ErrNotFound` to
 ## Frontend
 
 - `src/api/*` is the only place that touches the network: one typed function per
-  endpoint, `credentials: 'include'`, error normalisation into `ApiClientError`.
+  endpoint, `credentials: 'include'`, error normalisation into `ApiClientError`,
+  and a small retry for reads that hit a cold-starting free instance.
 - Context providers for auth and cart; everything else is local state.
 - The store keeps filters in the URL, so any view is shareable and Back works.
 - Design tokens (`#4618AC` violet, `#FAD318` CTA yellow) live once in
   `src/index.css` under `@theme`; components consume token classes only.
+
+## Deployment topology (and the cookie trap)
+
+The SPA is on Vercel, the API on Render, the database on Neon. That is three
+origins, which matters for auth: a cookie set by `*.onrender.com` and read from
+`*.vercel.app` is a **third-party cookie**, and browsers now block those by
+default. The symptom is subtle — login returns 200, the UI looks signed in, then
+every authenticated request is a 401 because the cookie was never stored.
+
+The fix in this repo is a Vercel rewrite in `frontend/vercel.json`:
+
+```
+/api/:path*  ->  https://keyforge-api-fra.onrender.com/api/:path*
+```
+
+Now the browser talks to a single origin. Benefits:
+
+- the `HttpOnly` cookie is first-party, so it is stored and sent normally;
+- no CORS preflight on any request (the server-to-server hop is not subject to it);
+- the JWT never reaches JavaScript, so XSS still cannot exfiltrate it.
+
+Costs: API traffic passes through Vercel's edge, and a cold Render instance can
+surface as a 502/503/504 at the proxy, which is why `src/api/client.ts` retries
+reads a couple of times with a "server is starting up" message. Mutating calls
+are never retried automatically; `POST /api/checkout` is safe regardless because
+of the `Idempotency-Key`.
+
+CORS is still configured on the API (`CORS_ORIGINS`) so the Render URL remains
+usable directly by curl, Postman or a native client.
 
 ## Known limits
 

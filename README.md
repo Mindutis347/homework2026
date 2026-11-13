@@ -71,9 +71,17 @@ win), so the Neon CLI can own the connection string while `.env` holds the rest.
 | `SEED_ON_BOOT` | `true` (seeds once, then no-ops) |
 | `SHOW_DEV_CODES` | `true` for the demo (verification codes visible) |
 
-**Frontend — Vercel.** Import the repo, set root directory to `frontend`
-(`vercel.json` already configures the Vite build and SPA rewrites), and set
-`VITE_API_URL` to the Render URL.
+**Frontend — Vercel.** Import the repo, set root directory to `frontend`.
+`vercel.json` handles the Vite build, the SPA rewrite, and — importantly — proxies
+`/api/*` to the Render service so the browser only ever talks to one origin.
+
+**Why the proxy:** the session cookie is `HttpOnly` and, across two different
+sites (`*.vercel.app` → `*.onrender.com`), it would be a *third-party* cookie,
+which browsers now block by default. Routing `/api` through Vercel makes the
+cookie first-party, removes the CORS preflight, and keeps the token out of
+JavaScript's reach. Because of this, **no `VITE_API_URL` is set in production** —
+the client uses relative `/api` paths. Set `VITE_API_URL` only if you host the
+API and frontend under the same site another way.
 
 ## Verification
 

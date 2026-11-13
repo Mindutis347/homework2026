@@ -27,37 +27,70 @@ type RequestOptions = {
   headers?: Record<string, string>
 }
 
+/** 502/503/504 from the Vercel proxy almost always mean the free Render
+ *  instance is still booting, so a GET is safe to retry after a short wait. */
+const RETRYABLE_STATUS = new Set([502, 503, 504])
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, signal, headers } = options
+  // Only reads are retried: a mutating call could have already been applied.
+  const maxAttempts = method === 'GET' ? 3 : 1
 
-  const response = await fetch(`${BASE_URL}${path}`, {
-    method,
-    signal,
-    credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      ...headers,
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  })
+  for (let attempt = 1; ; attempt++) {
+    let response: Response
+    try {
+      response = await fetch(`${BASE_URL}${path}`, {
+        method,
+        signal,
+        // Same-origin in production (Vercel proxies /api), so cookies are
+        // first-party and no CORS preflight is needed.
+        credentials: 'include',
+        headers: {
+          Accept: 'application/json',
+          ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+          ...headers,
+        },
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+      })
+    } catch (cause) {
+      if (signal?.aborted) throw cause
+      if (attempt < maxAttempts) {
+        await sleep(1200 * attempt)
+        continue
+      }
+      throw new ApiClientError(
+        0,
+        'network_error',
+        'Could not reach the server. It may be starting up — try again in a moment.',
+      )
+    }
 
-  if (response.status === 204) {
-    return undefined as T
+    if (RETRYABLE_STATUS.has(response.status) && attempt < maxAttempts) {
+      await sleep(1500 * attempt)
+      continue
+    }
+
+    if (response.status === 204) {
+      return undefined as T
+    }
+
+    const payload: unknown = await response.json().catch(() => null)
+
+    if (!response.ok) {
+      const envelope = payload as { error?: { code?: string; message?: string } } | null
+      const retryable = RETRYABLE_STATUS.has(response.status)
+      throw new ApiClientError(
+        response.status,
+        envelope?.error?.code ?? 'request_failed',
+        retryable
+          ? 'The server is starting up after sleeping (free hosting). Give it a few seconds and try again.'
+          : (envelope?.error?.message ?? `Request failed with status ${response.status}`),
+      )
+    }
+
+    return payload as T
   }
-
-  const payload: unknown = await response.json().catch(() => null)
-
-  if (!response.ok) {
-    const envelope = payload as { error?: { code?: string; message?: string } } | null
-    throw new ApiClientError(
-      response.status,
-      envelope?.error?.code ?? 'request_failed',
-      envelope?.error?.message ?? `Request failed with status ${response.status}`,
-    )
-  }
-
-  return payload as T
 }
 
 export const api = {

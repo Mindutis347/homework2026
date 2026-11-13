@@ -1,0 +1,26 @@
+# Render blueprint for the Go API. Connect this repo in Render and it will
+# create the service; set DATABASE_URL and CORS_ORIGINS in the dashboard.
+services:
+  - type: web
+    name: keyforge-api
+    runtime: go
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    buildCommand: go build -trimpath -ldflags="-s -w" -o bin/api ./cmd/api
+    startCommand: ./bin/api
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SEED_ON_BOOT
+        value: "true"
+      - key: SHOW_DEV_CODES
+        value: "true"

@@ -1,0 +1,1728 @@
+[
+  {
+    "slug": "elden-ring",
+    "title": "Elden Ring",
+    "description": "Rise, Tarnished, and be guided by grace to brandish the power of the Elden Ring. Explore the vast Lands Between on horseback, delve into labyrinthine legacy dungeons, and clash with demigods in brutal, rewardingly precise combat.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg",
+    "developer": "FromSoftware",
+    "publisher": "Bandai Namco Entertainment",
+    "releaseDate": "2022-02-25",
+    "genres": [
+      "action-rpg",
+      "open-world"
+    ],
+    "popularity": 100,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "cyberpunk-2077",
+    "title": "Cyberpunk 2077",
+    "description": "Build your own cyber-enhanced mercenary in the neon sprawl of Night City. Shape your body, skills and reputation as you chase the one implant that could grant immortality, with every choice rippling through a dense, reactive open world.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg",
+    "developer": "CD PROJEKT RED",
+    "publisher": "CD PROJEKT RED",
+    "releaseDate": "2020-12-09",
+    "genres": [
+      "action-rpg",
+      "open-world"
+    ],
+    "popularity": 98,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "gog"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "baldurs-gate-3",
+    "title": "Baldur's Gate 3",
+    "description": "Gather your party and return to the Forgotten Realms in a sprawling turn-based RPG shaped by your choices. Recruit unforgettable companions, bend the rules of D&D combat, and decide the fate of the Sword Coast alone or with friends.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1086940/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1086940/header.jpg",
+    "developer": "Larian Studios",
+    "publisher": "Larian Studios",
+    "releaseDate": "2023-08-03",
+    "genres": [
+      "rpg",
+      "adventure",
+      "multiplayer"
+    ],
+    "popularity": 99,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "gog"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "red-dead-redemption-2",
+    "title": "Red Dead Redemption 2",
+    "description": "America, 1899. Ride with the van der Linde gang as the outlaw era collapses around them in Rockstar's sweeping frontier epic. Hunt, trade, brawl and survive across a living open world of staggering detail and consequence.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/header.jpg",
+    "developer": "Rockstar Games",
+    "publisher": "Rockstar Games",
+    "releaseDate": "2019-12-05",
+    "genres": [
+      "action",
+      "adventure",
+      "open-world"
+    ],
+    "popularity": 97,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "the-witcher-3-wild-hunt",
+    "title": "The Witcher 3: Wild Hunt",
+    "description": "Play as Geralt of Rivia, a monster hunter for hire, in a morally grey fantasy world torn by war. Track the Child of Prophecy across vast regions, and let every contract, romance and betrayal decide how your saga ends.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/292030/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg",
+    "developer": "CD PROJEKT RED",
+    "publisher": "CD PROJEKT RED",
+    "releaseDate": "2015-05-18",
+    "genres": [
+      "action-rpg",
+      "open-world"
+    ],
+    "popularity": 96,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo",
+      "gog"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "grand-theft-auto-v",
+    "title": "Grand Theft Auto V",
+    "description": "Three very different criminals risk everything in a series of daring heists across Los Santos and Blaine County. Switch between Franklin, Michael and Trevor on the fly, then take the mayhem online with friends in GTA Online.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/271590/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg",
+    "developer": "Rockstar North",
+    "publisher": "Rockstar Games",
+    "releaseDate": "2013-09-17",
+    "genres": [
+      "action",
+      "open-world",
+      "multiplayer"
+    ],
+    "popularity": 97,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 2999
+  },
+  {
+    "slug": "hogwarts-legacy",
+    "title": "Hogwarts Legacy",
+    "description": "Live the unwritten story of a student at Hogwarts in the 1800s. Master spells, brew potions, tame magical beasts and uncover an ancient secret while the wizarding world decides what kind of witch or wizard you become.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/990080/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/990080/header.jpg",
+    "developer": "Avalanche Software",
+    "publisher": "Warner Bros. Games",
+    "releaseDate": "2023-02-10",
+    "genres": [
+      "action",
+      "adventure",
+      "open-world"
+    ],
+    "popularity": 93,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "stardew-valley",
+    "title": "Stardew Valley",
+    "description": "Inherit your grandfather's overgrown farm and turn it into a thriving homestead. Plant crops, raise animals, befriend the whole valley, explore the mines and marry the neighbour of your dreams at your own unhurried pace.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/413150/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/413150/header.jpg",
+    "developer": "ConcernedApe",
+    "publisher": "ConcernedApe",
+    "releaseDate": "2016-02-26",
+    "genres": [
+      "simulation",
+      "indie",
+      "rpg"
+    ],
+    "popularity": 95,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 1499
+  },
+  {
+    "slug": "terraria",
+    "title": "Terraria",
+    "description": "Dig, fight and build your way through a vast procedurally generated world packed with loot. The deeper you tunnel, the stranger and deadlier it gets, and a hundred hours later you are still finding new biomes to conquer.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/105600/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/105600/header.jpg",
+    "developer": "Re-Logic",
+    "publisher": "Re-Logic",
+    "releaseDate": "2011-05-16",
+    "genres": [
+      "adventure",
+      "indie",
+      "survival"
+    ],
+    "popularity": 91,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 999
+  },
+  {
+    "slug": "hades",
+    "title": "Hades",
+    "description": "Defy the god of the dead as Zagreus and hack your way out of the underworld one run at a time. Every death makes you stronger, and every conversation with the Olympians pulls you deeper into a family feud worth escaping.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1145360/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1145360/header.jpg",
+    "developer": "Supergiant Games",
+    "publisher": "Supergiant Games",
+    "releaseDate": "2020-09-17",
+    "genres": [
+      "action-rpg",
+      "indie",
+      "adventure"
+    ],
+    "popularity": 89,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 2499
+  },
+  {
+    "slug": "hollow-knight",
+    "title": "Hollow Knight",
+    "description": "Descend into Hallownest, a ruined insect kingdom full of secrets and sorrow. Chart twisting caverns, sharpen your nail against monstrous guardians and piece together a haunting story told almost entirely without words.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/367520/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/367520/header.jpg",
+    "developer": "Team Cherry",
+    "publisher": "Team Cherry",
+    "releaseDate": "2017-02-24",
+    "genres": [
+      "platformer",
+      "indie",
+      "adventure"
+    ],
+    "popularity": 92,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 1499
+  },
+  {
+    "slug": "disco-elysium",
+    "title": "Disco Elysium",
+    "description": "Wake up with no memory, a raging hangover and a murder to solve in a decaying coastal city. Interrogate a cast of broken idealists while arguing with the twenty-four voices inside your own head in this genre-defining detective RPG.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/632470/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/632470/header.jpg",
+    "developer": "ZA/UM",
+    "publisher": "ZA/UM",
+    "releaseDate": "2019-10-15",
+    "genres": [
+      "rpg",
+      "adventure"
+    ],
+    "popularity": 68,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo",
+      "gog"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "doom-eternal",
+    "title": "DOOM Eternal",
+    "description": "Rip and tear through a demon-infested Earth at relentless speed. Chain glory kills, swap weapons mid-combo and surf the arenas in a combat loop that rewards aggression above all else, all set to a roaring metal soundtrack.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/782330/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/782330/header.jpg",
+    "developer": "id Software",
+    "publisher": "Bethesda Softworks",
+    "releaseDate": "2020-03-19",
+    "genres": [
+      "shooter",
+      "action"
+    ],
+    "popularity": 85,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "rust",
+    "title": "Rust",
+    "description": "Wash ashore naked with a rock and a dream, then claw your way to a fortified base before the neighbours notice. Gather, craft, raid and negotiate uneasy alliances on servers where trust is the rarest resource of all.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/252490/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/252490/header.jpg",
+    "developer": "Facepunch Studios",
+    "publisher": "Facepunch Studios",
+    "releaseDate": "2018-02-08",
+    "genres": [
+      "survival",
+      "multiplayer",
+      "action"
+    ],
+    "popularity": 78,
+    "platforms": [
+      "steam"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "factorio",
+    "title": "Factorio",
+    "description": "Land on an alien world and build a factory that grows until it consumes the map. Automate mining, smelting and logistics into ever more elaborate production chains while the locals take an increasingly dim view of your expansion.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/427520/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/427520/header.jpg",
+    "developer": "Wube Software LTD.",
+    "publisher": "Wube Software LTD.",
+    "releaseDate": "2020-08-14",
+    "genres": [
+      "simulation",
+      "strategy",
+      "indie"
+    ],
+    "popularity": 77,
+    "platforms": [
+      "steam",
+      "nintendo"
+    ],
+    "basePriceCents": 3499
+  },
+  {
+    "slug": "cities-skylines-ii",
+    "title": "Cities: Skylines II",
+    "description": "Design the city of your dreams with deeper simulation than ever before, from traffic flows to household economies. Zone districts, route utilities and watch a living metropolis of millions grow, flourish or gridlock.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/949230/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/949230/header.jpg",
+    "developer": "Iceflake Studios",
+    "publisher": "Paradox Interactive",
+    "releaseDate": "2023-10-24",
+    "genres": [
+      "simulation",
+      "strategy"
+    ],
+    "popularity": 49,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 4999
+  },
+  {
+    "slug": "ea-sports-fc-25",
+    "title": "EA SPORTS FC 25",
+    "description": "Take the pitch with the world's biggest clubs and leagues in the latest chapter of the football simulation. Build your squad in Ultimate Team, run a club in Career Mode or rally friends in Rush, the new five-a-side mode.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2669320/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2669320/header.jpg",
+    "developer": "EA Canada",
+    "publisher": "Electronic Arts",
+    "releaseDate": "2024-09-26",
+    "genres": [
+      "sports",
+      "simulation"
+    ],
+    "popularity": 60,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 6999
+  },
+  {
+    "slug": "forza-horizon-5",
+    "title": "Forza Horizon 5",
+    "description": "Explore the vibrant open roads of Mexico in hundreds of beautifully modelled cars. Race through jungles, deserts and volcano slopes, or just cruise with friends in the most welcoming racing festival around.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1551360/header.jpg",
+    "developer": "Playground Games",
+    "publisher": "Xbox Game Studios",
+    "releaseDate": "2021-11-08",
+    "genres": [
+      "racing",
+      "open-world"
+    ],
+    "popularity": 75,
+    "platforms": [
+      "steam",
+      "xbox"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "god-of-war",
+    "title": "God of War",
+    "description": "Kratos returns as a father, carrying his son and his past through the harsh Norse wilds. Fight gods and monsters with the Leviathan Axe in a single unbroken camera shot that never leaves the pair for a moment.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1593500/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1593500/header.jpg",
+    "developer": "Santa Monica Studio",
+    "publisher": "PlayStation Publishing LLC",
+    "releaseDate": "2022-01-14",
+    "genres": [
+      "action",
+      "adventure"
+    ],
+    "popularity": 90,
+    "platforms": [
+      "steam",
+      "playstation"
+    ],
+    "basePriceCents": 4999
+  },
+  {
+    "slug": "horizon-zero-dawn",
+    "title": "Horizon Zero Dawn",
+    "description": "A thousand years after civilisation fell, colossal animal machines roam a lush reclaimed wilderness. Play as outcast hunter Aloy, learning to override and dismantle the machines while uncovering the truth of humanity's collapse.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1151640/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1151640/header.jpg",
+    "developer": "Guerrilla Games",
+    "publisher": "PlayStation Publishing LLC",
+    "releaseDate": "2024-10-31",
+    "genres": [
+      "action-rpg",
+      "open-world"
+    ],
+    "popularity": 73,
+    "platforms": [
+      "steam",
+      "playstation"
+    ],
+    "basePriceCents": 4999
+  },
+  {
+    "slug": "marvels-spider-man-remastered",
+    "title": "Marvel's Spider-Man Remastered",
+    "description": "Swing through a meticulously recreated Manhattan as a seasoned Peter Parker facing his biggest threats yet. Chain acrobatic combat and web-slinging traversal across a story packed with villains and heart.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1817070/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1817070/header.jpg",
+    "developer": "Insomniac Games",
+    "publisher": "PlayStation Publishing LLC",
+    "releaseDate": "2022-08-12",
+    "genres": [
+      "action",
+      "adventure",
+      "open-world"
+    ],
+    "popularity": 81,
+    "platforms": [
+      "steam",
+      "playstation"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "the-last-of-us-part-i",
+    "title": "The Last of Us Part I",
+    "description": "Twenty years after a fungal outbreak ended the world, a hardened smuggler escorts a teenage girl across a hostile nation. A rebuilt, fully modernised version of the story that redefined narrative action games.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1888930/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1888930/header.jpg",
+    "developer": "Naughty Dog LLC",
+    "publisher": "PlayStation Publishing LLC",
+    "releaseDate": "2023-03-28",
+    "genres": [
+      "action",
+      "adventure"
+    ],
+    "popularity": 83,
+    "platforms": [
+      "steam",
+      "playstation"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "palworld",
+    "title": "Palworld",
+    "description": "Collect mysterious Pals and put them to work gathering, crafting and fighting in a huge open survival world. Build factories, breed your roster and take on poachers and bosses, solo or with a crew of friends.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1623730/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1623730/header.jpg",
+    "developer": "Pocketpair",
+    "publisher": "Pocketpair",
+    "releaseDate": "2024-01-19",
+    "genres": [
+      "survival",
+      "multiplayer",
+      "adventure"
+    ],
+    "popularity": 80,
+    "platforms": [
+      "steam",
+      "xbox"
+    ],
+    "basePriceCents": 2999
+  },
+  {
+    "slug": "helldivers-2",
+    "title": "Helldivers 2",
+    "description": "Enlist in the Helldivers and spread managed democracy across the galaxy, four soldiers at a time. Call down devastating stratagems, fight friendly fire and Galactic War swings in this gloriously chaotic co-op shooter.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/553850/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/553850/header.jpg",
+    "developer": "Arrowhead Game Studios",
+    "publisher": "PlayStation Publishing LLC",
+    "releaseDate": "2024-02-08",
+    "genres": [
+      "shooter",
+      "multiplayer",
+      "action"
+    ],
+    "popularity": 87,
+    "platforms": [
+      "steam",
+      "playstation"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "lethal-company",
+    "title": "Lethal Company",
+    "description": "Scrape scrap from abandoned industrial moons for a faceless Company that does not care whether you make it back. Terrifying, hilarious co-op horror where proximity chat turns panic into comedy within seconds.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1966720/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1966720/header.jpg",
+    "developer": "Zeekerss",
+    "publisher": "Zeekerss",
+    "releaseDate": "2023-10-23",
+    "genres": [
+      "horror",
+      "indie",
+      "multiplayer"
+    ],
+    "popularity": 47,
+    "platforms": [
+      "steam"
+    ],
+    "basePriceCents": 999
+  },
+  {
+    "slug": "valheim",
+    "title": "Valheim",
+    "description": "Sail, build and conquer the tenth Norse realm in a stylish Viking survival game. Raise longhouses, hunt trolls, and gather a band of shield-brothers to challenge the Forsaken one biome at a time.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/892970/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/892970/header.jpg",
+    "developer": "Iron Gate AB",
+    "publisher": "Coffee Stain Publishing",
+    "releaseDate": "2021-02-02",
+    "genres": [
+      "survival",
+      "indie",
+      "multiplayer"
+    ],
+    "popularity": 69,
+    "platforms": [
+      "steam",
+      "xbox"
+    ],
+    "basePriceCents": 1999
+  },
+  {
+    "slug": "phasmophobia",
+    "title": "Phasmophobia",
+    "description": "Investigate haunted locations with a crew of ghost hunters and prove what is lurking inside. Track evidence with EMF readers and spirit boxes while voice recognition means the ghost can hear you beg for mercy.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/739630/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/739630/header.jpg",
+    "developer": "Kinetic Games",
+    "publisher": "Kinetic Games",
+    "releaseDate": "2020-09-18",
+    "genres": [
+      "horror",
+      "indie",
+      "multiplayer"
+    ],
+    "popularity": 52,
+    "platforms": [
+      "steam"
+    ],
+    "basePriceCents": 1399
+  },
+  {
+    "slug": "sons-of-the-forest",
+    "title": "Sons of the Forest",
+    "description": "Search for a missing billionaire on a remote island where a cannibal society watches your every move. Build, hunt and defend a shelter in a stunning survival sandbox that never lets you feel truly safe after dark.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1326470/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1326470/header.jpg",
+    "developer": "Endnight Games Ltd",
+    "publisher": "Newnight",
+    "releaseDate": "2024-02-22",
+    "genres": [
+      "survival",
+      "horror",
+      "adventure"
+    ],
+    "popularity": 41,
+    "platforms": [
+      "steam"
+    ],
+    "basePriceCents": 2999
+  },
+  {
+    "slug": "schedule-i",
+    "title": "Schedule I",
+    "description": "Start small in a gritty city and build an underground empire one deal at a time. Manufacture, distribute and expand your crew while dodging the police in a surprisingly deep co-op management sandbox.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/3164500/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/3164500/header.jpg",
+    "developer": "TVGS",
+    "publisher": "TVGS",
+    "releaseDate": "2025-03-24",
+    "genres": [
+      "simulation",
+      "indie",
+      "multiplayer"
+    ],
+    "popularity": 33,
+    "platforms": [
+      "steam"
+    ],
+    "basePriceCents": 1999
+  },
+  {
+    "slug": "r-e-p-o",
+    "title": "R.E.P.O.",
+    "description": "Haul priceless artefacts out of abandoned facilities using physics-based grabbing and a shared quota. Teammates are fragile, monsters are not, and half the fun is deciding who to leave behind in this co-op horror romp.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/3241660/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/3241660/header.jpg",
+    "developer": "semiwork",
+    "publisher": "semiwork",
+    "releaseDate": "2025-02-26",
+    "genres": [
+      "horror",
+      "multiplayer",
+      "indie"
+    ],
+    "popularity": 32,
+    "platforms": [
+      "steam"
+    ],
+    "basePriceCents": 999
+  },
+  {
+    "slug": "sekiro-shadows-die-twice",
+    "title": "Sekiro: Shadows Die Twice",
+    "description": "A disgraced shinobi in Sengoku-era Japan hunts revenge against a towering samurai clan. Master posture-based swordplay, resurrect on the spot and use stealth and prosthetics in the most exacting combat FromSoftware has built.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/814380/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/814380/header.jpg",
+    "developer": "FromSoftware, Inc.",
+    "publisher": "Activision",
+    "releaseDate": "2019-03-21",
+    "genres": [
+      "action",
+      "adventure"
+    ],
+    "popularity": 85,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "dark-souls-iii",
+    "title": "Dark Souls III",
+    "description": "The fire is fading and the lords have abandoned their thrones. Journey through a beautifully bleak world of fallen kingdoms, mastering weighty combat against bosses that have become legend among players.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/374320/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/374320/header.jpg",
+    "developer": "FromSoftware",
+    "publisher": "Bandai Namco Entertainment",
+    "releaseDate": "2016-04-11",
+    "genres": [
+      "action-rpg",
+      "adventure"
+    ],
+    "popularity": 82,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "monster-hunter-world",
+    "title": "Monster Hunter: World",
+    "description": "Track colossal creatures across living ecosystems and bring them down with oversized weapons. Craft gear from every kill, refine your build and hunt with up to four players in a shared world of spectacular monster encounters.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/582010/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/582010/header.jpg",
+    "developer": "CAPCOM Co., Ltd.",
+    "publisher": "CAPCOM Co., Ltd.",
+    "releaseDate": "2018-08-08",
+    "genres": [
+      "action-rpg",
+      "multiplayer",
+      "adventure"
+    ],
+    "popularity": 72,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 2999
+  },
+  {
+    "slug": "monster-hunter-wilds",
+    "title": "Monster Hunter Wilds",
+    "description": "Hunt through a seamlessly connected, weather-wracked wilderness where entire ecosystems shift with the seasons. Mount up, use the environment and bring down apex monsters solo or in a four-hunter party.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2246340/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2246340/header.jpg",
+    "developer": "CAPCOM Co., Ltd.",
+    "publisher": "CAPCOM Co., Ltd.",
+    "releaseDate": "2025-02-27",
+    "genres": [
+      "action-rpg",
+      "open-world",
+      "multiplayer"
+    ],
+    "popularity": 84,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 6999
+  },
+  {
+    "slug": "resident-evil-4",
+    "title": "Resident Evil 4",
+    "description": "Leon Kennedy is sent to a remote European village to rescue the president's daughter and finds something far worse. A modernised remake of the genre-shifting classic, keeping the tension while sharpening every knife parry and gunfight.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2050650/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2050650/header.jpg",
+    "developer": "CAPCOM Co., Ltd.",
+    "publisher": "CAPCOM Co., Ltd.",
+    "releaseDate": "2023-03-24",
+    "genres": [
+      "horror",
+      "action",
+      "shooter"
+    ],
+    "popularity": 86,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "resident-evil-village",
+    "title": "Resident Evil Village",
+    "description": "Search a snowbound village for your kidnapped daughter and face the four lords who rule it. Survival horror with a fairy-tale bite, from the towering Lady Dimitrescu to a warehouse full of dread.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1196590/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1196590/header.jpg",
+    "developer": "CAPCOM Co., Ltd.",
+    "publisher": "CAPCOM Co., Ltd.",
+    "releaseDate": "2021-05-06",
+    "genres": [
+      "horror",
+      "action"
+    ],
+    "popularity": 65,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "silent-hill-2",
+    "title": "Silent Hill 2",
+    "description": "James Sunderland receives a letter from his dead wife and returns to the fog-shrouded town where she died. A ground-up remake of the psychological horror landmark, rebuilt with over-the-shoulder tension and unbearable atmosphere.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2124490/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2124490/header.jpg",
+    "developer": "Bloober Team SA",
+    "publisher": "KONAMI",
+    "releaseDate": "2024-10-07",
+    "genres": [
+      "horror",
+      "adventure"
+    ],
+    "popularity": 45,
+    "platforms": [
+      "steam",
+      "playstation"
+    ],
+    "basePriceCents": 6999
+  },
+  {
+    "slug": "dead-by-daylight",
+    "title": "Dead by Daylight",
+    "description": "One killer versus four survivors in a deadly game of hide and seek. Repair generators, run the loops and escape the trial, or hunt them down one hook at a time, in an ever-growing roster of licensed horror icons.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/381210/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/381210/header.jpg",
+    "developer": "Behaviour Interactive Inc.",
+    "publisher": "Behaviour Interactive Inc.",
+    "releaseDate": "2016-06-14",
+    "genres": [
+      "horror",
+      "multiplayer",
+      "survival"
+    ],
+    "popularity": 61,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 1999
+  },
+  {
+    "slug": "portal-2",
+    "title": "Portal 2",
+    "description": "Return to Aperture Science with a portal gun and the most passive-aggressive AI in gaming. Solve physics-bending test chambers alone or in full co-op, and try not to think too hard about the relentless dark humour.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/620/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/620/header.jpg",
+    "developer": "Valve",
+    "publisher": "Valve",
+    "releaseDate": "2011-04-18",
+    "genres": [
+      "puzzle",
+      "adventure"
+    ],
+    "popularity": 88,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 999
+  },
+  {
+    "slug": "half-life-alyx",
+    "title": "Half-Life: Alyx",
+    "description": "Set between the two halves of the original saga, this VR-only chapter follows Alyx Vance in occupied City 17. Gravity-glove puzzles, tense firefights and a properly terrifying return of the Combine, built for VR from the ground up.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/546560/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/546560/header.jpg",
+    "developer": "Valve",
+    "publisher": "Valve",
+    "releaseDate": "2020-03-23",
+    "genres": [
+      "shooter",
+      "adventure",
+      "action"
+    ],
+    "popularity": 60,
+    "platforms": [
+      "steam"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "half-life-2",
+    "title": "Half-Life 2",
+    "description": "Gordon Freeman arrives in a dystopian City 17 under Combine occupation, armed with a crowbar and a gravity gun. The physics-driven shooter that set the template for cinematic first-person campaigns, still essential today.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/220/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/220/header.jpg",
+    "developer": "Valve",
+    "publisher": "Valve",
+    "releaseDate": "2004-11-16",
+    "genres": [
+      "shooter",
+      "action",
+      "adventure"
+    ],
+    "popularity": 66,
+    "platforms": [
+      "steam"
+    ],
+    "basePriceCents": 1999
+  },
+  {
+    "slug": "left-4-dead-2",
+    "title": "Left 4 Dead 2",
+    "description": "Four survivors carve a path through the zombie-ridden American South, and the Director makes sure no two runs feel alike. Tight, endlessly replayable co-op shooting with friendlies who will absolutely shoot you by accident.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/550/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/550/header.jpg",
+    "developer": "Valve",
+    "publisher": "Valve",
+    "releaseDate": "2009-11-16",
+    "genres": [
+      "shooter",
+      "multiplayer",
+      "horror"
+    ],
+    "popularity": 56,
+    "platforms": [
+      "steam"
+    ],
+    "basePriceCents": 999
+  },
+  {
+    "slug": "final-fantasy-vii-remake-intergrade",
+    "title": "Final Fantasy VII Remake Intergrade",
+    "description": "Cloud Strife joins an eco-terrorist cell to topple a city-devouring megacorporation. A bold reimagining of the 1997 classic with real-time hybrid combat, expanded character stories and a bonus episode for Yuffie.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1462040/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1462040/header.jpg",
+    "developer": "Square Enix",
+    "publisher": "Square Enix",
+    "releaseDate": "2022-06-17",
+    "genres": [
+      "rpg",
+      "action",
+      "adventure"
+    ],
+    "popularity": 70,
+    "platforms": [
+      "steam",
+      "epic",
+      "playstation"
+    ],
+    "basePriceCents": 6999
+  },
+  {
+    "slug": "nier-automata",
+    "title": "NieR:Automata",
+    "description": "Androids 2B and 9S fight a proxy war against machine lifeforms for a humanity that may no longer exist. PlatinumGames combat, multiple endings and a story that uses the medium itself to break your heart.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/524220/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/524220/header.jpg",
+    "developer": "Square Enix",
+    "publisher": "Square Enix",
+    "releaseDate": "2017-03-17",
+    "genres": [
+      "action-rpg",
+      "adventure"
+    ],
+    "popularity": 66,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "persona-5-royal",
+    "title": "Persona 5 Royal",
+    "description": "By day a Tokyo high schooler, by night a Phantom Thief who steals the twisted desires of corrupt adults. Stylish turn-based combat and social links that make every calendar day count in the definitive version of the JRPG phenomenon.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1687950/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1687950/header.jpg",
+    "developer": "ATLUS",
+    "publisher": "SEGA",
+    "releaseDate": "2022-10-20",
+    "genres": [
+      "rpg",
+      "adventure"
+    ],
+    "popularity": 79,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "persona-3-reload",
+    "title": "Persona 3 Reload",
+    "description": "Transfer to a dorm where students fight monsters during the hidden Dark Hour. A faithful, gorgeous remake of the entry that defined modern Persona, balancing school life and bonds with tense turn-based dungeon crawls.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2161700/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2161700/header.jpg",
+    "developer": "ATLUS",
+    "publisher": "SEGA",
+    "releaseDate": "2024-02-01",
+    "genres": [
+      "rpg",
+      "adventure"
+    ],
+    "popularity": 53,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 6999
+  },
+  {
+    "slug": "metaphor-refantazio",
+    "title": "Metaphor: ReFantazio",
+    "description": "A royal tournament to choose the next king sends a young outcast on a journey across a divided fantasy kingdom. From the Persona team, mixing turn-based Archetype combat with a calendar of friendships and hard political questions.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2679460/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2679460/header.jpg",
+    "developer": "ATLUS",
+    "publisher": "SEGA",
+    "releaseDate": "2024-10-10",
+    "genres": [
+      "rpg",
+      "adventure"
+    ],
+    "popularity": 44,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 6999
+  },
+  {
+    "slug": "mass-effect-legendary-edition",
+    "title": "Mass Effect Legendary Edition",
+    "description": "All three original Mass Effect games remastered with every piece of DLC included. Build Commander Shepard, recruit a crew across the galaxy and carry your choices all the way to a war that decides the fate of every species.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1328670/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1328670/header.jpg",
+    "developer": "BioWare",
+    "publisher": "Electronic Arts",
+    "releaseDate": "2021-05-14",
+    "genres": [
+      "rpg",
+      "shooter",
+      "adventure"
+    ],
+    "popularity": 55,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "starfield",
+    "title": "Starfield",
+    "description": "Join Constellation and chart more than a thousand planets in Bethesda's first new universe in decades. Build ships, outposts and mods to your weapons while hunting the mystery behind humanity's first contact with the unknown.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1716740/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1716740/header.jpg",
+    "developer": "Bethesda Game Studios",
+    "publisher": "Bethesda Softworks",
+    "releaseDate": "2023-09-05",
+    "genres": [
+      "rpg",
+      "open-world",
+      "adventure"
+    ],
+    "popularity": 51,
+    "platforms": [
+      "steam",
+      "xbox"
+    ],
+    "basePriceCents": 6999
+  },
+  {
+    "slug": "the-elder-scrolls-v-skyrim-special-edition",
+    "title": "The Elder Scrolls V: Skyrim Special Edition",
+    "description": "Dragons have returned to Skyrim and only the Dragonborn can stop them. Remastered with all add-ons, it remains the definitive open-world role-playing sandbox where every mountain hides a story to stumble into.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/489830/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/489830/header.jpg",
+    "developer": "Bethesda Game Studios",
+    "publisher": "Bethesda Softworks",
+    "releaseDate": "2016-10-27",
+    "genres": [
+      "rpg",
+      "open-world",
+      "adventure"
+    ],
+    "popularity": 94,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "fallout-4",
+    "title": "Fallout 4",
+    "description": "Crawl out of Vault 111 into a nuclear wasteland to find your missing son. Build settlements, scavenge scrap, mod your guns and choose sides between the Brotherhood, the Institute and everyone in between.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/377160/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/377160/header.jpg",
+    "developer": "Bethesda Game Studios",
+    "publisher": "Bethesda Softworks",
+    "releaseDate": "2015-11-09",
+    "genres": [
+      "rpg",
+      "open-world",
+      "shooter"
+    ],
+    "popularity": 76,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 2999
+  },
+  {
+    "slug": "fallout-new-vegas",
+    "title": "Fallout: New Vegas",
+    "description": "A courier shot in the head wakes up in the Mojave with a chip worth killing for. Faction warfare, razor-sharp writing and freedom to back any warlord, casino or lunatic in one of the most beloved RPGs ever made.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/22380/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/22380/header.jpg",
+    "developer": "Obsidian Entertainment",
+    "publisher": "Bethesda Softworks",
+    "releaseDate": "2010-10-19",
+    "genres": [
+      "rpg",
+      "open-world",
+      "adventure"
+    ],
+    "popularity": 71,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 1999
+  },
+  {
+    "slug": "kingdom-come-deliverance-ii",
+    "title": "Kingdom Come: Deliverance II",
+    "description": "Blacksmith's son Henry returns for a historically grounded adventure across 15th century Bohemia. Swordplay is weighty, choices are permanent, and the countryside is the most convincing medieval sandbox in gaming.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1771300/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1771300/header.jpg",
+    "developer": "Warhorse Studios",
+    "publisher": "Deep Silver",
+    "releaseDate": "2025-02-04",
+    "genres": [
+      "rpg",
+      "open-world",
+      "adventure"
+    ],
+    "popularity": 57,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "divinity-original-sin-2",
+    "title": "Divinity: Original Sin 2",
+    "description": "The Divine is dead and the Void draws near in this enormous turn-based RPG. Combine elemental effects, escape the galleon of a Sourcerer and play the campaign with friends in one of the deepest tactical combat systems ever built.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/435150/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/435150/header.jpg",
+    "developer": "Larian Studios",
+    "publisher": "Larian Studios",
+    "releaseDate": "2017-09-14",
+    "genres": [
+      "rpg",
+      "strategy",
+      "multiplayer"
+    ],
+    "popularity": 67,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo",
+      "gog"
+    ],
+    "basePriceCents": 4499
+  },
+  {
+    "slug": "diablo-iv",
+    "title": "Diablo IV",
+    "description": "Lilith has returned to Sanctuary and the loot-crawl begins again. Carve through hordes of demons with five distinct classes, chase endgame build evolution and share the world with other players in seasonal drops.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2344520/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2344520/header.jpg",
+    "developer": "Blizzard Entertainment, Inc.",
+    "publisher": "Blizzard Entertainment, Inc.",
+    "releaseDate": "2023-10-17",
+    "genres": [
+      "action-rpg",
+      "multiplayer"
+    ],
+    "popularity": 48,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 4999
+  },
+  {
+    "slug": "total-war-warhammer-iii",
+    "title": "Total War: Warhammer III",
+    "description": "Command giant daemonic armies and legendary lords from across the Warhammer world in turn-based empire building and real-time carnage. The culmination of the trilogy, eventually unlocking a colossal combined campaign map.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1142710/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1142710/header.jpg",
+    "developer": "Creative Assembly",
+    "publisher": "SEGA",
+    "releaseDate": "2022-02-16",
+    "genres": [
+      "strategy",
+      "simulation"
+    ],
+    "popularity": 39,
+    "platforms": [
+      "steam",
+      "epic"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "crusader-kings-iii",
+    "title": "Crusader Kings III",
+    "description": "Rule a medieval dynasty as a person, not just a colour on a map. Scheming, marriage, murder and inheritance drive a deeply personal grand strategy game where a bad heir can undo a century of careful plotting.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1158310/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1158310/header.jpg",
+    "developer": "Paradox Development Studio",
+    "publisher": "Paradox Interactive",
+    "releaseDate": "2020-09-01",
+    "genres": [
+      "strategy",
+      "simulation",
+      "rpg"
+    ],
+    "popularity": 37,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 4999
+  },
+  {
+    "slug": "sid-meiers-civilization-vi",
+    "title": "Sid Meier's Civilization VI",
+    "description": "Found a city, survive the neighbours, and keep pressing that one more turn. Districts, agendas and great people make the sixth instalment the most flexible build-your-own-empire entry in the classic 4X series.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/289070/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/289070/header.jpg",
+    "developer": "Firaxis Games",
+    "publisher": "2K",
+    "releaseDate": "2016-10-20",
+    "genres": [
+      "strategy"
+    ],
+    "popularity": 64,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "xcom-2",
+    "title": "XCOM 2",
+    "description": "Humanity lost and now the resistance fights from the shadows with stolen tech. Lead a squad of customisable soldiers through brutal turn-based tactical missions where permadeath makes every overwatch miss hurt.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/268500/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/268500/header.jpg",
+    "developer": "Firaxis Games",
+    "publisher": "2K",
+    "releaseDate": "2016-02-04",
+    "genres": [
+      "strategy",
+      "rpg"
+    ],
+    "popularity": 38,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "frostpunk",
+    "title": "Frostpunk",
+    "description": "The world has frozen and you are the appointed leader of the last city. Push a giant generator to its limits and decide how much humanity you will trade for heat, food and another day of survival.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/323190/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/323190/header.jpg",
+    "developer": "11 bit studios",
+    "publisher": "11 bit studios",
+    "releaseDate": "2018-04-24",
+    "genres": [
+      "strategy",
+      "simulation",
+      "survival"
+    ],
+    "popularity": 35,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 2999
+  },
+  {
+    "slug": "satisfactory",
+    "title": "Satisfactory",
+    "description": "Drop onto an alien planet and build a conveyor-belt paradise that grows from a single smelter to a multi-level megabase. First-person automation with breathtaking landscapes and a wildly satisfying sense of scale.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/526870/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/526870/header.jpg",
+    "developer": "Coffee Stain Studios",
+    "publisher": "Coffee Stain Publishing",
+    "releaseDate": "2024-09-10",
+    "genres": [
+      "simulation",
+      "strategy",
+      "indie"
+    ],
+    "popularity": 46,
+    "platforms": [
+      "steam"
+    ],
+    "basePriceCents": 3499
+  },
+  {
+    "slug": "rimworld",
+    "title": "RimWorld",
+    "description": "Guide a handful of survivors stranded on a hostile world through stories no one scripted. A brilliant AI storyteller spins raids, illness, betrayal and darkly comic disasters into a colony sim with real emotional weight.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/294100/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/294100/header.jpg",
+    "developer": "Ludeon Studios",
+    "publisher": "Ludeon Studios",
+    "releaseDate": "2018-10-17",
+    "genres": [
+      "simulation",
+      "strategy",
+      "indie"
+    ],
+    "popularity": 35,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 3499
+  },
+  {
+    "slug": "subnautica",
+    "title": "Subnautica",
+    "description": "Stranded on an ocean planet whose surface is a hotbed of life and whose depths are considerably less welcoming. Explore by submarine, build a habitat and uncover why your ship fell into the water in the first place.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/264710/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/264710/header.jpg",
+    "developer": "Unknown Worlds Entertainment",
+    "publisher": "Unknown Worlds Entertainment",
+    "releaseDate": "2018-01-23",
+    "genres": [
+      "survival",
+      "adventure",
+      "indie"
+    ],
+    "popularity": 63,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 2499
+  },
+  {
+    "slug": "project-zomboid",
+    "title": "Project Zomboid",
+    "description": "This is how you died. An isometric zombie survival sim with brutal detail, from wound infection to barricaded windows to the inevitable moment you relax for five seconds too long. Every run ends badly, and the story you tell about it is the point.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/108600/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/108600/header.jpg",
+    "developer": "The Indie Stone",
+    "publisher": "The Indie Stone",
+    "releaseDate": "2013-11-08",
+    "genres": [
+      "survival",
+      "indie",
+      "simulation"
+    ],
+    "popularity": 42,
+    "platforms": [
+      "steam"
+    ],
+    "basePriceCents": 1999
+  },
+  {
+    "slug": "dont-starve-together",
+    "title": "Don't Starve Together",
+    "description": "A hand-drawn nightmare survival game where everything, including your friends, can kill you. Manage hunger and sanity, learn the secrets of the Constant and try to winter somewhere with a plan.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/322330/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/322330/header.jpg",
+    "developer": "Klei Entertainment",
+    "publisher": "Klei Entertainment",
+    "releaseDate": "2016-04-21",
+    "genres": [
+      "survival",
+      "indie",
+      "multiplayer"
+    ],
+    "popularity": 36,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 1499
+  },
+  {
+    "slug": "hunt-showdown-1896",
+    "title": "Hunt: Showdown 1896",
+    "description": "Bounty hunters stalk monstrous targets through gothic swamps where every gunshot draws rivals. High-stakes PvPvE extraction shooter where sound matters, one bullet kills and the bayou rarely gives up its dead.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/594650/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/594650/header.jpg",
+    "developer": "Crytek",
+    "publisher": "Crytek",
+    "releaseDate": "2019-08-27",
+    "genres": [
+      "shooter",
+      "multiplayer",
+      "horror"
+    ],
+    "popularity": 34,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 2999
+  },
+  {
+    "slug": "rainbow-six-siege",
+    "title": "Rainbow Six Siege",
+    "description": "Five versus five tactical destruction, breach and defend. Highly operator-driven gunplay, destructible walls and a learning curve that rewards team coordination over reflexes in one of the longest-running shooters going.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg",
+    "developer": "Ubisoft Montreal",
+    "publisher": "Ubisoft",
+    "releaseDate": "2015-12-01",
+    "genres": [
+      "shooter",
+      "multiplayer"
+    ],
+    "popularity": 47,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 1999
+  },
+  {
+    "slug": "titanfall-2",
+    "title": "Titanfall 2",
+    "description": "A pilot and his Titan, wall-running across the frontier. Widely held up as the best movement shooter of its generation, with a short campaign that hits harder than it has any right to.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1237970/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1237970/header.jpg",
+    "developer": "Respawn Entertainment",
+    "publisher": "Electronic Arts",
+    "releaseDate": "2020-06-18",
+    "genres": [
+      "shooter",
+      "action",
+      "multiplayer"
+    ],
+    "popularity": 40,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 1999
+  },
+  {
+    "slug": "halo-the-master-chief-collection",
+    "title": "Halo: The Master Chief Collection",
+    "description": "Six classic Halo campaigns remastered and one shared multiplayer suite. Fight the Covenant from Reach to Halo 4, then jump into custom games and Big Team Battle with the whole crew.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/976730/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/976730/header.jpg",
+    "developer": "343 Industries",
+    "publisher": "Xbox Game Studios",
+    "releaseDate": "2019-12-03",
+    "genres": [
+      "shooter",
+      "multiplayer",
+      "action"
+    ],
+    "popularity": 59,
+    "platforms": [
+      "steam",
+      "xbox"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "sea-of-thieves",
+    "title": "Sea of Thieves",
+    "description": "Pirate crews sail, dig and betray each other across a gorgeous shared ocean. Tiny sloop or four-player galleon, the best moments are always the ones nobody planned, ideally involving a kraken and a powder keg.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1172620/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1172620/header.jpg",
+    "developer": "Rare Ltd",
+    "publisher": "Xbox Game Studios",
+    "releaseDate": "2020-06-03",
+    "genres": [
+      "adventure",
+      "multiplayer",
+      "open-world"
+    ],
+    "popularity": 41,
+    "platforms": [
+      "steam",
+      "xbox",
+      "playstation"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "ori-and-the-will-of-the-wisps",
+    "title": "Ori and the Will of the Wisps",
+    "description": "A small spirit guardian sets out to restore a broken world in one of the most beautiful metroidvanias ever drawn. Fluid movement, emotional storytelling and a score that will absolutely ruin your composure.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1057090/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1057090/header.jpg",
+    "developer": "Moon Studios GmbH",
+    "publisher": "Xbox Game Studios",
+    "releaseDate": "2020-03-10",
+    "genres": [
+      "platformer",
+      "adventure",
+      "indie"
+    ],
+    "popularity": 54,
+    "platforms": [
+      "steam",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 2999
+  },
+  {
+    "slug": "cuphead",
+    "title": "Cuphead",
+    "description": "Run and gun through a 1930s cartoon brought to life by hand-drawn animation and real jazz. Boss rush brutality wrapped in rubber-hose charm, best played with a very forgiving partner.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/268910/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/268910/header.jpg",
+    "developer": "Studio MDHR Entertainment Inc.",
+    "publisher": "Studio MDHR Entertainment Inc.",
+    "releaseDate": "2017-09-29",
+    "genres": [
+      "platformer",
+      "indie",
+      "action"
+    ],
+    "popularity": 54,
+    "platforms": [
+      "steam",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 1999
+  },
+  {
+    "slug": "celeste",
+    "title": "Celeste",
+    "description": "Madeline climbs a mountain, and the mountain is really about anxiety. Exhilarating precision platforming paired with a story that treats struggle with unusual honesty, plus a huge optional remix campaign.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/504230/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/504230/header.jpg",
+    "developer": "Maddy Makes Games Inc.",
+    "publisher": "Maddy Makes Games Inc.",
+    "releaseDate": "2018-01-25",
+    "genres": [
+      "platformer",
+      "indie",
+      "adventure"
+    ],
+    "popularity": 62,
+    "platforms": [
+      "steam",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 1999
+  },
+  {
+    "slug": "undertale",
+    "title": "Undertale",
+    "description": "Fall into the Underground and meet monsters who mostly just want to be spared. A small RPG built on the idea that you can avoid fighting at all, with a soundtrack and twist that people still talk about.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/391540/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/391540/header.jpg",
+    "developer": "tobyfox",
+    "publisher": "tobyfox",
+    "releaseDate": "2015-09-15",
+    "genres": [
+      "rpg",
+      "indie",
+      "adventure"
+    ],
+    "popularity": 72,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 999
+  },
+  {
+    "slug": "balatro",
+    "title": "Balatro",
+    "description": "A poker roguelite where jokers rewrite the rules and scoring explodes into the billions. Simple to learn, catastrophic for your sleep schedule, and easily the most addictive deckbuilder of its year.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2379780/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2379780/header.jpg",
+    "developer": "LocalThunk",
+    "publisher": "Playstack",
+    "releaseDate": "2024-02-20",
+    "genres": [
+      "indie",
+      "puzzle",
+      "strategy"
+    ],
+    "popularity": 50,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 1499
+  },
+  {
+    "slug": "it-takes-two",
+    "title": "It Takes Two",
+    "description": "A feuding couple turned into dolls must cooperate to get back to normal. Every level reinvents its mechanics, and it is strictly two-player, either online or with a friend beside you on the sofa.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1426210/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1426210/header.jpg",
+    "developer": "Hazelight Studios",
+    "publisher": "Electronic Arts",
+    "releaseDate": "2021-03-25",
+    "genres": [
+      "adventure",
+      "multiplayer",
+      "platformer"
+    ],
+    "popularity": 58,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 3999
+  },
+  {
+    "slug": "bioshock-infinite",
+    "title": "BioShock Infinite",
+    "description": "A former Pinkerton agent rides a floating city to rescue a girl who can tear holes in reality. Skyhooks, vigors and one of the most discussed endings in games, remastered with all story DLC.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/8870/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/8870/header.jpg",
+    "developer": "Irrational Games",
+    "publisher": "2K",
+    "releaseDate": "2013-03-25",
+    "genres": [
+      "shooter",
+      "adventure",
+      "action"
+    ],
+    "popularity": 43,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 2999
+  },
+  {
+    "slug": "ghost-of-tsushima-directors-cut",
+    "title": "Ghost of Tsushima Director's Cut",
+    "description": "Jin Sakai abandons samurai honour to defend Tsushima from the Mongol invasion. Stunning wind-guided exploration, katana duels and a world of haiku and hot springs, with the Iki Island expansion included.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2215430/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2215430/header.jpg",
+    "developer": "Sucker Punch Productions",
+    "publisher": "PlayStation Publishing LLC",
+    "releaseDate": "2024-05-16",
+    "genres": [
+      "action",
+      "adventure",
+      "open-world"
+    ],
+    "popularity": 74,
+    "platforms": [
+      "steam",
+      "playstation"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "black-myth-wukong",
+    "title": "Black Myth: Wukong",
+    "description": "The Destined One walks the road of Journey to the West across breathtaking mythic China. Staff combat, transforming spells and huge bosses drawn from Chinese folklore, rendered with remarkable visual ambition.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg",
+    "developer": "Game Science",
+    "publisher": "Game Science",
+    "releaseDate": "2024-08-19",
+    "genres": [
+      "action-rpg",
+      "adventure"
+    ],
+    "popularity": 78,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox"
+    ],
+    "basePriceCents": 5999
+  },
+  {
+    "slug": "hollow-knight-silksong",
+    "title": "Hollow Knight: Silksong",
+    "description": "Hornet takes the lead in a long-awaited sequel across a haunted kingdom of silk and song. Faster, tougher and more mobile than the original, with boss encounters built for players who wanted more bite.",
+    "coverUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1030300/library_600x900.jpg",
+    "heroUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/1030300/header.jpg",
+    "developer": "Team Cherry",
+    "publisher": "Team Cherry",
+    "releaseDate": "2025-09-04",
+    "genres": [
+      "platformer",
+      "indie",
+      "action"
+    ],
+    "popularity": 91,
+    "platforms": [
+      "steam",
+      "playstation",
+      "xbox",
+      "nintendo"
+    ],
+    "basePriceCents": 1999
+  }
+]

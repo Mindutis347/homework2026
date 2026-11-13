@@ -19,7 +19,7 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 |---|---|
 | Homepage | 7 blocks fetched from `homepage_blocks` and rendered by `type` (hero, product_carousel, category_tiles, banner). Nothing about the landing page is hardcoded in React. |
 | Store | Platform / region / genre / max-price filters, 6 sort modes, pagination, all filter state in the URL so views are shareable. |
-| Search | Global dropdown + store results, typo tolerant via `pg_trgm` (`eleden ring` → Elden Ring at 64%, `cyberpuk` → Cyberpunk 2077 at 78%). |
+| Search | Global dropdown + store results, typo tolerant via `pg_trgm` (`eleden ring` → Elden Ring at 64%, `cyberpuk` → Cyberpunk 2077 at 78%). Title initialisms resolve too, computed in SQL: `gta` → Grand Theft Auto V, `bg3` → Baldur's Gate 3, `rdr2` → Red Dead Redemption 2. |
 | Product page | Game details, genres, developer/publisher, competing offers from several sellers with platform/region chips, cheapest-offer highlighting, stock. |
 | Cart | Add, change quantity (1–10), remove, clear; totals always re-read from live offers, never cached prices. |
 | Checkout | Simulated payment, single transaction: idempotency replay, `FOR UPDATE` on offers, `SKIP LOCKED` key allocation, guarded stock decrement, 8% commission recorded per line. Decline path via card ending `0002`. |

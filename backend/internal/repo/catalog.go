@@ -37,6 +37,15 @@ type CatalogFilter struct {
 	PageSize      int
 }
 
+// titleAcronymExpr builds a product title's initialism in SQL — "Grand Theft
+// Auto V" becomes "gtav" — so a shopper typing "gta", "bg3" or "rdr2" finds the
+// game. Trigram similarity cannot reach those: they share almost no characters
+// with the full title. Comparing by prefix keeps it cheap and predictable.
+const titleAcronymExpr = `(SELECT string_agg(left(w, 1), '' ORDER BY ord)
+					FROM regexp_split_to_table(regexp_replace(lower(p.title), '''', '', 'g'), '[^a-z0-9]+')
+					     WITH ORDINALITY AS t(w, ord)
+					WHERE w <> '')`
+
 // sortClauses is a whitelist: the client picks a key, never SQL. This avoids
 // injection while still supporting the store's sort options.
 var sortClauses = map[string]string{
@@ -94,14 +103,18 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 		       a.min_price, a.max_price, a.offer_count, a.best_discount,
 		       a.platform_slugs, a.region_codes,
 		       COUNT(*) OVER() AS total,
-		       CASE WHEN @search = '' THEN 0 ELSE similarity(p.title, @search) END AS score
+		       CASE WHEN @search = '' THEN 0
+		            ELSE GREATEST(similarity(p.title, @search),
+		                 CASE WHEN `+titleAcronymExpr+` LIKE lower(@search) || '%%' THEN 0.9 ELSE 0 END)
+		       END AS score
 		FROM products p
 		JOIN offer_agg a ON a.product_id = p.id
 		WHERE p.is_active
 		  AND (@search = ''
 		       OR p.title ILIKE '%%' || @search || '%%'
 		       OR similarity(p.title, @search) > 0.25
-		       OR word_similarity(@search, p.title) > 0.6)
+		       OR word_similarity(@search, p.title) > 0.6
+		       OR `+titleAcronymExpr+` LIKE lower(@search) || '%%')
 		  AND (@genre = '' OR EXISTS (
 		       SELECT 1 FROM product_genres pg
 		       JOIN genres g ON g.id = pg.genre_id
@@ -265,13 +278,15 @@ func (c *Catalog) Search(ctx context.Context, term string, limit int) ([]models.
 
 	rows, err := c.pool.Query(ctx, `
 		SELECT p.slug, p.title, p.cover_url,
-		       GREATEST(similarity(p.title, @term), word_similarity(@term, p.title)) AS score
+		       GREATEST(similarity(p.title, @term), word_similarity(@term, p.title),
+		                CASE WHEN `+titleAcronymExpr+` LIKE lower(@term) || '%' THEN 0.9 ELSE 0 END) AS score
 		FROM products p
 		WHERE p.is_active
 		  AND EXISTS (SELECT 1 FROM offers o WHERE o.product_id = p.id AND o.is_active AND o.stock > 0)
 		  AND (p.title ILIKE '%' || @term || '%'
 		       OR similarity(p.title, @term) > 0.2
-		       OR word_similarity(@term, p.title) > 0.5)
+		       OR word_similarity(@term, p.title) > 0.5
+		       OR `+titleAcronymExpr+` LIKE lower(@term) || '%')
 		ORDER BY score DESC, p.popularity DESC, p.title ASC
 		LIMIT @limit`,
 		pgx.NamedArgs{"term": term, "limit": limit},

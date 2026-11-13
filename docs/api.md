@@ -19,7 +19,7 @@ is required from the browser.
 | GET | `/api/homepage` | visible blocks with resolved products |
 | GET | `/api/products` | `q, platform, region, genre, minPriceCents, maxPriceCents, sort, page, pageSize` |
 | GET | `/api/products/{slug}` | product detail + competing offers |
-| GET | `/api/search?q=&limit=` | fuzzy suggestions with match scores |
+| GET | `/api/search?q=&limit=` | fuzzy suggestions with match scores: trigrams tolerate typos (`eleden ring`), prefix/`ILIKE` catches partial names (`cyberpu`), and title initialisms resolve abbreviations (`gta`, `bg3`, `rdr2`) |
 
 `sort` accepts `popular` (default), `relevance`, `price_asc`, `price_desc`,
 `newest`, `discount`, `title`. Prices are integer cents.

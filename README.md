@@ -4,7 +4,7 @@ A production-shaped marketplace for digital game keys: browse the catalog, searc
 compare offers from several sellers, check out, and get an instant key — plus a merchant portal
 for sellers and an admin back-office for the platform.
 
-**Live:** [keyforge-blush.vercel.app](https://keyforge-blush.vercel.app) · API: [keyforge-api-n1sm.onrender.com](https://keyforge-api-n1sm.onrender.com/api/health)
+**Live:** [keyforge-blush.vercel.app](https://keyforge-blush.vercel.app) · API: [keyforge-api-fra.onrender.com](https://keyforge-api-fra.onrender.com/api/health)
 
 Demo accounts (also listed on the sign-in page):
 

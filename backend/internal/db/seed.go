@@ -142,8 +142,7 @@ func Seed(ctx context.Context, pool *pgxpool.Pool, games []seed.Game, secret []b
 	}
 
 	// --- accounts ----------------------------------------------------------
-	adminID, err := insertUser(ctx, tx, AdminEmail, AdminPassword, "Keyforge Admin", "admin", true)
-	if err != nil {
+	if _, err := insertUser(ctx, tx, AdminEmail, AdminPassword, "Keyforge Admin", "admin", true); err != nil {
 		return err
 	}
 	if _, err := insertUser(ctx, tx, CustomerEmail, CustomerPass, "Demo Buyer", "customer", true); err != nil {
@@ -306,7 +305,6 @@ func Seed(ctx context.Context, pool *pgxpool.Pool, games []seed.Game, secret []b
 	slog.Info("database seeded",
 		"products", len(games), "keys", len(keys),
 		"admin", AdminEmail, "customer", CustomerEmail)
-	_ = adminID
 	return nil
 }
 
@@ -409,16 +407,11 @@ func seedHomepage(ctx context.Context, tx pgx.Tx, productIDs map[string]int64) e
 		return err
 	}
 
-	heroSlug := "elden-ring"
-	heroProduct, ok := productIDs[heroSlug]
-	if !ok {
-		for _, id := range bestSellers {
-			heroProduct = id
-			break
-		}
-	}
-	if len(bestSellers) > 0 && !ok {
-		heroSlug = ""
+	var heroProduct int64
+	if id, ok := productIDs["elden-ring"]; ok {
+		heroProduct = id
+	} else if len(bestSellers) > 0 {
+		heroProduct = bestSellers[0]
 	}
 
 	tiles := make([]map[string]any, 0, len(seedPlatforms))
@@ -523,7 +516,6 @@ func seedHomepage(ctx context.Context, tx pgx.Tx, productIDs map[string]int64) e
 				return fmt.Errorf("link block product: %w", err)
 			}
 		}
-		_ = heroSlug
 	}
 	return nil
 }

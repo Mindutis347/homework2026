@@ -8,7 +8,10 @@
       "source": "/api/:path*",
       "destination": "https://keyforge-api-fra.onrender.com/api/:path*"
     },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/((?!api/)(?!.*\\.).*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {

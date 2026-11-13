@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/mindutis347/keyforge/backend/internal/models"
@@ -23,6 +24,13 @@ type Admin struct {
 func NewAdmin(pool *pgxpool.Pool) *Admin { return &Admin{pool: pool} }
 
 var nonSlug = regexp.MustCompile(`[^a-z0-9]+`)
+
+// isUniqueViolation reports a Postgres unique-constraint error (SQLSTATE 23505)
+// so the API can answer 409 instead of a generic 500.
+func isUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
+}
 
 func slugify(s string) string {
 	s = strings.ToLower(strings.TrimSpace(s))
@@ -88,18 +96,18 @@ func (a *Admin) SetRole(ctx context.Context, userID int64, role string) (models.
 	}
 
 	if role == "merchant" {
-		storeName := displayName
+		// One statement, no error path: Postgres aborts the whole transaction on
+		// any constraint violation, so "try, fail, retry" is not an option here.
+		// The CASE picks a free store name up front; ON CONFLICT only covers a
+		// merchant being promoted twice.
 		if _, err := tx.Exec(ctx, `
 			INSERT INTO seller_profiles (user_id, store_name)
-			VALUES ($1, $2)
-			ON CONFLICT (user_id) DO NOTHING`, userID, storeName); err != nil {
-			// Unique constraint on store_name: fall back to a suffixed name.
-			if _, err2 := tx.Exec(ctx, `
-				INSERT INTO seller_profiles (user_id, store_name)
-				VALUES ($1, $2)
-				ON CONFLICT (user_id) DO NOTHING`, userID, fmt.Sprintf("%s #%d", storeName, userID)); err2 != nil {
-				return models.AdminUser{}, fmt.Errorf("create seller profile: %w", err2)
-			}
+			SELECT $1,
+			       CASE WHEN EXISTS (SELECT 1 FROM seller_profiles WHERE store_name = $2)
+			            THEN left($2, 48) || ' #' || $1
+			            ELSE $2 END
+			ON CONFLICT (user_id) DO NOTHING`, userID, displayName); err != nil {
+			return models.AdminUser{}, fmt.Errorf("create seller profile: %w", err)
 		}
 	}
 
@@ -447,6 +455,9 @@ func (a *Admin) CreateBlock(ctx context.Context, in BlockInput) (models.Homepage
 		RETURNING id`,
 		in.Key, in.Type, in.Title, in.Subtitle, cfg, in.Position, in.IsVisible).Scan(&id)
 	if err != nil {
+		if isUniqueViolation(err) {
+			return models.HomepageBlock{}, ErrConflict
+		}
 		return models.HomepageBlock{}, fmt.Errorf("create block: %w", err)
 	}
 	if err := replaceBlockProducts(ctx, tx, id, in.ProductIDs); err != nil {

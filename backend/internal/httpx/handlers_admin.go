@@ -199,13 +199,34 @@ func (a *App) handleAdminCreateBlock(w http.ResponseWriter, r *http.Request) {
 		WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "key and type are required"))
 		return
 	}
+	if !validBlockType(in.Type) {
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_body",
+			"type must be hero, product_carousel, category_tiles, banner or platform_strip"))
+		return
+	}
 	block, err := a.admin.CreateBlock(r.Context(), in)
+	if errors.Is(err, repo.ErrConflict) {
+		WriteError(w, Errorf(http.StatusConflict, "block_exists", "a block with that key already exists"))
+		return
+	}
 	if err != nil {
 		WriteError(w, err)
 		return
 	}
 	WriteJSON(w, http.StatusCreated, map[string]any{"block": block})
 }
+
+// blockTypes mirrors the CHECK constraint on homepage_blocks.type, so an invalid
+// type is a 400 from the API instead of a 500 from the database.
+var blockTypes = map[string]bool{
+	"hero":             true,
+	"product_carousel": true,
+	"category_tiles":   true,
+	"banner":           true,
+	"platform_strip":   true,
+}
+
+func validBlockType(t string) bool { return blockTypes[t] }
 
 // handleAdminUpdateBlock edits a homepage block.
 //
@@ -219,6 +240,11 @@ func (a *App) handleAdminUpdateBlock(w http.ResponseWriter, r *http.Request) {
 	var in repo.BlockInput
 	if err := DecodeJSON(w, r, &in); err != nil {
 		WriteError(w, err)
+		return
+	}
+	if !validBlockType(in.Type) {
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_body",
+			"type must be hero, product_carousel, category_tiles, banner or platform_strip"))
 		return
 	}
 	block, err := a.admin.UpdateBlock(r.Context(), id, in)

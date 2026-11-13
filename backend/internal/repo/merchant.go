@@ -154,15 +154,16 @@ func (m *Merchant) UploadKeys(ctx context.Context, sellerID, offerID int64, code
 	}
 
 	inserted := 0
-	for _, code := range codes {
-		tag, err := tx.Exec(ctx, `
-			INSERT INTO inventory_keys (offer_id, key_code)
-			VALUES ($1, $2) ON CONFLICT (key_code) DO NOTHING`, offerID, code)
-		if err != nil {
-			return 0, fmt.Errorf("insert key: %w", err)
-		}
-		inserted += int(tag.RowsAffected())
+	// One statement for the whole batch: a merchant pasting 500 keys would
+	// otherwise mean 500 sequential round trips (~2 minutes against Neon).
+	tag, err := tx.Exec(ctx, `
+		INSERT INTO inventory_keys (offer_id, key_code)
+		SELECT $1, code FROM unnest($2::text[]) AS t(code)
+		ON CONFLICT (key_code) DO NOTHING`, offerID, codes)
+	if err != nil {
+		return 0, fmt.Errorf("insert keys: %w", err)
 	}
+	inserted = int(tag.RowsAffected())
 
 	if inserted > 0 {
 		if _, err := tx.Exec(ctx, `

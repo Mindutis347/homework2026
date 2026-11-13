@@ -46,7 +46,7 @@ var sortClauses = map[string]string{
 	"price_desc": "min_price DESC, p.title ASC",
 	"newest":     "p.release_date DESC NULLS LAST, p.title ASC",
 	"discount":   "best_discount DESC, p.popularity DESC",
-	"title":      "p.title ASC",
+	"title":      "lower(p.title) ASC, p.title ASC",
 }
 
 const offerAggCTE = `

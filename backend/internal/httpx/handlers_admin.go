@@ -286,15 +286,17 @@ func (a *App) handleAdminDeleteBlock(w http.ResponseWriter, r *http.Request) {
 
 // handleCreateTicket lets a signed-in buyer file a support request.
 //
-//	POST /api/tickets {"subject","body","category","orderId","refundRequested"}
+//	POST /api/tickets {"subject","body","category","orderId"}
+//
+// The refund flag is derived from the category rather than sent by the client, so
+// the queue's refund filter can never disagree with the category shown beside it.
 func (a *App) handleCreateTicket(w http.ResponseWriter, r *http.Request) {
 	user := UserFrom(r.Context())
 	var body struct {
-		Subject         string `json:"subject"`
-		Body            string `json:"body"`
-		Category        string `json:"category"`
-		OrderID         *int64 `json:"orderId"`
-		RefundRequested bool   `json:"refundRequested"`
+		Subject  string `json:"subject"`
+		Body     string `json:"body"`
+		Category string `json:"category"`
+		OrderID  *int64 `json:"orderId"`
 	}
 	if err := DecodeJSON(w, r, &body); err != nil {
 		WriteError(w, err)
@@ -314,9 +316,22 @@ func (a *App) handleCreateTicket(w http.ResponseWriter, r *http.Request) {
 		body.Category = "other"
 	}
 	if err := a.admin.CreateTicket(r.Context(), user.UserID, body.OrderID, body.Subject,
-		body.Body, body.Category, body.RefundRequested); err != nil {
+		body.Body, body.Category, body.Category == "refund"); err != nil {
 		WriteError(w, err)
 		return
 	}
 	WriteJSON(w, http.StatusCreated, map[string]any{"status": "ticket_created"})
+}
+
+// handleMyTickets lists the signed-in buyer's own support requests.
+//
+//	GET /api/tickets
+func (a *App) handleMyTickets(w http.ResponseWriter, r *http.Request) {
+	user := UserFrom(r.Context())
+	tickets, err := a.admin.TicketsByUser(r.Context(), user.UserID)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, map[string]any{"tickets": tickets})
 }

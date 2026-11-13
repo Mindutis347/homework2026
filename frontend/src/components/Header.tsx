@@ -92,6 +92,7 @@ function AccountMenu() {
           <p className="mt-1 text-[0.7rem] uppercase tracking-wide text-brand-600">{user?.role}</p>
         </div>
         <MenuLink to="/account/orders">Your library</MenuLink>
+        <MenuLink to="/account/support">Support</MenuLink>
         {(user?.role === 'merchant' || user?.role === 'admin') && <MenuLink to="/merchant">Merchant portal</MenuLink>}
         {user?.role === 'admin' && <MenuLink to="/admin">Admin back-office</MenuLink>}
         {!user?.isVerified && <MenuLink to={`/verify?email=${encodeURIComponent(user?.email ?? '')}`}>Verify e-mail</MenuLink>}

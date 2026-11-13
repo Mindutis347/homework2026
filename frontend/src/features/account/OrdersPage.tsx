@@ -85,6 +85,12 @@ function OrderCard({ order }: { order: Order }) {
           <p className="text-xs text-ink-500">
             {new Date(order.createdAt).toLocaleString()} · {order.paymentMethod}
           </p>
+          <Link
+            to={`/account/support?orderId=${order.id}&category=delivery`}
+            className="mt-1 inline-block text-xs font-semibold text-brand-700 hover:underline"
+          >
+            Get help with this order
+          </Link>
         </div>
         <Badge tone={order.status === 'paid' ? 'success' : order.status === 'refunded' ? 'danger' : 'neutral'}>
           {order.status}

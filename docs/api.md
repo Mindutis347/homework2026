@@ -53,7 +53,8 @@ is required from the browser.
 | POST | `/api/checkout` | verified users only. Header `Idempotency-Key`. Body `{cardNumber?, method?}`. 201 new order, 200 replayed, 402 decline, 409 out of stock |
 | GET | `/api/orders` | own order history with keys |
 | GET | `/api/orders/{id}` | one order (404 unless you own it) |
-| POST | `/api/tickets` | `{subject, body, category, orderId?, refundRequested?}` |
+| POST | `/api/tickets` | verified users only. `{subject, body, category, orderId?}`; `category` is one of `refund`, `delivery`, `account`, `other` and drives the refund flag. 404 when `orderId` is not one of your own orders |
+| GET | `/api/tickets` | your own support tickets with their status, newest first |
 
 ## Merchant (`merchant` or `admin`, verified)
 

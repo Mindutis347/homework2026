@@ -375,20 +375,16 @@ func (a *Admin) Orders(ctx context.Context, limit int) ([]models.AdminOrder, err
 	return out, rows.Err()
 }
 
-// Tickets lists support requests.
-func (a *Admin) Tickets(ctx context.Context, status string) ([]models.Ticket, error) {
-	rows, err := a.pool.Query(ctx, `
+const ticketColumns = `
 		SELECT t.id, u.email, COALESCE(od.reference, ''), t.subject, t.body,
 		       t.category, t.status, t.refund_requested, t.created_at
 		FROM support_tickets t
 		JOIN users u ON u.id = t.user_id
-		LEFT JOIN orders od ON od.id = t.order_id
-		WHERE $1 = '' OR t.status = $1
-		ORDER BY t.created_at DESC
-		LIMIT 200`, status)
-	if err != nil {
-		return nil, fmt.Errorf("list tickets: %w", err)
-	}
+		LEFT JOIN orders od ON od.id = t.order_id`
+
+// collectTickets drains a ticket query; both the support queue and a buyer's own
+// list project the same columns.
+func collectTickets(rows pgx.Rows) ([]models.Ticket, error) {
 	defer rows.Close()
 
 	out := []models.Ticket{}
@@ -401,6 +397,30 @@ func (a *Admin) Tickets(ctx context.Context, status string) ([]models.Ticket, er
 		out = append(out, t)
 	}
 	return out, rows.Err()
+}
+
+// Tickets lists every support request for the back-office queue.
+func (a *Admin) Tickets(ctx context.Context, status string) ([]models.Ticket, error) {
+	rows, err := a.pool.Query(ctx, ticketColumns+`
+		WHERE $1 = '' OR t.status = $1
+		ORDER BY t.created_at DESC
+		LIMIT 200`, status)
+	if err != nil {
+		return nil, fmt.Errorf("list tickets: %w", err)
+	}
+	return collectTickets(rows)
+}
+
+// TicketsByUser lists one buyer's own support requests, newest first.
+func (a *Admin) TicketsByUser(ctx context.Context, userID int64) ([]models.Ticket, error) {
+	rows, err := a.pool.Query(ctx, ticketColumns+`
+		WHERE t.user_id = $1
+		ORDER BY t.created_at DESC
+		LIMIT 100`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("list own tickets: %w", err)
+	}
+	return collectTickets(rows)
 }
 
 // UpdateTicketStatus moves a ticket through open -> in_progress -> resolved.
@@ -417,11 +437,24 @@ func (a *Admin) UpdateTicketStatus(ctx context.Context, id int64, status string)
 }
 
 // CreateTicket files a support request on behalf of a signed-in user.
+//
+// The insert only happens when the referenced order belongs to the caller, so a
+// ticket can never be attached to somebody else's purchase. Returns ErrNotFound
+// when the order does not exist or is not theirs; the handler turns that into 404.
 func (a *Admin) CreateTicket(ctx context.Context, userID int64, orderID *int64, subject, body, category string, refund bool) error {
-	_, err := a.pool.Exec(ctx, `
+	tag, err := a.pool.Exec(ctx, `
 		INSERT INTO support_tickets (user_id, order_id, subject, body, category, refund_requested)
-		VALUES ($1, $2, $3, $4, $5, $6)`, userID, orderID, subject, body, category, refund)
-	return err
+		SELECT $1::bigint, $2::bigint, $3::text, $4::text, $5::text, $6::boolean
+		WHERE $2::bigint IS NULL
+		   OR EXISTS (SELECT 1 FROM orders WHERE id = $2::bigint AND user_id = $1::bigint)`,
+		userID, orderID, subject, body, category, refund)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
 }
 
 // --- homepage content management -------------------------------------------

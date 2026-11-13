@@ -140,11 +140,11 @@ export const adminApi = {
 }
 
 export const ticketApi = {
+  list: () => api.get<{ tickets: Ticket[] }>('/api/tickets'),
   create: (payload: {
     subject: string
     body: string
-    category: string
+    category: Ticket['category']
     orderId?: number
-    refundRequested?: boolean
   }) => api.post<{ status: string }>('/api/tickets', payload),
 }

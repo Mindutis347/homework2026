@@ -1,6 +1,7 @@
 # PROGRESS
 
-_Status as of 2026-11-13, end of session 1. Live deployment audited: 95/95 checks pass._
+_Status as of 2026-11-14, end of session 2. The live deployment was audited at 95/95 in session 1;
+the customer support feature added in session 2 is covered by the checks listed under Verification._
 
 Live app: <https://keyforge-blush.vercel.app> · API: <https://keyforge-api-fra.onrender.com/api/health>
 
@@ -23,6 +24,7 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Cart | Add, change quantity (1–10), remove, clear; totals always re-read from live offers, never cached prices. |
 | Checkout | Simulated payment, single transaction: idempotency replay, `FOR UPDATE` on offers, `SKIP LOCKED` key allocation, guarded stock decrement, 8% commission recorded per line. Decline path via card ending `0002`. |
 | Library | `/account/orders` lists purchases with revealable, copyable keys. |
+| Support | `/account/support` files a ticket (subject, reason, optional link to one of your orders) and lists your own tickets with their live status. Reaching it from an order ("Get help with this order") prefills that order. A linked order must belong to the caller, enforced in the insert itself. |
 | Auth | Register → 6-digit code (HMAC'd, 15 min TTL) → verify → login; bcrypt cost 12; httpOnly JWT cookie; unverified users blocked from checkout and merchant tools. |
 | Merchant portal | Stats, own offers, create/update listing, bulk key upload, catalog title requests. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, homepage block CRUD. |
@@ -30,7 +32,7 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 ### Backend
 
 - Go with stdlib `net/http` (Go 1.22 method+path routing), `pgx/v5`, hand-written SQL. Three dependencies total: `pgx`, `golang-jwt`, `x/crypto`.
-- **42 routes** in `backend/internal/httpx/app.go`; contracts documented in `docs/api.md`.
+- **43 routes** in `backend/internal/httpx/app.go`; contracts documented in `docs/api.md`.
 - Migrations: `0001_init.sql` (13 tables, `pg_trgm` + `citext`, trigram index) and `0002_idempotency_per_user.sql`.
 - Design notes and trade-offs: `docs/architecture.md`.
 
@@ -52,11 +54,15 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 - `backend/internal/httpx/e2e_test.go` walks the whole purchase path against a real database; runs when `TEST_DATABASE_URL` is set (use a Neon branch, not production).
 - `npm run build` + `tsc -p tsconfig.app.json --noEmit` clean.
 - Live audit: 95 checks across catalog, routing, auth, cart, checkout, RBAC, merchant, admin — **95/95 pass**.
+- Ticket changes exercised over HTTP against the `e2e-test` Neon branch: a foreign order id → 404, a
+  nonexistent order id → 404, your own order → 201 with the order reference resolved, `category=refund`
+  → `refundRequested = true`, the retired `refundRequested` field → 400, anonymous `GET /api/tickets`
+  → 401, and one buyer's list never contains another buyer's tickets.
 
 ### Repository
 
-`github.com/Mindutis347/homework2026`, branch `main`, 7 commits, 96 tracked files.
-Latest: `d112f09 fix(admin): verified-only merchant promotion, correct profile in response`.
+`github.com/Mindutis347/homework2026`, branch `main`, 10 commits, 98 tracked files.
+Latest: `feat: customer support form with owned-order ticket guard`.
 
 ---
 
@@ -101,14 +107,14 @@ reading the code are fixed and covered by the 95 checks.
 Pending, in order of importance:
 
 1. **Rotate the Render API key.** It was pasted into the agent chat, and that chat is a submission
-   artifact. Revoke it at Render → Account Settings → API Keys. Nothing depends on it.
-2. **Fold the chat export into the deliverable.** An export already sits at the repo root as
-   `kimi-export-session_-20261113-220003.md` (1.2 MB, untracked). It contains the Render API key on
-   **3 lines** — redact all three, then append it to `agent-chat-history.md` (or move it to
-   `docs/chat-logs/`) and commit. I checked the file: every Postgres connection string in it is a
-   placeholder (`postgres://user:password@host/dbname`) and the `JWT_SECRET=` occurrences are the
-   `.env.example` example value, so no database credentials or session secrets leaked.
-3. Optional: delete the `e2e-test` Neon branch instead of waiting for its TTL.
+   artifact. Revoke it at Render → Account Settings → API Keys. Nothing depends on it. (Still open
+   as of session 2.)
+2. Optional: delete the `e2e-test` Neon branch instead of waiting for its TTL.
+
+One deliberate API change in session 2: `POST /api/tickets` no longer accepts `refundRequested`. The
+refund flag is derived from `category == "refund"` server-side, so the queue's refund badge can never
+disagree with the category next to it, and sending the old field is now a 400 rather than a silent
+no-op. The only client (`frontend/src/api/endpoints.ts`) was updated in the same commit.
 
 Known limitations, deliberately accepted and documented in `docs/architecture.md`:
 
@@ -122,8 +128,8 @@ Known limitations, deliberately accepted and documented in `docs/architecture.md
   (product page ≈ 0.7 s). Moving the Neon project to `aws-eu-central-1` would fix it (~10 min, reseed).
 - Only the production Vercel alias (plus one preview domain) is in `CORS_ORIGINS`; new preview
   deployment hostnames are not, which matters only for direct cross-origin calls.
-- Support tickets can be created via `POST /api/tickets` and managed in the admin UI, but there is no
-  customer-facing form yet.
+- Support tickets have a customer-facing form and status list on both sides now, but no message
+  thread: an admin cannot reply in-app beyond moving the status, and the buyer sees only that status.
 - Four keys from deleted audit orders remain marked `sold` with a null `order_item_id`; harmless,
   not visible in any UI.
 
@@ -131,19 +137,18 @@ Known limitations, deliberately accepted and documented in `docs/architecture.md
 
 ## 4. Exact next step
 
-Rotate the leaked Render API key, then merge the existing export into the submission log and stop
-building:
+The submission log is merged and committed, so only deployment and rotation are left:
 
 ```bash
-# 1. Render → Account Settings → API Keys → revoke the key used today
-# 2. Redact that key from the export, then merge it:
-cat kimi-export-session_-20261113-220003.md >> agent-chat-history.md
-git add agent-chat-history.md && git commit -m "docs: add full agent chat history"
+# 1. Revoke the Render API key (Render → Account Settings → API Keys)
+# 2. Ship the support feature: Render redeploys the API on push to main,
+git push origin main
+cd frontend && vercel deploy --prod --yes   # Vercel does not auto-deploy from this repo
 ```
 
-After that the assignment deliverables are complete: repo, public URL, demo accounts, architecture
-notes, API reference, and the chat history.
+Then check one ticket in the browser as `demo@keyforge.dev`: `/account/support`, file a request
+against an order, and confirm it appears in `/admin/tickets` for `admin@keyforge.dev`.
 
-If there is build time left, the highest-value work is the customer-facing support form
-(`POST /api/tickets` already exists, only the UI is missing), followed by rate limiting on the auth
-endpoints.
+The assignment deliverables are otherwise complete: repo, public URL, demo accounts, architecture
+notes, API reference, and the chat history. If build time remains, the highest-value work is rate
+limiting on `/api/auth/*` — the one gap flagged before real traffic.

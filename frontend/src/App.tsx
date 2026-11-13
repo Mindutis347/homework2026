@@ -10,6 +10,7 @@ import AdminRequests from '@/features/admin/AdminRequests'
 import AdminTickets from '@/features/admin/AdminTickets'
 import AdminUsers from '@/features/admin/AdminUsers'
 import OrdersPage from '@/features/account/OrdersPage'
+import SupportPage from '@/features/account/SupportPage'
 import { AuthProvider } from '@/features/auth/AuthContext'
 import SignInPage from '@/features/auth/SignInPage'
 import SignUpPage from '@/features/auth/SignUpPage'
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="sign-up" element={<SignUpPage />} />
             <Route path="verify" element={<VerifyPage />} />
             <Route path="account/orders" element={<OrdersPage />} />
+            <Route path="account/support" element={<SupportPage />} />
 
             <Route path="merchant" element={<MerchantLayout />}>
               <Route index element={<MerchantOverview />} />

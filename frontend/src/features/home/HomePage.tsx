@@ -162,15 +162,50 @@ function PlatformStrip({ block }: { block: HomepageBlock }) {
             to={tile.href}
             className="group flex min-w-24 flex-1 flex-col items-center gap-1.5 rounded-[2px] px-3 py-2.5 text-center transition hover:bg-brand-700"
           >
-            <span className="grid size-9 place-items-center rounded-[2px] border border-white/30 text-xs font-extrabold uppercase text-white transition group-hover:border-accent-500 group-hover:text-accent-500">
-              {platformLabel(tile.platformSlug).slice(0, 2)}
-            </span>
+            <PlatformLogo slug={tile.platformSlug} />
             <span className="text-[0.8125rem] font-bold leading-tight">{tile.label}</span>
             <span className="text-[0.6875rem] font-semibold text-brand-200">{tile.count} games</span>
           </Link>
         ))}
       </div>
     </section>
+  )
+}
+
+/** White, transparent platform marks keep the purple strip coherent. Logos live in
+ *  `public/logos` as single-colour SVGs: Steam, PlayStation, Epic and GOG come from
+ *  Simple Icons (CC0), Xbox from Font Awesome Free (CC BY 4.0, attribution kept in
+ *  the file), and the Switch mark is drawn here because neither set ships it. Brand
+ *  marks belong to their owners and are used only to label the platform filter. The
+ *  initials remain as a fallback if a file is missing. */
+const PLATFORM_LOGOS: Record<string, string> = {
+  steam: "steam",
+  playstation: "playstation",
+  xbox: "xbox",
+  nintendo: "nintendoswitch",
+  epic: "epicgames",
+  gog: "gogdotcom",
+}
+
+function PlatformLogo({ slug }: { slug: string }) {
+  const [failed, setFailed] = useState(false)
+  const file = PLATFORM_LOGOS[slug]
+  if (!file || failed) {
+    return (
+      <span className="grid size-9 place-items-center text-xs font-extrabold uppercase text-white">
+        {platformLabel(slug).slice(0, 2)}
+      </span>
+    )
+  }
+  return (
+    <img
+      src={`/logos/${file}.svg`}
+      alt=""
+      aria-hidden
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className="size-8 object-contain opacity-90 transition group-hover:opacity-100"
+    />
   )
 }
 

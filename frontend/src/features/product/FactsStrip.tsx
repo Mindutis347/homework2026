@@ -18,7 +18,7 @@ export function FactsStrip({
   delivery: 'instant' | 'manual'
 }) {
   return (
-    <ul className="mt-4 grid grid-cols-2 gap-2.5 sm:gap-3">
+    <ul className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:gap-3">
       <Fact
         icon={<GlobeIcon />}
         title={regionCode === 'GLOBAL' ? 'Global key' : `${regionName} key`}

@@ -40,7 +40,7 @@ export function MediaGallery({
           src={coverUrl}
           alt={title}
           loading={eager ? 'eager' : 'lazy'}
-          className="max-h-[32vh] w-full object-cover object-top lg:max-h-none lg:aspect-[3/4]"
+          className="max-h-[30vh] w-full object-cover object-top lg:max-h-none lg:aspect-[3/4]"
         />
       </button>
 

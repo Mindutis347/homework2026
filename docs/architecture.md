@@ -209,5 +209,6 @@ usable directly by curl, Postman or a native client.
 - Payment is simulated by design (assignment allows it).
 - No refresh-token rotation; a session simply expires after 7 days.
 - No rate limiting on auth endpoints — the first thing to add for production.
-- Order history loads keys per order in a loop (`N+1`) because order counts in a
-  demo are tiny; a single joined query would be the fix at scale.
+- Order history is loaded in three queries (orders, items, key metadata) after the
+  session-6 batching; the merchant key inspector and the admin order list still
+  loop per row, which is fine at demo scale.

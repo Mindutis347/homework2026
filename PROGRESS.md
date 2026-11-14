@@ -263,8 +263,9 @@ Known limitations, deliberately accepted and documented in `docs/architecture.md
   (product page ≈ 0.7 s). Moving the Neon project to `aws-eu-central-1` would fix it (~10 min, reseed).
 - Only the production Vercel alias (plus one preview domain) is in `CORS_ORIGINS`; new preview
   deployment hostnames are not, which matters only for direct cross-origin calls.
-- Support tickets have a customer-facing form and status list on both sides now, but no message
-  thread: an admin cannot reply in-app beyond moving the status, and the buyer sees only that status.
+- Support tickets have a conversation on both sides now (text and up to three pictures per message,
+  including the opening request). Two gaps remain: there is no unread indicator, so the buyer learns
+  about a reply only by opening the thread, and there is no notification outside the app.
 - Four keys from deleted audit orders remain marked `sold` with a null `order_item_id`; harmless,
   not visible in any UI.
 - One production row is audit debris: a support ticket filed by the session-2 buyer (`demo@keyforge.dev`)

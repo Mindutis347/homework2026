@@ -42,7 +42,7 @@ export default function SupportPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const [subject, setSubject] = useState('')
+  const [subject, setSubject] = useState(params.get('subject') ?? '')
   const [category, setCategory] = useState<Ticket['category']>(
     (params.get('category') as Ticket['category'] | null) ?? 'delivery',
   )

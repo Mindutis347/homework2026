@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 
 import { catalogApi } from '@/api/endpoints'
@@ -120,40 +120,106 @@ export function Header() {
 
 function AccountMenu() {
   const { user, signOut } = useAuth()
+  const location = useLocation()
+  // Open state is keyed to the current location, so any navigation closes the
+  // menu without an effect that would re-render on route changes.
+  const locationKey = `${location.pathname}${location.search}`
+  const [openKey, setOpenKey] = useState<string | null>(null)
+  const open = openKey === locationKey
+  const close = () => setOpenKey(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Close on outside click or Escape — a <details> element does neither, which is
+  // why this is a controlled popover.
+  useEffect(() => {
+    if (!open) return
+    function onPointerDown(event: MouseEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) setOpenKey(null)
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpenKey(null)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
 
   return (
-    <details className="group relative">
-      <summary className="flex cursor-pointer list-none items-center gap-2 rounded-[2px] border border-white/25 px-2.5 py-1.5 text-xs font-bold text-white hover:border-accent-500 hover:text-accent-500">
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpenKey(open ? null : locationKey)}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-label="Account menu"
+        className="flex cursor-pointer items-center gap-2 rounded-[2px] border border-white/25 px-2.5 py-1.5 text-xs font-bold text-white hover:border-accent-500 hover:text-accent-500"
+      >
         <span className="grid size-6 place-items-center rounded-full bg-accent-500 text-xs font-extrabold text-on-accent">
           {user?.displayName.slice(0, 1).toUpperCase()}
         </span>
         <span className="hidden sm:block">{user?.displayName}</span>
-      </summary>
-      <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-[2px] border border-line bg-surface py-1 text-on-accent shadow-raised">
-        <div className="border-b border-line px-4 py-2">
-          <p className="truncate text-sm font-bold text-white">{user?.displayName}</p>
-          <p className="truncate text-xs text-ink-500">{user?.email}</p>
-          <p className="mt-1 label-caps text-brand-600">{user?.role}</p>
-        </div>
-        <MenuLink to="/account/orders">Your library</MenuLink>
-        <MenuLink to="/account/support">Support</MenuLink>
-        {(user?.role === 'merchant' || user?.role === 'admin') && <MenuLink to="/merchant">Merchant portal</MenuLink>}
-        {user?.role === 'admin' && <MenuLink to="/admin">Admin back-office</MenuLink>}
-        {!user?.isVerified && <MenuLink to={`/verify?email=${encodeURIComponent(user?.email ?? '')}`}>Verify e-mail</MenuLink>}
-        <button
-          onClick={() => void signOut()}
-          className="block w-full px-4 py-2 text-left text-sm font-semibold text-ink-700 hover:bg-canvas"
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-[2px] border border-line bg-surface py-1 text-white shadow-raised"
         >
-          Sign out
-        </button>
-      </div>
-    </details>
+          <div className="border-b border-line px-4 py-2">
+            <p className="truncate text-sm font-bold text-white">{user?.displayName}</p>
+            <p className="truncate text-xs text-ink-500">{user?.email}</p>
+            <p className="mt-1 label-caps text-accent-500">{user?.role}</p>
+          </div>
+          <MenuLink to="/account/orders" onNavigate={close}>Your library</MenuLink>
+          <MenuLink to="/account/support" onNavigate={close}>Support</MenuLink>
+          {(user?.role === 'merchant' || user?.role === 'admin') && (
+            <MenuLink to="/merchant" onNavigate={close}>Merchant portal</MenuLink>
+          )}
+          {user?.role === 'admin' && (
+            <MenuLink to="/admin" onNavigate={close}>Admin back-office</MenuLink>
+          )}
+          {!user?.isVerified && (
+            <MenuLink
+              to={`/verify?email=${encodeURIComponent(user?.email ?? '')}`}
+              onNavigate={close}
+            >
+              Verify e-mail
+            </MenuLink>
+          )}
+          <button
+            onClick={() => {
+              close()
+              void signOut()
+            }}
+            className="block w-full px-4 py-2 text-left text-sm font-semibold text-brand-100 hover:bg-white/10 hover:text-white"
+          >
+            Sign out
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
 
-function MenuLink({ to, children }: { to: string; children: React.ReactNode }) {
+function MenuLink({
+  to,
+  children,
+  onNavigate,
+}: {
+  to: string
+  children: React.ReactNode
+  onNavigate: () => void
+}) {
   return (
-    <Link to={to} className="block px-4 py-2 text-sm font-semibold text-ink-700 hover:bg-canvas">
+    <Link
+      to={to}
+      role="menuitem"
+      onClick={onNavigate}
+      className="block px-4 py-2 text-sm font-semibold text-brand-100 hover:bg-white/10 hover:text-white"
+    >
       {children}
     </Link>
   )

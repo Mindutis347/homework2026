@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { orderApi } from '@/api/endpoints'
-import type { Order } from '@/api/types'
+import { orderApi, ticketApi } from '@/api/endpoints'
+import type { Order, OrderItem, Ticket } from '@/api/types'
 import { Badge, Button, Card, EmptyState, PageBand, Skeleton } from '@/components/ui'
 import { KeyPanel } from '@/features/account/KeyPanel'
 import { useAuth } from '@/features/auth/AuthContext'
 import { formatMoney } from '@/lib/format'
 
-/** Order history / game library: every purchase with its revealable keys. */
+/** Order history / game library: every purchase with its revealable keys, plus a
+ *  direct line to support for each order and each game in it. */
 export default function OrdersPage() {
   const { user } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
+  const [tickets, setTickets] = useState<Ticket[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -20,12 +22,22 @@ export default function OrdersPage() {
       setLoading(false)
       return
     }
-    orderApi
-      .list()
-      .then(({ orders: fetched }) => setOrders(fetched))
+    // Tickets ride along so an order can show that a request is already open.
+    Promise.all([orderApi.list(), ticketApi.list()])
+      .then(([orderResult, ticketResult]) => {
+        setOrders(orderResult.orders)
+        setTickets(ticketResult.tickets)
+      })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Could not load orders'))
       .finally(() => setLoading(false))
   }, [user])
+
+  const ticketsByOrder = new Map<string, Ticket>()
+  for (const ticket of tickets) {
+    if (ticket.orderReference && !ticketsByOrder.has(ticket.orderReference)) {
+      ticketsByOrder.set(ticket.orderReference, ticket)
+    }
+  }
 
   // Revealing a key or refunding a line changes the order, so swap in the fresh copy.
   function replaceOrder(updated: Order) {
@@ -72,7 +84,12 @@ export default function OrdersPage() {
       ) : (
         <div className="space-y-4">
           {orders.map((order) => (
-            <OrderCard key={order.id} order={order} onOrderChange={replaceOrder} />
+            <OrderCard
+              key={order.id}
+              order={order}
+              ticket={ticketsByOrder.get(order.reference)}
+              onOrderChange={replaceOrder}
+            />
           ))}
         </div>
       )}
@@ -81,7 +98,22 @@ export default function OrdersPage() {
   )
 }
 
-function OrderCard({ order, onOrderChange }: { order: Order; onOrderChange: (order: Order) => void }) {
+/** Deep link into the support form with the order (and optionally the game) prefilled. */
+function supportHref(order: Order, item?: OrderItem) {
+  const query = new URLSearchParams({ orderId: String(order.id), category: 'delivery' })
+  if (item) query.set('subject', `Problem with ${item.productTitle}`)
+  return `/account/support?${query.toString()}`
+}
+
+function OrderCard({
+  order,
+  ticket,
+  onOrderChange,
+}: {
+  order: Order
+  ticket?: Ticket
+  onOrderChange: (order: Order) => void
+}) {
   return (
     <Card className="p-5">
       <div className="flex flex-wrap items-center gap-3 border-b border-line pb-3">
@@ -90,16 +122,18 @@ function OrderCard({ order, onOrderChange }: { order: Order; onOrderChange: (ord
           <p className="text-xs text-ink-500">
             {new Date(order.createdAt).toLocaleString()} · {order.paymentMethod}
           </p>
-          <Link
-            to={`/account/support?orderId=${order.id}&category=delivery`}
-            className="mt-1 inline-block text-xs font-semibold text-accent-500 hover:underline"
-          >
-            Get help with this order
-          </Link>
         </div>
         <Badge tone={order.status === 'paid' ? 'success' : order.status === 'refunded' ? 'danger' : 'neutral'}>
           {order.status}
         </Badge>
+        {ticket && (
+          <Badge tone={ticket.status === 'resolved' ? 'neutral' : 'accent'}>
+            support: {ticket.status.replace('_', ' ')}
+          </Badge>
+        )}
+        <Link to={supportHref(order)} className="text-xs font-extrabold uppercase tracking-wide text-accent-500 hover:underline">
+          Contact support
+        </Link>
         <p className="ml-auto font-display text-lg font-extrabold text-white">{formatMoney(order.totalCents)}</p>
       </div>
 
@@ -116,6 +150,15 @@ function OrderCard({ order, onOrderChange }: { order: Order; onOrderChange: (ord
               </p>
 
               <KeyPanel orderId={order.id} item={item} onOrderChange={onOrderChange} />
+
+              {!item.refunded && (
+                <Link
+                  to={supportHref(order, item)}
+                  className="mt-2 inline-block text-xs font-semibold text-brand-200 hover:text-accent-500 hover:underline"
+                >
+                  Report a problem with this game
+                </Link>
+              )}
             </div>
             <p className={`font-bold ${item.refunded ? 'text-ink-300 line-through' : 'text-white'}`}>
               {formatMoney(item.unitPriceCents * item.quantity)}

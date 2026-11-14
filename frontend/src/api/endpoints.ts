@@ -31,13 +31,16 @@ import type {
 
 export const catalogApi = {
   meta: () => api.get<Meta>('/api/meta'),
-  homepage: () => api.get<{ blocks: HomepageBlock[] }>('/api/homepage'),
+  // market is the visitor's region; the API prices cards from that region or
+  // global keys, whichever is cheaper, and falls back to global on its own.
+  homepage: (market?: string) => api.get<{ blocks: HomepageBlock[] }>(`/api/homepage${queryString({ market })}`),
   products: (query: CatalogQuery, signal?: AbortSignal) =>
     api.get<Paged<ProductCard>>(`/api/products${queryString({ ...query })}`, signal),
-  product: (slug: string) => api.get<ProductDetail>(`/api/products/${slug}`),
-  search: (term: string, signal?: AbortSignal) =>
+  product: (slug: string, market?: string) =>
+    api.get<ProductDetail>(`/api/products/${slug}${queryString({ market })}`),
+  search: (term: string, signal?: AbortSignal, market?: string) =>
     api.get<{ query: string; items: SearchSuggestion[] }>(
-      `/api/search${queryString({ q: term })}`,
+      `/api/search${queryString({ q: term, market })}`,
       signal,
     ),
 }

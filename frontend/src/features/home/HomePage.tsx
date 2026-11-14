@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { catalogApi } from '@/api/endpoints'
+import { useMarket } from '@/features/market/MarketContext'
 import type { HomepageBlock } from '@/api/types'
 import { Card, Skeleton } from '@/components/ui'
 import { HomeBlock } from '@/features/home/blocks'
@@ -9,6 +10,7 @@ import { HomeBlock } from '@/features/home/blocks'
  *  content, heading or pricing lives here; the block renderers live in ./blocks so
  *  the admin preview can reuse them. */
 export default function HomePage() {
+  const { region } = useMarket()
   const [blocks, setBlocks] = useState<HomepageBlock[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -16,7 +18,7 @@ export default function HomePage() {
   useEffect(() => {
     let cancelled = false
     catalogApi
-      .homepage()
+      .homepage(region)
       .then(({ blocks: fetched }) => {
         if (!cancelled) setBlocks(fetched)
       })
@@ -29,7 +31,7 @@ export default function HomePage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [region])
 
   if (loading) {
     return (

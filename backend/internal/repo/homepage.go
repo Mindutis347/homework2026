@@ -21,7 +21,7 @@ type Homepage struct {
 func NewHomepage(pool *pgxpool.Pool) *Homepage { return &Homepage{pool: pool} }
 
 // Blocks returns every visible block, each with its curated product list.
-func (h *Homepage) Blocks(ctx context.Context) ([]models.HomepageBlock, error) {
+func (h *Homepage) Blocks(ctx context.Context, marketRegion string) ([]models.HomepageBlock, error) {
 	rows, err := h.pool.Query(ctx, `
 		SELECT id, block_key, type, title, subtitle, config, position
 		FROM homepage_blocks
@@ -81,9 +81,12 @@ func (h *Homepage) Blocks(ctx context.Context) ([]models.HomepageBlock, error) {
 		JOIN platforms pl  ON pl.id = o.platform_id
 		JOIN regions r     ON r.id = o.region_id
 		WHERE bp.block_id = ANY(@ids)
+		  -- Cards follow the visitor's market: their region or global keys only,
+		  -- and MIN() below then picks whichever of the two is cheaper.
+		  AND (@market_region = '' OR r.code = @market_region OR r.code = 'GLOBAL')
 		GROUP BY bp.block_id, bp.position, p.id, p.slug, p.title, p.cover_url, p.release_date, p.popularity, p.content_type
 		ORDER BY bp.block_id ASC, bp.position ASC, min_price ASC`,
-		pgx.NamedArgs{"ids": ids},
+		pgx.NamedArgs{"ids": ids, "market_region": marketRegion},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("list block products: %w", err)
@@ -117,7 +120,7 @@ func (h *Homepage) Blocks(ctx context.Context) ([]models.HomepageBlock, error) {
 	for _, block := range blocks {
 		if source, _ := block.Config["source"].(string); source == "new_releases" {
 			if auto == nil {
-				if auto, err = h.newReleases(ctx, 12); err != nil {
+				if auto, err = h.newReleases(ctx, marketRegion, 12); err != nil {
 					return nil, err
 				}
 			}
@@ -136,7 +139,7 @@ func (h *Homepage) Blocks(ctx context.Context) ([]models.HomepageBlock, error) {
 // titles, newest first. No arbitrary cut-off window — a quiet catalogue would
 // otherwise render an empty row. Because it reads release_date on every request, a
 // title stops being a pre-order the day it ships.
-func (h *Homepage) newReleases(ctx context.Context, limit int) ([]models.ProductCard, error) {
+func (h *Homepage) newReleases(ctx context.Context, marketRegion string, limit int) ([]models.ProductCard, error) {
 	rows, err := h.pool.Query(ctx, `
 		SELECT p.id, p.slug, p.title, p.cover_url, p.release_date, p.popularity, p.content_type,
 		       MIN(o.price_cents)::int AS min_price,
@@ -154,11 +157,12 @@ func (h *Homepage) newReleases(ctx context.Context, limit int) ([]models.Product
 		JOIN regions r    ON r.id = o.region_id
 		WHERE p.is_active
 		  AND p.release_date IS NOT NULL
+		  AND (@market_region = '' OR r.code = @market_region OR r.code = 'GLOBAL')
 		GROUP BY p.id, p.slug, p.title, p.cover_url, p.release_date, p.popularity, p.content_type
 		ORDER BY (p.release_date >= CURRENT_DATE) DESC,
 		         CASE WHEN p.release_date >= CURRENT_DATE THEN p.release_date END ASC,
 		         p.release_date DESC
-		LIMIT $1`, limit)
+		LIMIT @limit`, pgx.NamedArgs{"limit": limit, "market_region": marketRegion})
 	if err != nil {
 		return nil, fmt.Errorf("list new releases: %w", err)
 	}

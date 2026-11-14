@@ -9,7 +9,7 @@ import { Badge, Button, Card, EmptyState, ErrorNote, Field, Input, Notice, PageB
 import { KeyPanel } from '@/features/account/KeyPanel'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
-import { useCurrency } from '@/features/currency/CurrencyContext'
+import { useMarket } from '@/features/market/MarketContext'
 import { formatMoney } from '@/lib/format'
 
 /**
@@ -19,7 +19,7 @@ import { formatMoney } from '@/lib/format'
 export default function CheckoutPage() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
-  const { currency } = useCurrency()
+  const { currency } = useMarket()
   const { cart, refresh } = useCart()
 
   const [cardNumber, setCardNumber] = useState('4242 4242 4242 4242')

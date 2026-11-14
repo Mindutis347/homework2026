@@ -38,6 +38,11 @@ type CatalogFilter struct {
 	Sort          string
 	Page          int
 	PageSize      int
+	// MarketRegion is the visitor's region (EU, US, …). When set, only offers
+	// from that region or GLOBAL ones may price a card — and because the
+	// aggregate takes MIN(), the cheaper of the two always wins. An empty value
+	// means "no market preference" (admin and merchant views).
+	MarketRegion string
 	// IncludeUnlisted keeps products that have no live offers yet. The storefront
 	// never wants those, but a merchant listing a freshly approved catalogue entry
 	// does: that product exists before any offer points at it.
@@ -86,6 +91,10 @@ const offerAggCTE = `
 		  -- displayed price, so a "PlayStation" filter never shows a Steam price.
 		  AND (cardinality(@platforms::text[]) = 0 OR pl.slug = ANY(@platforms::text[]))
 		  AND (cardinality(@regions::text[])   = 0 OR r.code  = ANY(@regions::text[]))
+		  -- A visitor only buys keys they can activate: their own region or a
+		  -- global one. Explicit region chips already narrow the list, so they
+		  -- switch this preference off in the handler.
+		  AND (@market_region = '' OR r.code = @market_region OR r.code = 'GLOBAL')
 		GROUP BY o.product_id
 	)`
 
@@ -152,6 +161,7 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 		"max_price":     f.MaxPriceCents,
 		"limit":         pg.PageSize,
 		"offset":        (pg.Page - 1) * pg.PageSize,
+		"market_region": f.MarketRegion,
 	}
 
 	rows, err := c.pool.Query(ctx, query, args)
@@ -293,7 +303,7 @@ func (c *Catalog) GetBySlug(ctx context.Context, slug string) (models.ProductDet
 // Search returns fuzzy title suggestions for the global search dropdown.
 // Trigram similarity tolerates typos ("eleden ring"), ILIKE covers partial
 // words ("cyberpunk"), and popularity breaks ties so famous games surface first.
-func (c *Catalog) Search(ctx context.Context, term string, limit int) ([]models.SearchSuggestion, error) {
+func (c *Catalog) Search(ctx context.Context, term, marketRegion string, limit int) ([]models.SearchSuggestion, error) {
 	term = strings.TrimSpace(term)
 	out := []models.SearchSuggestion{}
 	if len([]rune(term)) < 2 {
@@ -309,14 +319,18 @@ func (c *Catalog) Search(ctx context.Context, term string, limit int) ([]models.
 		                CASE WHEN `+titleAcronymExpr+` LIKE lower(@term) || '%' THEN 0.9 ELSE 0 END) AS score
 		FROM products p
 		WHERE p.is_active
-		  AND EXISTS (SELECT 1 FROM offers o WHERE o.product_id = p.id AND o.is_active AND o.stock > 0)
+		  AND EXISTS (
+		        SELECT 1 FROM offers o
+		        JOIN regions r ON r.id = o.region_id
+		        WHERE o.product_id = p.id AND o.is_active AND o.stock > 0
+		          AND (@market_region = '' OR r.code = @market_region OR r.code = 'GLOBAL'))
 		  AND (p.title ILIKE '%' || @term || '%'
 		       OR similarity(p.title, @term) > 0.2
 		       OR word_similarity(@term, p.title) > 0.5
 		       OR `+titleAcronymExpr+` LIKE lower(@term) || '%')
 		ORDER BY score DESC, p.popularity DESC, p.title ASC
 		LIMIT @limit`,
-		pgx.NamedArgs{"term": term, "limit": limit},
+		pgx.NamedArgs{"term": term, "limit": limit, "market_region": marketRegion},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("search products: %w", err)
@@ -389,7 +403,7 @@ func (c *Catalog) Meta(ctx context.Context) (models.Meta, error) {
 // Related lists products that share genres with the given one, most shared tags
 // first, then by popularity. Products without a shared tag are still eligible, so
 // a title with unusual tags never leaves the section empty; they simply rank last.
-func (c *Catalog) Related(ctx context.Context, slug string, limit int) ([]models.ProductCard, error) {
+func (c *Catalog) Related(ctx context.Context, slug, marketRegion string, limit int) ([]models.ProductCard, error) {
 	if limit < 1 || limit > 12 {
 		limit = 8
 	}
@@ -417,10 +431,11 @@ func (c *Catalog) Related(ctx context.Context, slug string, limit int) ([]models
 		ORDER BY COALESCE(s.overlap, 0) DESC, p.popularity DESC, p.title ASC
 		LIMIT @limit`,
 		pgx.NamedArgs{
-			"slug":      slug,
-			"limit":     limit,
-			"platforms": []string{},
-			"regions":   []string{},
+			"slug":          slug,
+			"limit":         limit,
+			"platforms":     []string{},
+			"regions":       []string{},
+			"market_region": marketRegion,
 		})
 	if err != nil {
 		return nil, fmt.Errorf("related products: %w", err)
@@ -457,7 +472,7 @@ func (c *Catalog) CardsByIDs(ctx context.Context, ids []int64) ([]models.Product
 		JOIN offer_agg a ON a.product_id = p.id
 		WHERE p.is_active AND p.id = ANY(@ids)
 		ORDER BY array_position(@ids::bigint[], p.id)`,
-		pgx.NamedArgs{"ids": ids, "platforms": []string{}, "regions": []string{}})
+		pgx.NamedArgs{"ids": ids, "platforms": []string{}, "regions": []string{}, "market_region": ""})
 	if err != nil {
 		return nil, fmt.Errorf("cards by ids: %w", err)
 	}

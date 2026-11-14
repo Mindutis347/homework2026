@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { catalogApi } from '@/api/endpoints'
 import type { SearchSuggestion } from '@/api/types'
 import { Cover } from '@/components/Cover'
+import { useMarket } from '@/features/market/MarketContext'
 import { formatMoney } from '@/lib/format'
 
 /**
@@ -13,6 +14,7 @@ import { formatMoney } from '@/lib/format'
  */
 export function SearchBar({ initialValue = '' }: { initialValue?: string }) {
   const navigate = useNavigate()
+  const { region } = useMarket()
   const [term, setTerm] = useState(initialValue)
   const [items, setItems] = useState<SearchSuggestion[]>([])
   const [open, setOpen] = useState(false)
@@ -31,7 +33,7 @@ export function SearchBar({ initialValue = '' }: { initialValue?: string }) {
     setSearching(true)
     const timer = window.setTimeout(() => {
       catalogApi
-        .search(trimmed, controller.signal)
+        .search(trimmed, controller.signal, region)
         .then((res) => {
           setItems(res.items)
           setOpen(true)
@@ -44,7 +46,7 @@ export function SearchBar({ initialValue = '' }: { initialValue?: string }) {
       window.clearTimeout(timer)
       controller.abort()
     }
-  }, [term])
+  }, [term, region])
 
   useEffect(() => {
     function onClickOutside(event: MouseEvent) {

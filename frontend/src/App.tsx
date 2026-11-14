@@ -23,7 +23,7 @@ import VerifyPage from '@/features/auth/VerifyPage'
 import CartPage from '@/features/cart/CartPage'
 import { CartProvider } from '@/features/cart/CartContext'
 import CheckoutPage from '@/features/checkout/CheckoutPage'
-import { CurrencyProvider } from '@/features/currency/CurrencyContext'
+import { MarketProvider } from '@/features/market/MarketContext'
 import HomePage from '@/features/home/HomePage'
 import MerchantLayout from '@/features/merchant/MerchantLayout'
 import MerchantOffers from '@/features/merchant/MerchantOffers'
@@ -34,7 +34,7 @@ import StorePage from '@/features/store/StorePage'
 
 export default function App() {
   return (
-    <CurrencyProvider>
+    <MarketProvider>
       <AuthProvider>
       <ToastProvider>
         <CartProvider>
@@ -88,6 +88,6 @@ export default function App() {
         </CartProvider>
       </ToastProvider>
       </AuthProvider>
-    </CurrencyProvider>
+    </MarketProvider>
   )
 }

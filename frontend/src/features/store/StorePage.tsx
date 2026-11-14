@@ -6,7 +6,7 @@ import { catalogApi } from '@/api/endpoints'
 import type { Meta, ProductCard as ProductCardType } from '@/api/types'
 import { ProductGrid } from '@/components/ProductCard'
 import { Badge, Button, Card, EmptyState, Input, PageBand, Select, Skeleton } from '@/components/ui'
-import { useCurrency } from '@/features/currency/CurrencyContext'
+import { useMarket } from '@/features/market/MarketContext'
 import { toDisplayAmount, toEuroCents } from '@/lib/currency'
 import { formatMoney } from '@/lib/format'
 
@@ -53,7 +53,7 @@ function amountsFromParam(params: URLSearchParams, key: string): string {
  *  multi-select; price is a range. */
 export default function StorePage() {
   const [params, setParams] = useSearchParams()
-  const { currency } = useCurrency()
+  const { currency, region } = useMarket()
   const [meta, setMeta] = useState<Meta | null>(null)
   const [items, setItems] = useState<ProductCardType[]>([])
   const [total, setTotal] = useState(0)
@@ -76,6 +76,9 @@ export default function StorePage() {
   const search = searchDraft ?? queryText
   const priceFrom = priceDraft?.from ?? amountsFromParam(params, 'minPriceCents')
   const priceTo = priceDraft?.to ?? amountsFromParam(params, 'maxPriceCents')
+
+  // An explicit region chip is a deliberate filter, so it wins over the market.
+  const marketForRequest = regions.length > 0 ? undefined : region
 
   const query = useMemo(
     () => ({
@@ -100,7 +103,7 @@ export default function StorePage() {
     const controller = new AbortController()
     setLoading(true)
     catalogApi
-      .products({ ...query, pageSize: PAGE_SIZE }, controller.signal)
+      .products({ ...query, pageSize: PAGE_SIZE, market: marketForRequest }, controller.signal)
       .then((result) => {
         setItems(result.items)
         setTotal(result.total)
@@ -294,7 +297,14 @@ export default function StorePage() {
                 </div>
               </FilterGroup>
 
-              <FilterGroup title="Region">
+              <FilterGroup
+                title="Region"
+                hint={
+                  regions.length > 0
+                    ? 'Only the regions you tick — your market is ignored while a chip is active.'
+                    : `Following your market: ${region}. Every price is the cheaper of a ${region} key and a global one.`
+                }
+              >
                 <div className="flex flex-wrap gap-1.5">
                   <FilterChip active={regions.length === 0} onClick={() => clearParam('region')}>
                     All

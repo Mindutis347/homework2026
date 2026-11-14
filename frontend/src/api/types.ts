@@ -291,6 +291,8 @@ export type AdminOrder = {
 }
 
 export type CatalogQuery = {
+  /** Visitor market region: prices come from that region or global keys. */
+  market?: string
   q?: string
   /** Repeatable: several platforms/regions/genres narrow the catalogue to any of them. */
   platform?: string[]

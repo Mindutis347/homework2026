@@ -9,6 +9,7 @@ import { ProductCard } from '@/components/ProductCard'
 import { useToast } from '@/components/Toast'
 import { Badge, Button, Card, EmptyState, SectionHeading, Skeleton } from '@/components/ui'
 import { useCart } from '@/features/cart/CartContext'
+import { useMarket } from '@/features/market/MarketContext'
 import { ClampedText } from '@/features/product/ClampedText'
 import { FactsStrip } from '@/features/product/FactsStrip'
 import { MediaGallery } from '@/features/product/MediaGallery'
@@ -31,6 +32,7 @@ export default function ProductPage() {
   const { slug = '' } = useParams()
   const { add } = useCart()
   const { notify } = useToast()
+  const { region } = useMarket()
 
   const [product, setProduct] = useState<ProductDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -50,7 +52,7 @@ export default function ProductPage() {
     let cancelled = false
     setLoading(true)
     catalogApi
-      .product(slug)
+      .product(slug, region)
       .then((detail) => {
         if (!cancelled) {
           setProduct(detail)
@@ -66,7 +68,7 @@ export default function ProductPage() {
     return () => {
       cancelled = true
     }
-  }, [slug])
+  }, [slug, region])
 
   const inStock = useMemo(
     () => (product ? product.offers.filter((offer) => offer.stock > 0) : []),

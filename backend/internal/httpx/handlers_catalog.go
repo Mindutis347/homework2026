@@ -44,6 +44,19 @@ func multiParam(r *http.Request, key string) []string {
 	return out
 }
 
+// marketParam reads the visitor's region. Anything unknown is treated as "no
+// preference" rather than an error: a stale bookmark or a typo should not break
+// the storefront, it should just show every region as before.
+func marketParam(r *http.Request) string {
+	code := strings.ToUpper(strings.TrimSpace(r.URL.Query().Get("market")))
+	switch code {
+	case "EU", "US", "UK", "TR", "BR", "GLOBAL":
+		return code
+	default:
+		return ""
+	}
+}
+
 // handleListProducts serves the store catalog.
 //
 //	GET /api/products?q=&platform=&region=&genre=&minPriceCents=&maxPriceCents=
@@ -51,6 +64,9 @@ func multiParam(r *http.Request, key string) []string {
 //	                 &page=1&pageSize=24
 //
 // platform, region and genre accept several values, repeated or comma-separated.
+// market is the visitor's own region (EU, US, …): it keeps cards priced from keys
+// they can activate — their region or a global one — and the aggregate takes the
+// cheaper of the two. An explicit region filter overrides it.
 func (a *App) handleListProducts(w http.ResponseWriter, r *http.Request) {
 	filter := repo.CatalogFilter{
 		Search:       strings.TrimSpace(r.URL.Query().Get("q")),
@@ -61,6 +77,9 @@ func (a *App) handleListProducts(w http.ResponseWriter, r *http.Request) {
 		Sort:         r.URL.Query().Get("sort"),
 		Page:         1,
 		PageSize:     24,
+	}
+	if len(filter.Regions) == 0 {
+		filter.MarketRegion = marketParam(r)
 	}
 
 	var err error
@@ -101,7 +120,7 @@ func (a *App) handleGetProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// "You might also like": same shape as a store card, ranked by shared genres.
-	related, err := a.catalog.Related(r.Context(), slug, 8)
+	related, err := a.catalog.Related(r.Context(), slug, marketParam(r), 8)
 	if err != nil {
 		WriteError(w, err)
 		return
@@ -121,7 +140,7 @@ func (a *App) handleSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	term := q.Get("q")
-	suggestions, err := a.catalog.Search(r.Context(), term, limit)
+	suggestions, err := a.catalog.Search(r.Context(), term, marketParam(r), limit)
 	if err != nil {
 		WriteError(w, err)
 		return
@@ -133,7 +152,7 @@ func (a *App) handleSearch(w http.ResponseWriter, r *http.Request) {
 //
 //	GET /api/homepage
 func (a *App) handleHomepage(w http.ResponseWriter, r *http.Request) {
-	blocks, err := a.homepage.Blocks(r.Context())
+	blocks, err := a.homepage.Blocks(r.Context(), marketParam(r))
 	if err != nil {
 		WriteError(w, err)
 		return

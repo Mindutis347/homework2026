@@ -6,13 +6,13 @@ import { Cover } from '@/components/Cover'
 import { Badge, Button, Card, EmptyState, Notice, PageBand } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
-import { useCurrency } from '@/features/currency/CurrencyContext'
+import { useMarket } from '@/features/market/MarketContext'
 import { formatMoney } from '@/lib/format'
 
 export default function CartPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { currency } = useCurrency()
+  const { currency } = useMarket()
   const { cart, loading, setQuantity, remove, clear, error } = useCart()
   const [tax, setTax] = useState<{ applyOnPurchase: boolean; purchaseTaxBasisPoints: number } | null>(null)
 

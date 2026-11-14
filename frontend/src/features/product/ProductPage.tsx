@@ -67,6 +67,15 @@ export default function ProductPage() {
     [product],
   )
 
+  // The mobile bar buys the cheapest in-stock offer, which is what "from" means.
+  const cheapest = useMemo(() => {
+    if (!product?.offers.length) return null
+    return [...product.offers].sort((a, b) => {
+      if ((a.stock === 0) !== (b.stock === 0)) return a.stock === 0 ? 1 : -1
+      return a.priceCents - b.priceCents
+    })[0]
+  }, [product])
+
   async function handleAdd(offer: Offer) {
     // Guests can fill a cart too; the sign-in prompt belongs at checkout.
     setBusyOffer(offer.id)
@@ -122,6 +131,8 @@ export default function ProductPage() {
       <div className="grid gap-8 lg:grid-cols-[300px_1fr]">
         <div>
           <div className="overflow-hidden rounded-card border border-white/20 shadow-raised">
+            {/* Steam's 600x900 original is already right for a 300 px slot at 2x,
+                and a larger proxy copy would cost more bytes than it saves. */}
             <img src={product.coverUrl} alt={product.title} className="aspect-[3/4] w-full object-cover" />
           </div>
           <Card className="mt-4 space-y-2 p-4 text-sm">
@@ -179,7 +190,7 @@ export default function ProductPage() {
             <div className="mt-5"><Notice tone="success">{feedback}</Notice></div>
           )}
 
-          <section className="mt-8">
+          <section id="offers" className="mt-8 scroll-mt-24">
             <div className="mb-3 flex flex-wrap items-center gap-3">
               <h2 className="font-display text-lg font-extrabold text-white">
                 {offers.length} offer{offers.length === 1 ? '' : 's'} from verified sellers
@@ -280,6 +291,33 @@ export default function ProductPage() {
             ))}
           </div>
         </section>
+      )}
+
+      {/* Phones: the real Add to cart sits below the cover, so keep the cheapest
+          offer one tap away while the page scrolls. */}
+      {cheapest && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/15 bg-brand-700/95 px-4 py-3 backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-3xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-semibold text-brand-200">{cheapest.seller.storeName}</p>
+              <p className="font-display text-lg font-extrabold text-accent-500">{formatMoney(cheapest.priceCents)}</p>
+            </div>
+            <a
+              href="#offers"
+              className="rounded-[2px] border border-white/40 px-3 py-2 text-[0.7rem] font-extrabold uppercase tracking-wide text-white"
+            >
+              Offers
+            </a>
+            <Button
+              size="sm"
+              loading={busyOffer === cheapest.id}
+              disabled={cheapest.stock === 0}
+              onClick={() => void handleAdd(cheapest)}
+            >
+              Add to cart
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   )

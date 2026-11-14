@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { catalogApi } from '@/api/endpoints'
 import type { SearchSuggestion } from '@/api/types'
+import { Cover } from '@/components/Cover'
 import { formatMoney } from '@/lib/format'
 
 /**
@@ -122,7 +123,16 @@ export function SearchBar({ initialValue = '' }: { initialValue?: string }) {
                       active === index ? 'bg-white/10' : 'hover:bg-canvas'
                     }`}
                   >
-                    <img src={item.coverUrl} alt="" className="h-12 w-9 rounded object-cover" loading="lazy" />
+                    <Cover
+                      productId={item.id}
+                      url={item.coverUrl}
+                      alt=""
+                      sizes="36px"
+                      widths={[160]}
+                      fallbackWidth={160}
+                      loading="lazy"
+                      className="h-12 w-9 rounded object-cover"
+                    />
                     <span className="flex-1 text-sm font-medium text-ink-900">{item.title}</span>
                     <span className="text-xs text-ink-300">{Math.round(item.score * 100)}% match</span>
                   </button>

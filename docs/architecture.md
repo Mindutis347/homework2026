@@ -209,6 +209,11 @@ usable directly by curl, Postman or a native client.
 - Payment is simulated by design (assignment allows it).
 - No refresh-token rotation; a session simply expires after 7 days.
 - No rate limiting on auth endpoints — the first thing to add for production.
+- Resized cover art lives in a bounded in-memory cache (400 entries) because Render's
+  free instance has no persistent disk; a cache miss costs one upstream fetch plus a
+  resize (~20 ms), so correctness never depends on it.
+- The hero artwork on a product page is still hotlinked from Steam's CDN: at 600×900 it
+  is already the right size for a 300 px slot at 2×, so proxying it would add bytes.
 - Order history is loaded in three queries (orders, items, key metadata) after the
   session-6 batching; the merchant key inspector and the admin order list still
   loop per row, which is fine at demo scale.

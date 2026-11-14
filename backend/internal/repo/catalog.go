@@ -305,7 +305,7 @@ func (c *Catalog) Search(ctx context.Context, term string, limit int) ([]models.
 	}
 
 	rows, err := c.pool.Query(ctx, `
-		SELECT p.slug, p.title, p.cover_url,
+		SELECT p.id, p.slug, p.title, p.cover_url,
 		       GREATEST(similarity(p.title, @term), word_similarity(@term, p.title),
 		                CASE WHEN `+titleAcronymExpr+` LIKE lower(@term) || '%' THEN 0.9 ELSE 0 END) AS score
 		FROM products p
@@ -326,7 +326,7 @@ func (c *Catalog) Search(ctx context.Context, term string, limit int) ([]models.
 
 	for rows.Next() {
 		var s models.SearchSuggestion
-		if err := rows.Scan(&s.Slug, &s.Title, &s.CoverURL, &s.Score); err != nil {
+		if err := rows.Scan(&s.ID, &s.Slug, &s.Title, &s.CoverURL, &s.Score); err != nil {
 			return nil, err
 		}
 		out = append(out, s)
@@ -491,4 +491,18 @@ func (c *Catalog) TaxInfo(ctx context.Context) (models.MetaTax, error) {
 		return t, fmt.Errorf("read tax info: %w", err)
 	}
 	return t, nil
+}
+
+// CoverURL returns one product's artwork URL, for the image proxy.
+func (c *Catalog) CoverURL(ctx context.Context, productID int64) (string, error) {
+	var url string
+	err := c.pool.QueryRow(ctx,
+		`SELECT cover_url FROM products WHERE id = $1 AND is_active`, productID).Scan(&url)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", ErrNotFound
+	}
+	if err != nil {
+		return "", fmt.Errorf("load cover url: %w", err)
+	}
+	return url, nil
 }

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 
 import { orderApi, ticketApi } from '@/api/endpoints'
 import type { Order, OrderItem, Ticket } from '@/api/types'
+import { Cover } from '@/components/Cover'
 import { Badge, Button, Card, EmptyState, PageBand, Skeleton } from '@/components/ui'
 import { KeyPanel } from '@/features/account/KeyPanel'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -168,7 +169,16 @@ function OrderCard({
       <div className="mt-4 space-y-4">
         {order.items.map((item) => (
           <div key={item.id} className="flex flex-wrap gap-4">
-            <img src={item.coverUrl} alt="" className="h-20 w-15 rounded-[2px] object-cover" />
+            <Cover
+              productId={item.productId}
+              url={item.coverUrl}
+              alt=""
+              sizes="80px"
+              widths={[160, 240]}
+              fallbackWidth={160}
+              loading="lazy"
+              className="h-20 w-15 rounded-[2px] object-cover"
+            />
             <div className="min-w-0 flex-1">
               <Link to={`/products/${item.productSlug}`} className="font-bold text-white hover:text-accent-500">
                 {item.productTitle}

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 
 import type { ProductCard as ProductCardType } from '@/api/types'
 import { ContentTypeTag } from '@/components/ContentTypeBadge'
+import { Cover } from '@/components/Cover'
 import { discountPercent, formatMoney, isPreorder } from '@/lib/format'
 
 /** Grid card used on the homepage rows, the store and search results. Dark navy
@@ -26,10 +27,14 @@ export function ProductCard({ product, eager = false }: { product: ProductCardTy
             Pre-order
           </span>
         )}
-        <img
-          src={product.coverUrl}
+        <Cover
+          productId={product.id}
+          url={product.coverUrl}
           alt={product.title}
           loading={eager ? 'eager' : 'lazy'}
+          widths={[240, 320, 480]}
+          fallbackWidth={320}
+          sizes="(min-width: 1280px) 18vw, (min-width: 1024px) 22vw, (min-width: 640px) 30vw, 44vw"
           className="size-full object-cover transition duration-300 group-hover:scale-[1.03]"
         />
       </div>

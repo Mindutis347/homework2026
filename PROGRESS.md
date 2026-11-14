@@ -31,6 +31,32 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Taxes | Admin sets two rates in percent — one for top-ups, one for card purchases — each with an on/off switch (`/admin/settings`). Tax is never baked into storefront prices; it appears only in the checkout summary and on the receipt. Wallet payments are always tax-free. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, **catalogue editor** (title, copy, art, developer/publisher, release date, content type, genres, visibility — slug stays fixed), sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, and a homepage block editor with a **product picker**, collapsed config JSON and a **live preview** of the block. Descriptions support light formatting (bold, italic, lists, headings). |
 
+### Phone ergonomics, lighter covers and the cold start (session 8)
+
+- **Mobile buy bar.** Below `lg` the product page keeps a sticky bottom bar with the cheapest
+  in-stock seller, its price, a jump to the offers list and an Add to cart button. Before this the
+  only buy button sat under a 300 px-tall cover.
+- **Covers are resized, not hotlinked.** `GET /api/covers/{id}?w=` scales Steam's 600×900 original
+  with `golang.org/x/image`, caches the JPEG in memory and serves it `immutable`. The store grid now
+  asks for 240/320/480 via `srcset` + `sizes`: measured on product 1, 320 px is 27.7 KB where the
+  original is 52 KB, and 160 px is 10.3 KB for the card thumbnails in the cart, library, header and
+  search. The product page hero deliberately keeps the original — a 600 px copy is exactly right for
+  a 300 px slot at 2×, and a 720 px proxy would have been *larger* than the source (88 KB vs 52 KB).
+  Failures (unknown host, non-200, undecodable bytes) answer 307 to the original, so art never
+  depends on the proxy working. Unit tests cover the scale factor, the failure paths, the cache bound
+  and the width whitelist.
+- **Cold start is explained, not hidden.** `/api/health` is pinged on mount so Render starts waking
+  while React renders, and if nothing has answered after 3.5 s a dismissible banner says the demo
+  server is waking and that the message clears itself. Each ping has its own 3 s timeout: a sleeping
+  server holds the connection open rather than refusing it, so without that deadline the banner would
+  never have appeared in the one situation it exists for.
+
+Verified in headless Chrome: **8/8** — 24/24 store covers load through the endpoint with 0 bytes
+from the origin (33.6 KB average), the phone bar is a real `fixed` element carrying the cheapest
+seller and adds to the cart, no banner while the API answers, and the banner appears when
+`/api/health` is blocked. Backend: `go vet` + `go test ./...` green including the four new cover
+tests.
+
 ### Polish round (session 7)
 
 Four small gaps from the walkthrough, plus one thing found while testing them:

@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 import { catalogApi } from '@/api/endpoints'
 import type { Meta } from '@/api/types'
+import { Cover } from '@/components/Cover'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
 import { useCurrency } from '@/features/currency/CurrencyContext'
@@ -285,7 +286,16 @@ function CartMenu() {
               <ul className="max-h-64 space-y-2 overflow-y-auto pr-1">
                 {cart.items.map((item) => (
                   <li key={item.offerId} className="flex items-center gap-2">
-                    <img src={item.coverUrl} alt="" className="h-12 w-9 shrink-0 rounded-[2px] object-cover" />
+                    <Cover
+                      productId={item.productId}
+                      url={item.coverUrl}
+                      alt=""
+                      sizes="36px"
+                      widths={[160]}
+                      fallbackWidth={160}
+                      loading="lazy"
+                      className="h-12 w-9 shrink-0 rounded-[2px] object-cover"
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-bold text-white">{item.title}</p>
                       <p className="truncate text-[0.6875rem] text-brand-200">

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { catalogApi } from '@/api/endpoints'
+import { Cover } from '@/components/Cover'
 import { Badge, Button, Card, EmptyState, Notice, PageBand } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
@@ -76,7 +77,16 @@ export default function CartPage() {
           <div className="space-y-3">
             {cart.items.map((item) => (
               <Card key={item.offerId} className="flex flex-wrap items-center gap-4 p-4">
-                <img src={item.coverUrl} alt="" className="h-20 w-15 rounded-[2px] object-cover" loading="lazy" />
+                <Cover
+                  productId={item.productId}
+                  url={item.coverUrl}
+                  alt=""
+                  sizes="80px"
+                  widths={[160, 240]}
+                  fallbackWidth={160}
+                  loading="lazy"
+                  className="h-20 w-15 rounded-[2px] object-cover"
+                />
                 <div className="min-w-0 flex-1">
                   <Link to={`/products/${item.slug}`} className="font-bold text-white hover:text-accent-500">
                     {item.title}

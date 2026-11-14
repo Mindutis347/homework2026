@@ -20,6 +20,7 @@ is required from the browser.
 | GET | `/api/products` | `q, platform, region, genre, contentType, minPriceCents, maxPriceCents, sort, page, pageSize`. `platform`, `region` and `genre` are repeatable (or comma-separated) and match **any** of the supplied values; `contentType` is one of `full`, `dlc`, `both`; `minPriceCents`/`maxPriceCents` bound the product's cheapest offer |
 | GET | `/api/products/{slug}` | product detail + competing offers, plus `related` — up to 8 cards ranked by shared genres (non-increasing), then popularity |
 | GET | `/api/search?q=&limit=` | fuzzy suggestions with match scores: trigrams tolerate typos (`eleden ring`), prefix/`ILIKE` catches partial names (`cyberpu`), and title initialisms resolve abbreviations (`gta`, `bg3`, `rdr2`) |
+| GET | `/api/covers/{id}?w=` | the product's artwork resized to `w` (160, 240, 320, 480 or 720; default 480), JPEG at quality 82, cached in memory and served `immutable` for a week. Fetches only from allow-listed hosts and answers 307 to the original URL whenever it cannot resize — a card's picture never depends on this succeeding |
 
 `sort` accepts `popular` (default), `relevance`, `price_asc`, `price_desc`,
 `newest`, `discount`, `title`. Prices are integer cents.

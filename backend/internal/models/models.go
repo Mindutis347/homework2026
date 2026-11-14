@@ -93,6 +93,7 @@ type HomepageBlock struct {
 
 // SearchSuggestion is a lightweight row for the search dropdown.
 type SearchSuggestion struct {
+	ID       int64   `json:"id"`
 	Slug     string  `json:"slug"`
 	Title    string  `json:"title"`
 	CoverURL string  `json:"coverUrl"`

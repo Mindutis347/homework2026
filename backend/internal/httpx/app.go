@@ -30,6 +30,7 @@ type App struct {
 	wallet   *repo.Wallet
 	merchant *repo.Merchant
 	admin    *repo.Admin
+	covers   *coverCache
 }
 
 func NewApp(cfg config.Config, pool *pgxpool.Pool) *App {
@@ -46,6 +47,7 @@ func NewApp(cfg config.Config, pool *pgxpool.Pool) *App {
 		wallet:   repo.NewWallet(pool),
 		merchant: repo.NewMerchant(pool),
 		admin:    repo.NewAdmin(pool),
+		covers:   newCoverCache(),
 	}
 }
 
@@ -62,6 +64,7 @@ func (a *App) Routes() http.Handler {
 	mux.HandleFunc("GET /api/products", a.handleListProducts)
 	mux.HandleFunc("GET /api/products/{slug}", a.handleGetProduct)
 	mux.HandleFunc("GET /api/search", a.handleSearch)
+	mux.HandleFunc("GET /api/covers/{id}", a.handleCover)
 
 	// Authentication
 	mux.HandleFunc("POST /api/auth/register", a.handleRegister)

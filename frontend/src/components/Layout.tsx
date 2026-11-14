@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 
 import { Header } from '@/components/Header'
 import { platformLabel } from '@/components/ProductCard'
+import { WakeBanner } from '@/components/WakeBanner'
 
 export function Layout() {
   const { pathname } = useLocation()
@@ -14,6 +15,7 @@ export function Layout() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <WakeBanner />
       <Header />
       <main className="flex-1">
         <Outlet />

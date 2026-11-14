@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { orderApi } from '@/api/endpoints'
 import { ApiClientError } from '@/api/client'
 import type { CheckoutQuote, Order } from '@/api/types'
+import { Cover } from '@/components/Cover'
 import { Badge, Button, Card, EmptyState, ErrorNote, Field, Input, Notice, PageBand } from '@/components/ui'
 import { KeyPanel } from '@/features/account/KeyPanel'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -252,7 +253,15 @@ export default function CheckoutPage() {
             <div className="space-y-3">
               {cart.items.map((item) => (
                 <div key={item.offerId} className="flex gap-3">
-                  <img src={item.coverUrl} alt="" className="h-14 w-10 rounded-[2px] object-cover" />
+                  <Cover
+                    productId={item.productId}
+                    url={item.coverUrl}
+                    alt=""
+                    sizes="56px"
+                    widths={[160, 240]}
+                    fallbackWidth={160}
+                    className="h-14 w-10 rounded-[2px] object-cover"
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold text-white">{item.title}</p>
                     <p className="text-xs text-ink-500">

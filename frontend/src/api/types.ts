@@ -91,6 +91,7 @@ export type AdminBlock = Omit<HomepageBlock, "products"> & {
 }
 
 export type SearchSuggestion = {
+  id: number
   slug: string
   title: string
   coverUrl: string

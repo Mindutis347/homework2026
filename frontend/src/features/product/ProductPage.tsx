@@ -172,7 +172,7 @@ export default function ProductPage() {
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as 'price' | 'rating')}
-                  className="rounded-[2px] border border-line bg-surface px-2 py-1.5 text-xs font-bold text-ink-900"
+                  className="rounded-[2px] border border-line bg-surface px-2 py-1.5 text-xs font-bold text-white"
                   aria-label="Sort offers"
                 >
                   <option value="price">Cheapest first</option>
@@ -205,7 +205,7 @@ export default function ProductPage() {
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold text-ink-900">{offer.seller.storeName}</span>
+                        <span className="font-semibold text-white">{offer.seller.storeName}</span>
                         {isBest && <Badge tone="success">Best price</Badge>}
                         <Badge tone="neutral">{offer.platformName}</Badge>
                         <Badge tone="neutral">{offer.regionCode}</Badge>
@@ -218,7 +218,7 @@ export default function ProductPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-display text-xl font-bold text-brand-700">
+                      <p className="font-display text-xl font-bold text-accent-500">
                         {formatMoney(offer.priceCents)}
                       </p>
                     </div>
@@ -247,7 +247,7 @@ function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-3">
       <span className="text-ink-500">{label}</span>
-      <span className="text-right font-medium text-ink-900">{value}</span>
+      <span className="text-right font-medium text-white">{value}</span>
     </div>
   )
 }
@@ -258,7 +258,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
       onClick={onClick}
       className={`rounded-[2px] border px-2.5 py-1 text-xs font-bold transition ${
         active
-          ? 'border-accent-500 bg-accent-500 text-ink-900'
+          ? 'border-accent-500 bg-accent-500 text-on-accent'
           : 'border-white/30 text-white hover:border-accent-500 hover:text-accent-500'
       }`}
     >

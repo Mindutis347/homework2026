@@ -96,7 +96,7 @@ export function SearchBar({ initialValue = '' }: { initialValue?: string }) {
           type="search"
           placeholder="Search for games, platforms and more"
           aria-label="Search products"
-          className="w-full bg-transparent text-sm font-medium text-ink-900 placeholder:text-ink-500 focus:outline-none"
+          className="w-full bg-transparent text-sm font-medium text-[#14101f] placeholder:text-[#6d6680] focus:outline-none"
         />
         {searching && <span className="size-3.5 animate-spin rounded-full border-2 border-brand-400 border-t-transparent" />}
       </div>
@@ -119,7 +119,7 @@ export function SearchBar({ initialValue = '' }: { initialValue?: string }) {
                       navigate(`/products/${item.slug}`)
                     }}
                     className={`flex w-full items-center gap-3 px-3 py-2.5 text-left ${
-                      active === index ? 'bg-brand-50' : 'hover:bg-canvas'
+                      active === index ? 'bg-white/10' : 'hover:bg-canvas'
                     }`}
                   >
                     <img src={item.coverUrl} alt="" className="h-12 w-9 rounded object-cover" loading="lazy" />
@@ -133,7 +133,7 @@ export function SearchBar({ initialValue = '' }: { initialValue?: string }) {
           <button
             type="button"
             onClick={() => submit()}
-            className="w-full border-t border-line bg-canvas px-4 py-2.5 text-left text-sm font-semibold text-brand-700 hover:bg-brand-50"
+            className="w-full border-t border-line bg-canvas px-4 py-2.5 text-left text-sm font-semibold text-accent-500 hover:bg-white/10"
           >
             See all results for “{term.trim()}”
           </button>

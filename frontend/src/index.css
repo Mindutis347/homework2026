@@ -32,13 +32,16 @@
   --color-mint-400: #63e3c2;
   --color-mint-500: #23c299;
 
-  --color-ink-900: #14101f;
-  --color-ink-700: #3c3550;
-  --color-ink-500: #6d6680;
-  --color-ink-300: #a9a2b8;
-  --color-line: #e4e1ea;
-  --color-canvas: #f0f0f0;
-  --color-surface: #ffffff;
+  /* Text ramp is inverted on purpose: this app has no white surfaces, so "ink"
+     means type on a dark panel. Yellow CTAs need their own near-black token. */
+  --color-ink-900: #ffffff;
+  --color-ink-700: #dcd8e6;
+  --color-ink-500: #b3aac9;
+  --color-ink-300: #8b80a8;
+  --color-on-accent: #14101f;
+  --color-line: #43258c;
+  --color-canvas: #2b0f66;
+  --color-surface: #1f0a4d;
 
   --color-success: #23c299;
   --color-danger: #eb002e;

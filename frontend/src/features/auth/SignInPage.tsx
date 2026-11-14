@@ -86,7 +86,7 @@ export default function SignInPage() {
 
           <p className="mt-4 text-sm text-ink-500">
             No account?{' '}
-            <Link to={`/sign-up?next=${encodeURIComponent(next)}`} className="font-semibold text-brand-700 hover:underline">
+            <Link to={`/sign-up?next=${encodeURIComponent(next)}`} className="font-semibold text-accent-500 hover:underline">
               Create one
             </Link>
           </p>
@@ -127,7 +127,7 @@ function DemoRow({
         <span className="font-semibold text-ink-900">{label}</span>
         <span className="ml-2 text-ink-500">{email}</span>
       </span>
-      <span className="text-xs font-semibold text-brand-700">Use</span>
+      <span className="text-xs font-semibold text-accent-500">Use</span>
     </button>
   )
 }

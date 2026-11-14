@@ -158,7 +158,7 @@ export default function MerchantRequests() {
                   )}
 
                   {request.status === 'approved' && request.productSlug && (
-                    <p className="mt-2 text-xs font-semibold text-[#0b7a5e]">
+                    <p className="mt-2 text-xs font-semibold text-mint-400">
                       Live in the catalog — create an offer for it on the Offers &amp; keys tab.
                     </p>
                   )}
@@ -175,7 +175,7 @@ export default function MerchantRequests() {
           </p>
 
           {notice && (
-            <p className="mt-4 rounded-[2px] border border-mint-400/60 bg-mint-100 px-3.5 py-2.5 text-sm text-[#0b7a5e]">
+            <p className="mt-4 rounded-[2px] border border-mint-400/40 bg-mint-400/15 px-3.5 py-2.5 text-sm text-mint-400">
               {notice}
             </p>
           )}

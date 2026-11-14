@@ -249,7 +249,7 @@ export default function SupportPage() {
                     opened {formatDate(ticket.createdAt)}
                   </p>
                   <details className="mt-2">
-                    <summary className="cursor-pointer text-sm font-semibold text-brand-700">
+                    <summary className="cursor-pointer text-sm font-semibold text-accent-500">
                       Show message
                     </summary>
                     <p className="mt-2 whitespace-pre-wrap text-sm text-ink-700">{ticket.body}</p>

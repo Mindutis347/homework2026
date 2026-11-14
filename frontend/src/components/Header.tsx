@@ -52,7 +52,7 @@ export function Header() {
                 <circle cx="17.5" cy="19" r="1.4" />
               </svg>
               {cart.itemCount > 0 && (
-                <span className="absolute right-0 top-0.5 grid min-w-4 place-items-center rounded-full bg-accent-500 px-1 text-[0.65rem] font-extrabold leading-4 text-ink-900">
+                <span className="absolute right-0 top-0.5 grid min-w-4 place-items-center rounded-full bg-accent-500 px-1 text-[0.65rem] font-extrabold leading-4 text-on-accent">
                   {cart.itemCount}
                 </span>
               )}
@@ -66,7 +66,7 @@ export function Header() {
                 <span aria-hidden className="text-brand-300">|</span>
                 <Link
                   to="/sign-up"
-                  className="rounded-[2px] bg-accent-500 px-3 py-2 uppercase tracking-wide text-ink-900 hover:bg-accent-400"
+                  className="rounded-[2px] bg-accent-500 px-3 py-2 uppercase tracking-wide text-on-accent hover:bg-accent-400"
                 >
                   Register
                 </Link>
@@ -124,14 +124,14 @@ function AccountMenu() {
   return (
     <details className="group relative">
       <summary className="flex cursor-pointer list-none items-center gap-2 rounded-[2px] border border-white/25 px-2.5 py-1.5 text-xs font-bold text-white hover:border-accent-500 hover:text-accent-500">
-        <span className="grid size-6 place-items-center rounded-full bg-accent-500 text-xs font-extrabold text-ink-900">
+        <span className="grid size-6 place-items-center rounded-full bg-accent-500 text-xs font-extrabold text-on-accent">
           {user?.displayName.slice(0, 1).toUpperCase()}
         </span>
         <span className="hidden sm:block">{user?.displayName}</span>
       </summary>
-      <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-[2px] border border-line bg-surface py-1 text-ink-900 shadow-raised">
+      <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-[2px] border border-line bg-surface py-1 text-on-accent shadow-raised">
         <div className="border-b border-line px-4 py-2">
-          <p className="truncate text-sm font-bold text-brand-900">{user?.displayName}</p>
+          <p className="truncate text-sm font-bold text-white">{user?.displayName}</p>
           <p className="truncate text-xs text-ink-500">{user?.email}</p>
           <p className="mt-1 label-caps text-brand-600">{user?.role}</p>
         </div>

@@ -54,7 +54,7 @@ export default function HomePage() {
     return (
       <div className="container-page py-16">
         <Card className="p-8 text-center">
-          <h1 className="font-display text-xl font-extrabold text-brand-900">The catalogue is unavailable</h1>
+          <h1 className="font-display text-xl font-extrabold text-white">The catalogue is unavailable</h1>
           <p className="mt-2 text-sm text-ink-500">{error}</p>
         </Card>
       </div>
@@ -107,7 +107,7 @@ function HeroBlock({ block }: { block: HomepageBlock }) {
       <div className="container-page relative flex min-h-[360px] flex-col justify-center py-12 sm:min-h-[420px] sm:py-16">
         <div className="max-w-2xl">
           {str(block.config, 'badge') && (
-            <span className="inline-flex rounded-[2px] bg-accent-500 px-2.5 py-1 label-caps text-ink-900">
+            <span className="inline-flex rounded-[2px] bg-accent-500 px-2.5 py-1 label-caps text-on-accent">
               {str(block.config, 'badge')}
             </span>
           )}
@@ -186,7 +186,7 @@ function CarouselBlock({ block }: { block: HomepageBlock }) {
           <h2 className="flex items-center gap-2 font-display text-2xl font-extrabold text-white sm:text-[1.75rem]">
             {block.title}
             {tone === 'accent' && (
-              <span className="rounded-[2px] bg-accent-500 px-2 py-0.5 label-caps text-ink-900">Hot</span>
+              <span className="rounded-[2px] bg-accent-500 px-2 py-0.5 label-caps text-on-accent">Hot</span>
             )}
           </h2>
           {block.subtitle && <p className="mt-1 text-sm text-brand-100">{block.subtitle}</p>}

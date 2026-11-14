@@ -89,10 +89,10 @@ export default function VerifyPage() {
       <div className="w-full max-w-md">
         <Card className="p-6">
           {devCode && (
-            <div className="mt-4 rounded-[2px] border border-brand-200 bg-brand-50 px-4 py-3">
+            <div className="mt-4 rounded-[2px] border border-white/25 bg-white/10 px-4 py-3">
               <div className="flex items-center gap-2">
                 <Badge tone="brand">Simulated inbox</Badge>
-                <span className="font-mono text-lg font-bold tracking-widest text-brand-800">{devCode}</span>
+                <span className="font-mono text-lg font-bold tracking-widest text-white">{devCode}</span>
               </div>
               <p className="mt-1 text-xs text-ink-500">
                 No real e-mail is sent in this demo, so the code is shown here and pre-filled below.
@@ -118,7 +118,7 @@ export default function VerifyPage() {
             </Button>
           </form>
 
-          <button onClick={() => void resend()} className="mt-4 text-sm font-semibold text-brand-700 hover:underline">
+          <button onClick={() => void resend()} className="mt-4 text-sm font-semibold text-accent-500 hover:underline">
             Send a new code
           </button>
         </Card>

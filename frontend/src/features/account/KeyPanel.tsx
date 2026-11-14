@@ -89,7 +89,7 @@ export function KeyPanel({
               key={key}
               onClick={() => void copyKey(key)}
               title="Copy key"
-              className="rounded-[2px] bg-canvas px-3 py-1.5 font-mono text-sm tracking-widest text-ink-900 hover:bg-brand-50"
+              className="rounded-[2px] bg-canvas px-3 py-1.5 font-mono text-sm tracking-widest text-ink-900 hover:bg-white/10"
             >
               {copied === key ? 'Copied!' : key}
             </button>

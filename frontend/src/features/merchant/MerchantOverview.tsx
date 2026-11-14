@@ -143,9 +143,9 @@ function StatTile({
   tone?: 'neutral' | 'brand'
 }) {
   return (
-    <Card className={`p-5 ${tone === 'brand' ? 'border-brand-200 bg-brand-50/60' : ''}`}>
+    <Card className={`p-5 ${tone === 'brand' ? 'border-white/25 bg-white/10/60' : ''}`}>
       <p className="text-xs font-bold uppercase tracking-wide text-ink-500">{label}</p>
-      <p className={`mt-2 font-display text-2xl font-extrabold ${tone === 'brand' ? 'text-brand-700' : 'text-ink-900'}`}>
+      <p className={`mt-2 font-display text-2xl font-extrabold ${tone === 'brand' ? 'text-accent-500' : 'text-ink-900'}`}>
         {value}
       </p>
       {hint && <p className="mt-1 text-xs text-ink-500">{hint}</p>}

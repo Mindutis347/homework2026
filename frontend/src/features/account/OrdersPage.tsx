@@ -86,13 +86,13 @@ function OrderCard({ order, onOrderChange }: { order: Order; onOrderChange: (ord
     <Card className="p-5">
       <div className="flex flex-wrap items-center gap-3 border-b border-line pb-3">
         <div>
-          <p className="font-display font-bold text-brand-900">{order.reference}</p>
+          <p className="font-display font-bold text-white">{order.reference}</p>
           <p className="text-xs text-ink-500">
             {new Date(order.createdAt).toLocaleString()} · {order.paymentMethod}
           </p>
           <Link
             to={`/account/support?orderId=${order.id}&category=delivery`}
-            className="mt-1 inline-block text-xs font-semibold text-brand-700 hover:underline"
+            className="mt-1 inline-block text-xs font-semibold text-accent-500 hover:underline"
           >
             Get help with this order
           </Link>
@@ -100,7 +100,7 @@ function OrderCard({ order, onOrderChange }: { order: Order; onOrderChange: (ord
         <Badge tone={order.status === 'paid' ? 'success' : order.status === 'refunded' ? 'danger' : 'neutral'}>
           {order.status}
         </Badge>
-        <p className="ml-auto font-display text-lg font-extrabold text-brand-900">{formatMoney(order.totalCents)}</p>
+        <p className="ml-auto font-display text-lg font-extrabold text-white">{formatMoney(order.totalCents)}</p>
       </div>
 
       <div className="mt-4 space-y-4">
@@ -108,7 +108,7 @@ function OrderCard({ order, onOrderChange }: { order: Order; onOrderChange: (ord
           <div key={item.id} className="flex flex-wrap gap-4">
             <img src={item.coverUrl} alt="" className="h-20 w-15 rounded-[2px] object-cover" />
             <div className="min-w-0 flex-1">
-              <Link to={`/products/${item.productSlug}`} className="font-bold text-brand-900 hover:text-brand-700">
+              <Link to={`/products/${item.productSlug}`} className="font-bold text-white hover:text-accent-500">
                 {item.productTitle}
               </Link>
               <p className="text-xs text-ink-500">
@@ -117,7 +117,7 @@ function OrderCard({ order, onOrderChange }: { order: Order; onOrderChange: (ord
 
               <KeyPanel orderId={order.id} item={item} onOrderChange={onOrderChange} />
             </div>
-            <p className={`font-bold ${item.refunded ? 'text-ink-300 line-through' : 'text-brand-900'}`}>
+            <p className={`font-bold ${item.refunded ? 'text-ink-300 line-through' : 'text-white'}`}>
               {formatMoney(item.unitPriceCents * item.quantity)}
             </p>
           </div>

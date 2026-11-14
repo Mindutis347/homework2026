@@ -79,7 +79,7 @@ export default function AdminTickets() {
             className={`rounded-[2px] px-3 py-1.5 text-xs font-bold transition ${
               status === filter.value
                 ? 'bg-brand-600 text-white'
-                : 'bg-canvas text-ink-700 hover:bg-brand-50 hover:text-brand-700'
+                : 'bg-canvas text-ink-700 hover:bg-white/10 hover:text-accent-500'
             }`}
           >
             {filter.label}
@@ -133,7 +133,7 @@ export default function AdminTickets() {
               </div>
 
               <details className="mt-3 border-t border-line pt-3">
-                <summary className="cursor-pointer text-sm font-semibold text-brand-700">
+                <summary className="cursor-pointer text-sm font-semibold text-accent-500">
                   Show message
                 </summary>
                 <p className="mt-2 whitespace-pre-wrap text-sm text-ink-700">{ticket.body}</p>

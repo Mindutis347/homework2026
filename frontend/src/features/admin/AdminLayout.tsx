@@ -77,7 +77,7 @@ export default function AdminLayout() {
                 className={({ isActive }) =>
                   `rounded-[2px] px-3.5 py-2 text-sm font-extrabold transition ${
                     isActive
-                      ? 'bg-accent-500 text-ink-900'
+                      ? 'bg-accent-500 text-on-accent'
                       : 'text-brand-100 hover:bg-brand-700 hover:text-white'
                   }`
                 }

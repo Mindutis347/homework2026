@@ -194,7 +194,7 @@ export default function StorePage() {
                 <button
                   key={filter.key}
                   onClick={() => update({ [filter.key]: '' })}
-                  className="inline-flex items-center gap-1.5 rounded-[2px] border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700 hover:bg-brand-100"
+                  className="inline-flex items-center gap-1.5 rounded-[2px] border border-white/25 bg-white/10 px-3 py-1 text-xs font-bold text-accent-500 hover:bg-brand-100"
                 >
                   {filter.label}
                   <span aria-hidden>×</span>
@@ -276,7 +276,7 @@ function FilterChip({
       className={`rounded-[2px] border px-2.5 py-1.5 text-xs font-bold uppercase tracking-wide transition ${
         active
           ? 'border-brand-600 bg-brand-600 text-white'
-          : 'border-line bg-surface text-ink-700 hover:border-brand-400 hover:text-brand-700'
+          : 'border-line bg-surface text-ink-700 hover:border-brand-400 hover:text-accent-500'
       }`}
     >
       {children}

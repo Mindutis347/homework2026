@@ -93,7 +93,7 @@ export default function SignUpPage() {
 
           <p className="mt-4 text-sm text-ink-500">
             Already registered?{' '}
-            <Link to={`/sign-in?next=${encodeURIComponent(next)}`} className="font-semibold text-brand-700 hover:underline">
+            <Link to={`/sign-in?next=${encodeURIComponent(next)}`} className="font-semibold text-accent-500 hover:underline">
               Sign in
             </Link>
           </p>

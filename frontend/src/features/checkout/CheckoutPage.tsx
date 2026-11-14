@@ -116,7 +116,7 @@ export default function CheckoutPage() {
           <form onSubmit={pay} className="space-y-4">
             <Card className="space-y-4 p-5">
               <div className="flex items-center justify-between">
-                <h2 className="font-display text-lg font-extrabold text-brand-900">Card details</h2>
+                <h2 className="font-display text-lg font-extrabold text-white">Card details</h2>
                 <Badge tone="neutral">Simulated</Badge>
               </div>
               <Field label="Cardholder name">
@@ -155,13 +155,13 @@ export default function CheckoutPage() {
           </form>
 
           <Card className="h-fit space-y-4 p-5 lg:sticky lg:top-32">
-            <h2 className="font-display text-lg font-extrabold text-brand-900">Order summary</h2>
+            <h2 className="font-display text-lg font-extrabold text-white">Order summary</h2>
             <div className="space-y-3">
               {cart.items.map((item) => (
                 <div key={item.offerId} className="flex gap-3">
                   <img src={item.coverUrl} alt="" className="h-14 w-10 rounded-[2px] object-cover" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold text-brand-900">{item.title}</p>
+                    <p className="truncate text-sm font-bold text-white">{item.title}</p>
                     <p className="text-xs text-ink-500">
                       {item.platformName} · {item.regionCode} × {item.quantity}
                     </p>
@@ -171,7 +171,7 @@ export default function CheckoutPage() {
               ))}
             </div>
             <div className="border-t border-line pt-3">
-              <div className="flex justify-between font-display text-base font-extrabold text-brand-900">
+              <div className="flex justify-between font-display text-base font-extrabold text-white">
                 <span>Total</span>
                 <span>{formatMoney(cart.subtotalCents)}</span>
               </div>
@@ -207,7 +207,7 @@ function OrderConfirmation({ order, onOrderChange }: { order: Order; onOrderChan
           <div className="mt-6 space-y-4">
             {order.items.map((item) => (
               <div key={item.id} className="rounded-[2px] border border-line p-4">
-                <p className="font-bold text-brand-900">{item.productTitle}</p>
+                <p className="font-bold text-white">{item.productTitle}</p>
                 <p className="text-xs text-ink-500">
                   {item.platformName} · {item.regionCode} · from {item.sellerStore} ·{' '}
                   {formatMoney(item.unitPriceCents * item.quantity)}

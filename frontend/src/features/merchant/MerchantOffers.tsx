@@ -227,7 +227,7 @@ export default function MerchantOffers() {
       />
 
       {notice && (
-        <p className="mb-4 rounded-[2px] border border-mint-400/60 bg-mint-100 px-4 py-2.5 text-sm text-[#0b7a5e]">
+        <p className="mb-4 rounded-[2px] border border-mint-400/40 bg-mint-400/15 px-4 py-2.5 text-sm text-mint-400">
           {notice}
         </p>
       )}
@@ -292,7 +292,7 @@ export default function MerchantOffers() {
                       onClick={() =>
                         setPicked({ id: product.id, title: product.title, coverUrl: product.coverUrl })
                       }
-                      className="flex w-full items-center gap-3 border-b border-line px-3 py-2 text-left last:border-b-0 hover:bg-brand-50"
+                      className="flex w-full items-center gap-3 border-b border-line px-3 py-2 text-left last:border-b-0 hover:bg-white/10"
                     >
                       <img src={product.coverUrl} alt="" className="h-10 w-7 rounded object-cover" />
                       <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink-900">
@@ -420,7 +420,7 @@ export default function MerchantOffers() {
                           <div className="min-w-0">
                             <Link
                               to={`/products/${offer.productSlug}`}
-                              className="block max-w-[240px] truncate font-semibold text-ink-900 hover:text-brand-700"
+                              className="block max-w-[240px] truncate font-semibold text-ink-900 hover:text-accent-500"
                             >
                               {offer.productTitle}
                             </Link>
@@ -476,7 +476,7 @@ export default function MerchantOffers() {
 
                             <ErrorNote message={keyError} />
                             {keyFeedback && (
-                              <p className="rounded-[2px] border border-mint-400/60 bg-mint-100 px-3.5 py-2.5 text-sm text-[#0b7a5e]">
+                              <p className="rounded-[2px] border border-mint-400/40 bg-mint-400/15 px-3.5 py-2.5 text-sm text-mint-400">
                                 Upload complete — {keyFeedback}.
                               </p>
                             )}

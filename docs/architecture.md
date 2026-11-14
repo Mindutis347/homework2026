@@ -168,9 +168,12 @@ Handlers return `*httpx.APIError`; `WriteError` also maps `repo.ErrNotFound` to
   account) above a darker catalogue row whose platform links come from
   `/api/meta`, a full-bleed promo hero, a purple platform strip, then product
   rows. The page canvas itself is the brand purple and sections are transparent,
-  which is how eneba.com is built (`main` has no background); white is reserved
-  for dense panels such as forms, tables and order cards. Homepage block order is
-  database-owned; changing the layout means editing block positions, not code.
+  which is how eneba.com is built (`main` has no background). There are no white
+  surfaces: panels are `#1F0A4D` with white type, so the `ink` token ramp is
+  inverted (ink-900 = white) and `on-accent` covers text on yellow. The header
+  search field is the single light element, matching the reference. Homepage
+  block order is database-owned; changing the layout means editing block
+  positions, not code.
 
 ## Deployment topology (and the cookie trap)
 

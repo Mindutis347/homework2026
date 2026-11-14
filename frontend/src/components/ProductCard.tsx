@@ -13,7 +13,7 @@ export function ProductCard({ product, eager = false }: { product: ProductCardTy
       className="group relative flex flex-col overflow-hidden rounded-[2px] bg-brand-900 text-white transition hover:bg-brand-800"
     >
       {product.bestDiscountPercent > 0 && (
-        <span className="absolute left-0 top-0 z-10 bg-accent-500 px-2 py-0.5 text-xs font-extrabold text-ink-900">
+        <span className="absolute left-0 top-0 z-10 bg-accent-500 px-2 py-0.5 text-xs font-extrabold text-on-accent">
           -{product.bestDiscountPercent}%
         </span>
       )}
@@ -41,7 +41,7 @@ export function ProductCard({ product, eager = false }: { product: ProductCardTy
         </div>
       </div>
 
-      <span className="flex items-center justify-between bg-accent-500 px-3 py-2 text-[0.7rem] font-extrabold uppercase tracking-wide text-ink-900 transition group-hover:bg-accent-400">
+      <span className="flex items-center justify-between bg-accent-500 px-3 py-2 text-[0.7rem] font-extrabold uppercase tracking-wide text-on-accent transition group-hover:bg-accent-400">
         View offers
         {product.offerCount > 1 && <span className="font-bold">{product.offerCount}</span>}
       </span>

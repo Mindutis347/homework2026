@@ -75,13 +75,13 @@ export default function CartPage() {
               <Card key={item.offerId} className="flex flex-wrap items-center gap-4 p-4">
                 <img src={item.coverUrl} alt="" className="h-20 w-15 rounded-[2px] object-cover" loading="lazy" />
                 <div className="min-w-0 flex-1">
-                  <Link to={`/products/${item.slug}`} className="font-bold text-brand-900 hover:text-brand-700">
+                  <Link to={`/products/${item.slug}`} className="font-bold text-white hover:text-accent-500">
                     {item.title}
                   </Link>
                   <p className="mt-1 text-xs text-ink-500">
                     {item.platformName} · {item.regionCode} · sold by {item.sellerStore}
                   </p>
-                  <p className="mt-1 text-sm font-bold text-brand-700">{formatMoney(item.unitPriceCents)}</p>
+                  <p className="mt-1 text-sm font-bold text-accent-500">{formatMoney(item.unitPriceCents)}</p>
                 </div>
 
                 <div className="flex items-center gap-1 rounded-[2px] border border-line">
@@ -105,7 +105,7 @@ export default function CartPage() {
                 </div>
 
                 <div className="text-right">
-                  <p className="font-display font-extrabold text-brand-900">{formatMoney(item.lineTotalCents)}</p>
+                  <p className="font-display font-extrabold text-white">{formatMoney(item.lineTotalCents)}</p>
                   <button
                     onClick={() => void remove(item.offerId)}
                     className="mt-1 text-xs font-semibold text-ink-500 hover:text-danger"
@@ -118,7 +118,7 @@ export default function CartPage() {
           </div>
 
           <Card className="h-fit space-y-4 p-5 lg:sticky lg:top-32">
-            <h2 className="font-display text-lg font-extrabold text-brand-900">Summary</h2>
+            <h2 className="font-display text-lg font-extrabold text-white">Summary</h2>
             <div className="space-y-2 text-sm">
               <Row label={`Items (${cart.itemCount})`} value={formatMoney(cart.subtotalCents)} />
               <Row label="Delivery" value="Digital · instant" />
@@ -139,7 +139,7 @@ export default function CartPage() {
 
 function Row({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className={`flex justify-between ${strong ? 'font-display text-base font-extrabold text-brand-900' : 'text-ink-700'}`}>
+    <div className={`flex justify-between ${strong ? 'font-display text-base font-extrabold text-white' : 'text-ink-700'}`}>
       <span>{label}</span>
       <span>{value}</span>
     </div>

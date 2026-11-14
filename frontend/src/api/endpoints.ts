@@ -1,6 +1,7 @@
 import { api, queryString } from '@/api/client'
 import type {
   AdminBlock,
+  AdminProduct,
   AdminOrder,
   AdminUser,
   Cart,
@@ -125,6 +126,19 @@ export const adminApi = {
   reviewRequest: (id: number, approve: boolean, note: string) =>
     api.post<{ request: ProductRequest }>(`/api/admin/requests/${id}/review`, { approve, note }),
   summary: () => api.get<SalesSummary>('/api/admin/summary'),
+  catalog: (term = '') => api.get<{ products: AdminProduct[] }>(`/api/admin/catalog${queryString({ q: term })}`),
+  updateProduct: (id: number, payload: {
+    title: string
+    description: string
+    coverUrl: string
+    heroUrl: string
+    developer: string
+    publisher: string
+    releaseDate: string
+    contentType: string
+    isActive: boolean
+    genres: string[]
+  }) => api.patch<{ product: AdminProduct }>(`/api/admin/catalog/${id}`, payload),
   orders: () => api.get<{ orders: AdminOrder[] }>('/api/admin/orders'),
   tickets: (status = '') => api.get<{ tickets: Ticket[] }>(`/api/admin/tickets${queryString({ status })}`),
   setTicketStatus: (id: number, status: string) =>

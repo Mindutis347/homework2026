@@ -145,3 +145,22 @@ type AdminOrder struct {
 	Items      int       `json:"items"`
 	CreatedAt  time.Time `json:"createdAt"`
 }
+
+// AdminProduct is a catalogue entry as the back-office sees it: every editable
+// field plus what it currently costs and sells.
+type AdminProduct struct {
+	ID            int64      `json:"id"`
+	Slug          string     `json:"slug"`
+	Title         string     `json:"title"`
+	Description   string     `json:"description"`
+	CoverURL      string     `json:"coverUrl"`
+	HeroURL       string     `json:"heroUrl"`
+	Developer     string     `json:"developer"`
+	Publisher     string     `json:"publisher"`
+	ReleaseDate   *time.Time `json:"releaseDate"`
+	ContentType   string     `json:"contentType"`
+	IsActive      bool       `json:"isActive"`
+	Genres        []string   `json:"genres"`
+	OfferCount    int        `json:"offerCount"`
+	MinPriceCents int        `json:"minPriceCents"`
+}

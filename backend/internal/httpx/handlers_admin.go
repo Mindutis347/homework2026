@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/mindutis347/keyforge/backend/internal/models"
 	"github.com/mindutis347/keyforge/backend/internal/repo"
@@ -495,4 +496,108 @@ func (a *App) ticketThread(r *http.Request, ticketID int64, user *Principal) (mo
 		return models.TicketThread{}, err
 	}
 	return models.TicketThread{Ticket: ticket, Messages: messages}, nil
+}
+
+// --- catalogue management ---------------------------------------------------
+
+// handleAdminCatalog lists catalogue entries, including inactive ones.
+//
+//	GET /api/admin/catalog?q=elden
+func (a *App) handleAdminCatalog(w http.ResponseWriter, r *http.Request) {
+	products, err := a.admin.Products(r.Context(), r.URL.Query().Get("q"))
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, map[string]any{"products": products})
+}
+
+// handleAdminUpdateProduct edits a catalogue entry. The slug stays fixed: it is
+// the public URL and the search key, so changing it would break links.
+//
+//	PATCH /api/admin/catalog/{id}
+//	{"title","description","coverUrl","heroUrl","developer","publisher",
+//	 "releaseDate":"2024-06-21","contentType","isActive","genres":["action"]}
+func (a *App) handleAdminUpdateProduct(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_path", "product id must be a number"))
+		return
+	}
+	var body struct {
+		Title       string   `json:"title"`
+		Description string   `json:"description"`
+		CoverURL    string   `json:"coverUrl"`
+		HeroURL     string   `json:"heroUrl"`
+		Developer   string   `json:"developer"`
+		Publisher   string   `json:"publisher"`
+		ReleaseDate string   `json:"releaseDate"`
+		ContentType string   `json:"contentType"`
+		IsActive    bool     `json:"isActive"`
+		Genres      []string `json:"genres"`
+	}
+	if err := DecodeJSON(w, r, &body); err != nil {
+		WriteError(w, err)
+		return
+	}
+
+	title := strings.TrimSpace(body.Title)
+	if len(title) < 2 {
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "title is required"))
+		return
+	}
+	switch body.ContentType {
+	case "":
+		body.ContentType = "full"
+	case "full", "dlc", "both":
+	default:
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "contentType must be full, dlc or both"))
+		return
+	}
+
+	var release *time.Time
+	if raw := strings.TrimSpace(body.ReleaseDate); raw != "" {
+		parsed, err := time.Parse("2006-01-02", raw)
+		if err != nil {
+			WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "releaseDate must be YYYY-MM-DD"))
+			return
+		}
+		release = &parsed
+	}
+
+	genres := make([]string, 0, len(body.Genres))
+	seen := map[string]bool{}
+	for _, genre := range body.Genres {
+		genre = strings.TrimSpace(genre)
+		if genre == "" || seen[genre] {
+			continue
+		}
+		seen[genre] = true
+		genres = append(genres, genre)
+		if len(genres) == 10 {
+			break
+		}
+	}
+
+	product, err := a.admin.UpdateProduct(r.Context(), id, repo.ProductEditInput{
+		Title:       title,
+		Description: strings.TrimSpace(body.Description),
+		CoverURL:    strings.TrimSpace(body.CoverURL),
+		HeroURL:     strings.TrimSpace(body.HeroURL),
+		Developer:   strings.TrimSpace(body.Developer),
+		Publisher:   strings.TrimSpace(body.Publisher),
+		ReleaseDate: release,
+		ContentType: body.ContentType,
+		IsActive:    body.IsActive,
+		Genres:      genres,
+	})
+	if errors.Is(err, repo.ErrNotFound) {
+		WriteError(w, ErrNotFound)
+		return
+	}
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, map[string]any{"product": product})
 }

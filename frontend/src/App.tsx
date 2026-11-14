@@ -3,6 +3,7 @@ import { Link, Route, Routes } from 'react-router-dom'
 import { Layout } from '@/components/Layout'
 import { Button, EmptyState } from '@/components/ui'
 import AdminBlocks from '@/features/admin/AdminBlocks'
+import AdminCatalog from '@/features/admin/AdminCatalog'
 import AdminLayout from '@/features/admin/AdminLayout'
 import AdminOrders from '@/features/admin/AdminOrders'
 import AdminOverview from '@/features/admin/AdminOverview'
@@ -55,6 +56,7 @@ export default function App() {
               <Route path="requests" element={<AdminRequests />} />
               <Route path="orders" element={<AdminOrders />} />
               <Route path="tickets" element={<AdminTickets />} />
+              <Route path="catalog" element={<AdminCatalog />} />
               <Route path="blocks" element={<AdminBlocks />} />
             </Route>
 

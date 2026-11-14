@@ -27,7 +27,7 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Support | `/account/support` files a ticket (subject, reason, optional link to one of your orders) and lists your own tickets with their live status. Each ticket opens a **conversation**: both the buyer and the admin can reply and attach up to three pictures (PNG/JPEG/WebP/GIF, 1.5 MB each, sniffed server-side), stored as bytes in Postgres because the API's disk is ephemeral. A staff reply moves the ticket to `in_progress`; a buyer reply reopens a `resolved` one. Reaching it from an order ("Contact support" / "Report a problem with this game") prefills the order and subject. Ownership of a linked order is enforced server-side. |
 | Auth | Register → 6-digit code (HMAC'd, 15 min TTL) → verify → login; bcrypt cost 12; httpOnly JWT cookie; unverified users blocked from checkout and merchant tools. Signing in lands on the homepage unless something sent you there (`/sign-in?next=…`, e.g. checkout); signing out always returns home. |
 | Merchant portal | Stats, own offers, create/update listing, bulk key upload, catalog title requests. |
-| Admin back-office | Users + role changes (verified-only promotion), request approve/reject, sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, homepage block CRUD. |
+| Admin back-office | Users + role changes (verified-only promotion), request approve/reject, **catalogue editor** (title, copy, art, developer/publisher, release date, content type, genres, visibility — slug stays fixed), sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, homepage block CRUD. |
 
 ### Coherent page chrome and the SQL injection audit (session 5)
 

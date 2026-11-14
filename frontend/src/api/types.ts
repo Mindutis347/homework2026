@@ -284,3 +284,21 @@ export type CatalogQuery = {
   page?: number
   pageSize?: number
 }
+
+/** A catalogue entry as the back-office edits it. */
+export type AdminProduct = {
+  id: number
+  slug: string
+  title: string
+  description: string
+  coverUrl: string
+  heroUrl: string
+  developer: string
+  publisher: string
+  releaseDate: string | null
+  contentType: "full" | "dlc" | "both"
+  isActive: boolean
+  genres: string[]
+  offerCount: number
+  minPriceCents: number
+}

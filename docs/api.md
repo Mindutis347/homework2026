@@ -85,6 +85,8 @@ is required from the browser.
 | GET | `/api/admin/requests?status=` | proposals |
 | POST | `/api/admin/requests/{id}/review` | `{approve, note}`; approval creates the product |
 | GET | `/api/admin/summary` | gross, commission, payouts, top sellers, 14-day series |
+| GET | `/api/admin/catalog?q=` | catalogue entries with their editable fields, offer count and genres; hidden products included |
+| PATCH | `/api/admin/catalog/{id}` | `{title, description, coverUrl, heroUrl, developer, publisher, releaseDate, contentType, isActive, genres}`. The slug is fixed; setting `isActive:false` removes it from the storefront |
 | GET | `/api/admin/orders` | platform-wide orders |
 | GET | `/api/admin/tickets?status=` | support queue |
 | PATCH | `/api/admin/tickets/{id}` | `{status: open\|in_progress\|resolved}` |

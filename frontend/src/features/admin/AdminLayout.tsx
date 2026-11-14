@@ -7,6 +7,7 @@ const TABS = [
   { to: '/admin', label: 'Overview', end: true },
   { to: '/admin/users', label: 'Users', end: false },
   { to: '/admin/requests', label: 'Catalog requests', end: false },
+  { to: '/admin/catalog', label: 'Catalogue', end: false },
   { to: '/admin/orders', label: 'Orders & ledger', end: false },
   { to: '/admin/tickets', label: 'Support', end: false },
   { to: '/admin/blocks', label: 'Homepage', end: false },

@@ -1,5 +1,6 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, Outlet } from 'react-router-dom'
 
+import { SectionTabs } from '@/components/SectionTabs'
 import { Button, EmptyState, Skeleton } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
 
@@ -70,24 +71,7 @@ export default function AdminLayout() {
             Signed in as {user.displayName} ({user.email})
           </p>
 
-          <nav aria-label="Back-office sections" className="mt-5 flex flex-wrap gap-1.5">
-            {TABS.map((tab) => (
-              <NavLink
-                key={tab.to}
-                to={tab.to}
-                end={tab.end}
-                className={({ isActive }) =>
-                  `rounded-[2px] px-3.5 py-2 text-sm font-extrabold transition ${
-                    isActive
-                      ? 'bg-accent-500 text-on-accent'
-                      : 'text-brand-100 hover:bg-brand-700 hover:text-white'
-                  }`
-                }
-              >
-                {tab.label}
-              </NavLink>
-            ))}
-          </nav>
+          <SectionTabs tabs={TABS} label="Back-office sections" />
         </div>
       </div>
 

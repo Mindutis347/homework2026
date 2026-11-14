@@ -44,15 +44,18 @@ type Seller struct {
 
 // Offer is one seller's listing of a product on a platform/region.
 type Offer struct {
-	ID           int64  `json:"id"`
-	PriceCents   int    `json:"priceCents"`
-	Stock        int    `json:"stock"`
-	Delivery     string `json:"delivery"`
-	PlatformSlug string `json:"platformSlug"`
-	PlatformName string `json:"platformName"`
-	RegionCode   string `json:"regionCode"`
-	RegionName   string `json:"regionName"`
-	Seller       Seller `json:"seller"`
+	ID         int64 `json:"id"`
+	PriceCents int   `json:"priceCents"`
+	// BasePriceCents is the seller's compare-at price when there is one, so a
+	// row can show the markdown instead of only the final price.
+	BasePriceCents *int   `json:"basePriceCents,omitempty"`
+	Stock          int    `json:"stock"`
+	Delivery       string `json:"delivery"`
+	PlatformSlug   string `json:"platformSlug"`
+	PlatformName   string `json:"platformName"`
+	RegionCode     string `json:"regionCode"`
+	RegionName     string `json:"regionName"`
+	Seller         Seller `json:"seller"`
 }
 
 // ProductDetail is the product page payload.

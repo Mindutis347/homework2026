@@ -232,7 +232,7 @@ func (c *Catalog) GetBySlug(ctx context.Context, slug string) (models.ProductDet
 	}
 
 	offerRows, err := c.pool.Query(ctx, `
-		SELECT o.id, o.price_cents, o.stock, o.delivery,
+		SELECT o.id, o.price_cents, o.base_price_cents, o.stock, o.delivery,
 		       u.id, COALESCE(NULLIF(sp.store_name, ''), u.display_name),
 		       COALESCE(sp.rating, 5.0)::float8, COALESCE(sp.rating_count, 0), COALESCE(sp.sales_count, 0),
 		       pl.slug, pl.name, r.code, r.name
@@ -243,9 +243,8 @@ func (c *Catalog) GetBySlug(ctx context.Context, slug string) (models.ProductDet
 		JOIN regions r          ON r.id = o.region_id
 		WHERE o.product_id = @id
 		  AND o.is_active
-		  AND o.stock > 0
 		  AND (sp.is_active IS NULL OR sp.is_active)
-		ORDER BY o.price_cents ASC, sp.rating DESC NULLS LAST`,
+		ORDER BY (o.stock > 0) DESC, o.price_cents ASC, sp.rating DESC NULLS LAST`,
 		pgx.NamedArgs{"id": d.ID},
 	)
 	if err != nil {
@@ -256,7 +255,7 @@ func (c *Catalog) GetBySlug(ctx context.Context, slug string) (models.ProductDet
 	for offerRows.Next() {
 		var o models.Offer
 		if err := offerRows.Scan(
-			&o.ID, &o.PriceCents, &o.Stock, &o.Delivery,
+			&o.ID, &o.PriceCents, &o.BasePriceCents, &o.Stock, &o.Delivery,
 			&o.Seller.ID, &o.Seller.StoreName, &o.Seller.Rating, &o.Seller.RatingCount, &o.Seller.SalesCount,
 			&o.PlatformSlug, &o.PlatformName, &o.RegionCode, &o.RegionName,
 		); err != nil {

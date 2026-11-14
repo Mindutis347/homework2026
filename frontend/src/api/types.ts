@@ -49,6 +49,8 @@ export type Seller = {
 export type Offer = {
   id: number
   priceCents: number
+  /** The seller's compare-at price, when they set one — drives the strike-through. */
+  basePriceCents?: number | null
   stock: number
   delivery: 'instant' | 'manual'
   platformSlug: string

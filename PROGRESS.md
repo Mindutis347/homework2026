@@ -31,6 +31,34 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Taxes | Admin sets two rates in percent — one for top-ups, one for card purchases — each with an on/off switch (`/admin/settings`). Tax is never baked into storefront prices; it appears only in the checkout summary and on the receipt. Wallet payments are always tax-free. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, **catalogue editor** (title, copy, art, developer/publisher, release date, content type, genres, visibility — slug stays fixed), sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, and a homepage block editor with a **product picker**, collapsed config JSON and a **live preview** of the block. Descriptions support light formatting (bold, italic, lists, headings). |
 
+### Product page rebuild (session 9)
+
+The page was reviewed against eneba.com's own listing (fetched and inspected, not remembered) and
+rebuilt around the decision instead of the copy.
+
+| Before | Now |
+|---|---|
+| price, then the full description, then offers | artwork, title, four buying facts, cheapest price + one CTA, then offers |
+| description always expanded between price and offers | clamped to ~100 px with `Read more`, so offers are not pushed down by marketing copy |
+| offers as a flat list of rows | hero buy box, offer rows with per-offer strike-through and discount %, sold-out rows visible and disabled, low-stock in amber |
+| no way to compare regions | **Cheapest by region** grid (region × platform) built from the offers already loaded; clicking a cell filters the list (desktop only — a 30 rem table is not a phone control) |
+| one page-long scroll | `Overview / Offers / Details` anchor bar, sticky under the header on desktop only, with the active section tracked by an IntersectionObserver |
+| feedback `Notice` above the offers list, often off-screen | the toast from session 7, with a *View cart* action |
+| facts scattered as badges and a 12 px line | a four-icon facts strip: region + activation, platform, delivery speed, refund window |
+| hero art in the database but unused | `hero_url` renders as a gradient backdrop, and cover + hero form a two-tile gallery with an Escape-dismissable lightbox |
+| mobile: first buy button at 1.9 screens | 0.95 screens, the sticky bar is always visible, and the cover is capped at 38 vh |
+
+Backend: `offers.base_price_cents` is now exposed as `basePriceCents`, and `GET /api/products/{slug}`
+returns sold-out offers (ordered last) instead of hiding them — a price the buyer just saw should not
+disappear.
+
+Verified in headless Chrome, **17/17**: facts strip, hero CTA, clamped description with a working
+`Read more`/`Show less` (proved by setting a 758-character description on the test branch), offers
+before details, anchor tabs, region matrix, three sold-out rows rendered disabled, strike-through
+prices, the desktop bar hidden over the hero and visible after scrolling, the toast with its cart
+link, the hero backdrop loading, and on a 390 px viewport the buy button inside the first screen with
+no horizontal overflow. `tsc`, `npm run build`, lint and `go test ./...` green.
+
 ### Phone ergonomics, lighter covers and the cold start (session 8)
 
 - **Mobile buy bar.** Below `lg` the product page keeps a sticky bottom bar with the cheapest

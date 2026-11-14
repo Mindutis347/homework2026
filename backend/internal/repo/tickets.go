@@ -142,10 +142,12 @@ func (a *Admin) AddTicketMessage(
 		message.Attachments = append(message.Attachments, stored)
 	}
 
-	nextStatus := "status"
-	if role == "staff" {
-		nextStatus = `CASE WHEN status = 'open' THEN 'in_progress' ELSE status END`
-	} else {
+	// Any new message revives a resolved ticket; a staff answer also takes an open
+	// ticket into review.
+	nextStatus := `CASE WHEN status = 'open' THEN 'in_progress'
+	                     WHEN status = 'resolved' THEN 'open'
+	                     ELSE status END`
+	if role != "staff" {
 		nextStatus = `CASE WHEN status = 'resolved' THEN 'open' ELSE status END`
 	}
 	if _, err := tx.Exec(ctx,

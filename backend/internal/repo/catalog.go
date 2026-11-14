@@ -379,3 +379,57 @@ func (c *Catalog) Meta(ctx context.Context) (models.Meta, error) {
 		FROM offers WHERE is_active AND stock > 0`).Scan(&m.PriceRange.MinCents, &m.PriceRange.MaxCents)
 	return m, err
 }
+
+// Related lists products that share genres with the given one, most shared tags
+// first, then by popularity. Products without a shared tag are still eligible, so
+// a title with unusual tags never leaves the section empty; they simply rank last.
+func (c *Catalog) Related(ctx context.Context, slug string, limit int) ([]models.ProductCard, error) {
+	if limit < 1 || limit > 12 {
+		limit = 8
+	}
+	rows, err := c.pool.Query(ctx, `
+		WITH `+offerAggCTE+`,
+		mine AS (
+			SELECT pg.genre_id
+			FROM product_genres pg
+			JOIN products p ON p.id = pg.product_id
+			WHERE p.slug = @slug
+		),
+		shared AS (
+			SELECT pg.product_id, COUNT(*)::int AS overlap
+			FROM product_genres pg
+			JOIN mine ON mine.genre_id = pg.genre_id
+			GROUP BY pg.product_id
+		)
+		SELECT p.id, p.slug, p.title, p.cover_url, p.release_date, p.popularity,
+		       a.min_price, a.max_price, a.offer_count, a.best_discount,
+		       a.platform_slugs, a.region_codes, p.content_type
+		FROM products p
+		JOIN offer_agg a ON a.product_id = p.id
+		LEFT JOIN shared s ON s.product_id = p.id
+		WHERE p.is_active AND p.slug <> @slug
+		ORDER BY COALESCE(s.overlap, 0) DESC, p.popularity DESC, p.title ASC
+		LIMIT @limit`,
+		pgx.NamedArgs{
+			"slug":      slug,
+			"limit":     limit,
+			"platforms": []string{},
+			"regions":   []string{},
+		})
+	if err != nil {
+		return nil, fmt.Errorf("related products: %w", err)
+	}
+	defer rows.Close()
+
+	out := []models.ProductCard{}
+	for rows.Next() {
+		var item models.ProductCard
+		if err := rows.Scan(&item.ID, &item.Slug, &item.Title, &item.CoverURL, &item.ReleaseDate,
+			&item.Popularity, &item.MinPriceCents, &item.MaxPriceCents, &item.OfferCount,
+			&item.BestDiscountPercent, &item.Platforms, &item.Regions, &item.ContentType); err != nil {
+			return nil, err
+		}
+		out = append(out, item)
+	}
+	return out, rows.Err()
+}

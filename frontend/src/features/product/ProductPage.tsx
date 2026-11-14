@@ -4,6 +4,8 @@ import { Link, useParams } from 'react-router-dom'
 import { catalogApi } from '@/api/endpoints'
 import type { Offer, ProductDetail } from '@/api/types'
 import { ContentTypeBadge } from '@/components/ContentTypeBadge'
+import { ProductCard } from '@/components/ProductCard'
+import { SectionHeading } from '@/components/ui'
 import { Badge, Button, Card, EmptyState, Notice, Skeleton } from '@/components/ui'
 import { useCart } from '@/features/cart/CartContext'
 import { formatDate, formatMoney, isPreorder } from '@/lib/format'
@@ -238,6 +240,32 @@ export default function ProductPage() {
           </section>
         </div>
       </div>
+
+      {product.related.length > 0 && (
+        <section className="mt-12">
+          <SectionHeading
+            title="You might also like"
+            subtitle={
+              product.genres.length > 0
+                ? `More games tagged ${product.genres.slice(0, 3).join(", ")}`
+                : "Popular picks from the catalogue"
+            }
+            action={
+              <Link
+                to={`/store${product.genres.length > 0 ? `?genre=${encodeURIComponent(product.genres[0])}` : ""}`}
+                className="rounded-[2px] border border-white/40 px-4 py-2 text-xs font-extrabold uppercase tracking-wide text-white transition hover:border-accent-500 hover:text-accent-500"
+              >
+                Browse more
+              </Link>
+            }
+          />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {product.related.slice(0, 5).map((related) => (
+              <ProductCard key={related.id} product={related} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   )
 }

@@ -58,12 +58,13 @@ type Offer struct {
 // ProductDetail is the product page payload.
 type ProductDetail struct {
 	ProductCard
-	Description string   `json:"description"`
-	HeroURL     string   `json:"heroUrl"`
-	Developer   string   `json:"developer"`
-	Publisher   string   `json:"publisher"`
-	Genres      []string `json:"genres"`
-	Offers      []Offer  `json:"offers"`
+	Description string        `json:"description"`
+	HeroURL     string        `json:"heroUrl"`
+	Developer   string        `json:"developer"`
+	Publisher   string        `json:"publisher"`
+	Genres      []string      `json:"genres"`
+	Offers      []Offer       `json:"offers"`
+	Related     []ProductCard `json:"related"`
 }
 
 // HomepageBlock is a marketing block. Content comes from the database; the

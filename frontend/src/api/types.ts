@@ -59,6 +59,8 @@ export type ProductDetail = ProductCard & {
   publisher: string
   genres: string[]
   offers: Offer[]
+  /** “You might also like”: same shape as a store card, ranked by shared genres. */
+  related: ProductCard[]
 }
 
 export type HomepageBlock = {

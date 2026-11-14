@@ -18,7 +18,7 @@ is required from the browser.
 | GET | `/api/meta` | platforms, regions, genres, price range |
 | GET | `/api/homepage` | visible blocks with resolved products. A block whose config has `"source":"new_releases"` is filled from the release calendar instead of its curated list: upcoming titles first (soonest release), then the most recently released |
 | GET | `/api/products` | `q, platform, region, genre, contentType, minPriceCents, maxPriceCents, sort, page, pageSize`. `platform`, `region` and `genre` are repeatable (or comma-separated) and match **any** of the supplied values; `contentType` is one of `full`, `dlc`, `both`; `minPriceCents`/`maxPriceCents` bound the product's cheapest offer |
-| GET | `/api/products/{slug}` | product detail + competing offers |
+| GET | `/api/products/{slug}` | product detail + competing offers, plus `related` — up to 8 cards ranked by shared genres (non-increasing), then popularity |
 | GET | `/api/search?q=&limit=` | fuzzy suggestions with match scores: trigrams tolerate typos (`eleden ring`), prefix/`ILIKE` catches partial names (`cyberpu`), and title initialisms resolve abbreviations (`gta`, `bg3`, `rdr2`) |
 
 `sort` accepts `popular` (default), `relevance`, `price_asc`, `price_desc`,

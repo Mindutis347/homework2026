@@ -94,11 +94,19 @@ func (a *App) handleListProducts(w http.ResponseWriter, r *http.Request) {
 //
 //	GET /api/products/{slug}
 func (a *App) handleGetProduct(w http.ResponseWriter, r *http.Request) {
-	detail, err := a.catalog.GetBySlug(r.Context(), r.PathValue("slug"))
+	slug := r.PathValue("slug")
+	detail, err := a.catalog.GetBySlug(r.Context(), slug)
 	if err != nil {
 		WriteError(w, err)
 		return
 	}
+	// "You might also like": same shape as a store card, ranked by shared genres.
+	related, err := a.catalog.Related(r.Context(), slug, 8)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	detail.Related = related
 	WriteJSON(w, http.StatusOK, detail)
 }
 

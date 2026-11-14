@@ -56,10 +56,20 @@ func scanAdminProduct(row pgx.Row) (models.AdminProduct, error) {
 // Products lists catalogue entries for the back-office, including inactive ones
 // and entries nobody sells yet.
 func (a *Admin) Products(ctx context.Context, term string) ([]models.AdminProduct, error) {
+	// Same tolerance as the storefront: substring, trigram similarity and word
+	// similarity, ranked so the closest title comes first. An admin hunting for a
+	// typo'd title should not have to spell it exactly.
 	rows, err := a.pool.Query(ctx, adminProductSelect+`
-		WHERE $1 = '' OR p.title ILIKE '%' || $1 || '%' OR p.slug ILIKE '%' || $1 || '%'
-		ORDER BY p.is_active DESC, p.popularity DESC, p.title ASC
-		LIMIT 100`, strings.TrimSpace(term))
+		WHERE @term = ''
+		   OR p.title ILIKE '%' || @term || '%'
+		   OR p.slug ILIKE '%' || @term || '%'
+		   OR similarity(p.title, @term) > 0.2
+		   OR word_similarity(@term, p.title) > 0.5
+		ORDER BY (CASE WHEN @term = '' THEN 0
+		               ELSE GREATEST(similarity(p.title, @term), word_similarity(@term, p.title))
+		          END) DESC,
+		         p.is_active DESC, p.popularity DESC, p.title ASC
+		LIMIT 100`, pgx.NamedArgs{"term": strings.TrimSpace(term)})
 	if err != nil {
 		return nil, fmt.Errorf("list admin products: %w", err)
 	}

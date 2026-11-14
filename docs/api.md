@@ -95,7 +95,7 @@ Product `description` accepts a small Markdown subset, rendered by the storefron
 | GET | `/api/admin/settings/taxes` | `{topupTaxBasisPoints, purchaseTaxBasisPoints, applyOnTopup, applyOnPurchase}` |
 | PATCH | `/api/admin/settings/taxes` | same shape; rates are basis points (500 = 5%) and must be 0–10000 |
 | GET | `/api/admin/summary` | gross, commission, payouts, top sellers, 14-day series |
-| GET | `/api/admin/catalog?q=` | catalogue entries with their editable fields, offer count and genres; hidden products included |
+| GET | `/api/admin/catalog?q=` | catalogue entries with their editable fields, offer count and genres; hidden products included. `q` is typo tolerant (trigram similarity, ranked by closeness), like the storefront search |
 | GET | `/api/admin/catalog/cards?ids=1,2,3` | store cards for a hand-picked product list, in the given order — used by the homepage block preview |
 | PATCH | `/api/admin/catalog/{id}` | `{title, description, coverUrl, heroUrl, developer, publisher, releaseDate, contentType, isActive, genres}`. The slug is fixed; setting `isActive:false` removes it from the storefront |
 | GET | `/api/admin/orders` | platform-wide orders |

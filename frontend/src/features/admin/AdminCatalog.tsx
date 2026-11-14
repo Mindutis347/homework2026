@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 
 import { adminApi, catalogApi } from '@/api/endpoints'
@@ -191,6 +191,35 @@ function ProductForm({
   const [draft, setDraft] = useState<Draft>(() => draftOf(product))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const descriptionRef = useRef<HTMLTextAreaElement>(null)
+
+  /** Wrap the selected text (or a placeholder) in Markdown markers. */
+  function wrapSelection(before: string, after = before) {
+    const el = descriptionRef.current
+    if (!el) return
+    const { selectionStart: start, selectionEnd: end, value } = el
+    const selected = value.slice(start, end) || "text"
+    const next = value.slice(0, start) + before + selected + after + value.slice(end)
+    setDraft((prev) => ({ ...prev, description: next }))
+    requestAnimationFrame(() => {
+      el.focus()
+      el.setSelectionRange(start + before.length, start + before.length + selected.length)
+    })
+  }
+
+  /** Add a line prefix such as a bullet or heading to the line being edited. */
+  function prefixLine(prefix: string) {
+    const el = descriptionRef.current
+    if (!el) return
+    const { selectionStart: start, value } = el
+    const lineStart = value.lastIndexOf(String.fromCharCode(10), Math.max(0, start - 1)) + 1
+    const next = value.slice(0, lineStart) + prefix + value.slice(lineStart)
+    setDraft((prev) => ({ ...prev, description: next }))
+    requestAnimationFrame(() => {
+      el.focus()
+      el.setSelectionRange(start + prefix.length, start + prefix.length)
+    })
+  }
 
   function patch(next: Partial<Draft>) {
     setDraft((prev) => ({ ...prev, ...next }))
@@ -274,10 +303,28 @@ function ProductForm({
         </Field>
       </div>
 
-      <Field label="Description">
+      <Field label="Description" hint="**bold**, *italic*, - bullet list, ## subheading">
+        <div className="mb-2 flex flex-wrap gap-1.5">
+          <Button type="button" size="sm" variant="ghost" onClick={() => wrapSelection("**")}>
+            Bold
+          </Button>
+          <Button type="button" size="sm" variant="ghost" onClick={() => wrapSelection("*")}>
+            Italic
+          </Button>
+          <Button type="button" size="sm" variant="ghost" onClick={() => prefixLine("- ")}>
+            Bullet list
+          </Button>
+          <Button type="button" size="sm" variant="ghost" onClick={() => prefixLine("## ")}>
+            Subheading
+          </Button>
+          <Button type="button" size="sm" variant="ghost" onClick={() => prefixLine("# ")}>
+            Large heading
+          </Button>
+        </div>
         <textarea
+          ref={descriptionRef}
           value={draft.description}
-          rows={3}
+          rows={5}
           onChange={(event) => patch({ description: event.target.value })}
           className="w-full rounded-[2px] border border-line bg-canvas px-3.5 py-2.5 text-sm text-white placeholder:text-brand-300 focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/30"
         />

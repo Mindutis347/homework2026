@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { catalogApi } from '@/api/endpoints'
 import type { Offer, ProductDetail } from '@/api/types'
 import { ContentTypeBadge } from '@/components/ContentTypeBadge'
+import { RichText } from '@/components/RichText'
 import { ProductCard } from '@/components/ProductCard'
 import { SectionHeading } from '@/components/ui'
 import { Badge, Button, Card, EmptyState, Notice, Skeleton } from '@/components/ui'
@@ -158,7 +159,9 @@ export default function ProductPage() {
             )}
           </div>
 
-          <p className="mt-5 max-w-2xl text-sm leading-relaxed text-brand-100">{product.description}</p>
+          <div className="mt-5 max-w-2xl">
+            <RichText text={product.description} />
+          </div>
 
           {feedback && (
             <div className="mt-5"><Notice tone="success">{feedback}</Notice></div>

@@ -77,7 +77,11 @@ export type HomepageBlock = {
 
 /** Admin block payload. The editor works from linked product ids; the hydrated
  *  `products` cards are only filled in by the public homepage endpoint. */
-export type AdminBlock = Omit<HomepageBlock, 'products'> & { productIds: number[] }
+export type AdminBlock = Omit<HomepageBlock, "products"> & {
+  productIds: number[]
+  /** Compact product info so the editor can show names for saved blocks. */
+  productSummaries?: { id: number; title: string; coverUrl: string }[]
+}
 
 export type SearchSuggestion = {
   slug: string

@@ -24,6 +24,9 @@ is required from the browser.
 `sort` accepts `popular` (default), `relevance`, `price_asc`, `price_desc`,
 `newest`, `discount`, `title`. Prices are integer cents.
 
+Product `description` accepts a small Markdown subset, rendered by the storefront: `**bold**`, `*italic*`,
+`- ` bullet lists, and `# ` / `## ` headings. Anything else is shown as plain text.
+
 ## Authentication
 
 | Method | Path | Body |
@@ -88,11 +91,12 @@ is required from the browser.
 | POST | `/api/admin/requests/{id}/review` | `{approve, note}`; approval creates the product |
 | GET | `/api/admin/summary` | gross, commission, payouts, top sellers, 14-day series |
 | GET | `/api/admin/catalog?q=` | catalogue entries with their editable fields, offer count and genres; hidden products included |
+| GET | `/api/admin/catalog/cards?ids=1,2,3` | store cards for a hand-picked product list, in the given order — used by the homepage block preview |
 | PATCH | `/api/admin/catalog/{id}` | `{title, description, coverUrl, heroUrl, developer, publisher, releaseDate, contentType, isActive, genres}`. The slug is fixed; setting `isActive:false` removes it from the storefront |
 | GET | `/api/admin/orders` | platform-wide orders |
 | GET | `/api/admin/tickets?status=` | support queue |
 | PATCH | `/api/admin/tickets/{id}` | `{status: open\|in_progress\|resolved}` |
-| GET | `/api/admin/blocks` | all homepage blocks incl. hidden |
+| GET | `/api/admin/blocks` | all homepage blocks incl. hidden, each with `productIds` plus `productSummaries` (id, title, cover) for the editor |
 | POST | `/api/admin/blocks` | `{key, type, title, subtitle, config, position, isVisible, productIds}` |
 | PATCH | `/api/admin/blocks/{id}` | same body as create |
 | DELETE | `/api/admin/blocks/{id}` | 204 |

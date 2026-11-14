@@ -463,9 +463,12 @@ func (a *Admin) CreateTicket(ctx context.Context, userID int64, orderID *int64, 
 func (a *Admin) Blocks(ctx context.Context) ([]models.HomepageBlock, error) {
 	rows, err := a.pool.Query(ctx, `
 		SELECT b.id, b.block_key, b.type, b.title, b.subtitle, b.config, b.position, b.is_visible,
-		       COALESCE(array_agg(bp.product_id ORDER BY bp.position) FILTER (WHERE bp.product_id IS NOT NULL), '{}')
+		       COALESCE(array_agg(bp.product_id ORDER BY bp.position) FILTER (WHERE bp.product_id IS NOT NULL), '{}'),
+		       COALESCE(json_agg(json_build_object('id', p.id, 'title', p.title, 'coverUrl', p.cover_url)
+		                ORDER BY bp.position) FILTER (WHERE p.id IS NOT NULL), '[]')
 		FROM homepage_blocks b
 		LEFT JOIN homepage_block_products bp ON bp.block_id = b.id
+		LEFT JOIN products p ON p.id = bp.product_id
 		GROUP BY b.id
 		ORDER BY b.position, b.id`)
 	if err != nil {
@@ -478,9 +481,15 @@ func (a *Admin) Blocks(ctx context.Context) ([]models.HomepageBlock, error) {
 		var b models.HomepageBlock
 		var raw []byte
 		var productIDs []int64
+		var summaries []byte
 		if err := rows.Scan(&b.ID, &b.Key, &b.Type, &b.Title, &b.Subtitle, &raw, &b.Position,
-			&b.IsVisible, &productIDs); err != nil {
+			&b.IsVisible, &productIDs, &summaries); err != nil {
 			return nil, err
+		}
+		if len(summaries) > 0 {
+			if err := json.Unmarshal(summaries, &b.ProductSummaries); err != nil {
+				return nil, fmt.Errorf("decode block products: %w", err)
+			}
 		}
 		if len(raw) > 0 {
 			if err := json.Unmarshal(raw, &b.Config); err != nil {
@@ -605,14 +614,18 @@ func (a *Admin) blockByID(ctx context.Context, id int64) (models.HomepageBlock, 
 	var b models.HomepageBlock
 	var raw []byte
 	var productIDs []int64
+	var summaries []byte
 	err := a.pool.QueryRow(ctx, `
 		SELECT b.id, b.block_key, b.type, b.title, b.subtitle, b.config, b.position, b.is_visible,
-		       COALESCE(array_agg(bp.product_id ORDER BY bp.position) FILTER (WHERE bp.product_id IS NOT NULL), '{}')
+		       COALESCE(array_agg(bp.product_id ORDER BY bp.position) FILTER (WHERE bp.product_id IS NOT NULL), '{}'),
+		       COALESCE(json_agg(json_build_object('id', p.id, 'title', p.title, 'coverUrl', p.cover_url)
+		                ORDER BY bp.position) FILTER (WHERE p.id IS NOT NULL), '[]')
 		FROM homepage_blocks b
 		LEFT JOIN homepage_block_products bp ON bp.block_id = b.id
+		LEFT JOIN products p ON p.id = bp.product_id
 		WHERE b.id = $1
 		GROUP BY b.id`, id,
-	).Scan(&b.ID, &b.Key, &b.Type, &b.Title, &b.Subtitle, &raw, &b.Position, &b.IsVisible, &productIDs)
+	).Scan(&b.ID, &b.Key, &b.Type, &b.Title, &b.Subtitle, &raw, &b.Position, &b.IsVisible, &productIDs, &summaries)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return b, ErrNotFound
 	}
@@ -621,6 +634,11 @@ func (a *Admin) blockByID(ctx context.Context, id int64) (models.HomepageBlock, 
 	}
 	if len(raw) > 0 {
 		if err := json.Unmarshal(raw, &b.Config); err != nil {
+			return b, err
+		}
+	}
+	if len(summaries) > 0 {
+		if err := json.Unmarshal(summaries, &b.ProductSummaries); err != nil {
 			return b, err
 		}
 	}

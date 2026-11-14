@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { adminApi } from '@/api/endpoints'
-import type { AdminBlock } from '@/api/types'
+import type { AdminBlock, AdminProduct } from '@/api/types'
 import {
   Badge,
   Button,
@@ -10,10 +10,13 @@ import {
   ErrorNote,
   Field,
   Input,
+  Notice,
   SectionHeading,
   Select,
   Skeleton,
 } from '@/components/ui'
+import { HomeBlock } from '@/features/home/blocks'
+import type { HomeBlockData } from '@/features/home/blocks'
 
 const BLOCK_TYPES: AdminBlock['type'][] = [
   'hero',
@@ -23,6 +26,8 @@ const BLOCK_TYPES: AdminBlock['type'][] = [
   'platform_strip',
 ]
 
+type Picked = { id: number; title: string; coverUrl: string }
+
 type BlockDraft = {
   key: string
   type: string
@@ -30,17 +35,17 @@ type BlockDraft = {
   subtitle: string
   position: string
   isVisible: boolean
-  productIds: string
+  products: Picked[]
   config: string
 }
 
 type BlockPayload = Parameters<typeof adminApi.updateBlock>[1]
 
 const textareaClass =
-  'w-full rounded-[2px] border border-line bg-surface px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200'
+  'w-full rounded-[2px] border border-line bg-canvas px-3.5 py-2.5 text-sm text-white placeholder:text-brand-300 focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/30'
 
-/** Marketing block manager. The homepage renders whatever is visible, ordered
- *  by position, so this screen is the only thing that decides its layout. */
+/** Marketing block manager. The homepage renders whatever is visible, ordered by
+ *  position, so this screen is the only thing that decides its layout. */
 export default function AdminBlocks() {
   const [blocks, setBlocks] = useState<AdminBlock[]>([])
   const [loading, setLoading] = useState(true)
@@ -119,15 +124,15 @@ export default function AdminBlocks() {
             blocks.map((block) => (
               <Card key={block.id} className="p-4 sm:p-5">
                 <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-line pb-3">
-                  <span className="font-mono text-xs font-semibold text-ink-500">#{block.id}</span>
-                  <h3 className="font-display text-base font-bold text-ink-900">{block.key}</h3>
+                  <span className="font-mono text-xs font-semibold text-brand-200">#{block.id}</span>
+                  <h3 className="font-display text-base font-bold text-white">{block.key}</h3>
                   <Badge tone={block.isVisible ? 'success' : 'neutral'}>
                     {block.isVisible ? 'visible' : 'hidden'}
                   </Badge>
-                  <span className="text-xs text-ink-500">position {block.position}</span>
-                  {block.productIds.length > 0 && (
-                    <span className="text-xs text-ink-500">
-                      {block.productIds.length} product{block.productIds.length === 1 ? '' : 's'} attached
+                  <span className="text-xs text-brand-200">position {block.position}</span>
+                  {(block.productSummaries?.length ?? 0) > 0 && (
+                    <span className="text-xs text-brand-200">
+                      {block.productSummaries?.length} product{(block.productSummaries?.length ?? 0) === 1 ? '' : 's'} attached
                     </span>
                   )}
                 </div>
@@ -145,8 +150,8 @@ export default function AdminBlocks() {
 
           <Card className="p-4 sm:p-5">
             <div className="mb-4 border-b border-line pb-3">
-              <h3 className="font-display text-base font-bold text-ink-900">New block</h3>
-              <p className="mt-1 text-xs text-ink-500">
+              <h3 className="font-display text-base font-bold text-white">New block</h3>
+              <p className="mt-1 text-xs text-brand-200">
                 Created blocks appear on the public homepage only once they are visible and positioned.
               </p>
             </div>
@@ -182,6 +187,8 @@ function BlockEditor({
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [showConfig, setShowConfig] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
 
   function patch(next: Partial<BlockDraft>) {
     setDraft((prev) => ({ ...prev, ...next }))
@@ -197,6 +204,7 @@ function BlockEditor({
     const config = parseConfig(draft.config)
     if (!config) {
       setConfigError('Config must be a JSON object, for example {"href": "/store"}.')
+      setShowConfig(true)
       return
     }
     setConfigError(null)
@@ -223,8 +231,10 @@ function BlockEditor({
     }
   }
 
+  const config = parseConfig(draft.config) ?? {}
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Field label="Key" error={keyError}>
           <Input
@@ -232,7 +242,7 @@ function BlockEditor({
             readOnly={keyReadOnly}
             onChange={(event) => patch({ key: event.target.value })}
             placeholder="e.g. best_sellers"
-            className={keyReadOnly ? 'bg-canvas text-ink-500' : undefined}
+            className={keyReadOnly ? 'bg-canvas text-brand-200' : undefined}
             title={keyReadOnly ? 'Block keys identify the block in the API and cannot be changed here.' : undefined}
           />
         </Field>
@@ -257,12 +267,12 @@ function BlockEditor({
         </Field>
 
         <div className="flex items-end pb-2.5">
-          <label className="inline-flex items-center gap-2 text-sm font-medium text-ink-700">
+          <label className="inline-flex items-center gap-2 text-sm font-medium text-brand-100">
             <input
               type="checkbox"
               checked={draft.isVisible}
               onChange={(event) => patch({ isVisible: event.target.checked })}
-              className="size-4 rounded border-line accent-brand-600"
+              className="size-4 rounded-[2px] border-line accent-brand-500"
             />
             Visible on homepage
           </label>
@@ -272,30 +282,47 @@ function BlockEditor({
           <Input value={draft.title} onChange={(event) => patch({ title: event.target.value })} />
         </Field>
 
-        <Field label="Subtitle">
+        <Field label="Subtitle" hint="Optional, shown under the title.">
           <Input value={draft.subtitle} onChange={(event) => patch({ subtitle: event.target.value })} />
         </Field>
-
-        <div className="sm:col-span-2">
-          <Field label="Product IDs" hint="Comma separated, for example 12, 34, 56. Empty means no fixed products.">
-            <Input
-              value={draft.productIds}
-              onChange={(event) => patch({ productIds: event.target.value })}
-              placeholder="12, 34, 56"
-            />
-          </Field>
-        </div>
       </div>
 
-      <Field label="Config (JSON)" error={configError} hint="Everything the block needs beyond its title, stored as a JSON object.">
-        <textarea
-          rows={6}
-          value={draft.config}
-          onChange={(event) => patch({ config: event.target.value })}
-          spellCheck={false}
-          className={`${textareaClass} font-mono text-xs`}
-        />
-      </Field>
+      <ProductPicker
+        value={draft.products}
+        onChange={(products) => patch({ products })}
+      />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" size="sm" variant="onDark" onClick={() => setShowConfig((value) => !value)}>
+          {showConfig ? 'Hide config' : 'Show config (JSON)'}
+        </Button>
+        <Button type="button" size="sm" variant="onDark" onClick={() => setShowPreview((value) => !value)}>
+          {showPreview ? 'Hide preview' : 'Preview'}
+        </Button>
+        <span className="text-xs text-brand-200">
+          Config carries everything beyond the title: buttons, links, tiles, and `source: "new_releases"`.
+        </span>
+      </div>
+
+      {showConfig && (
+        <Field
+          label="Config (JSON)"
+          error={configError}
+          hint="Stored as a JSON object. Advanced: leave the keys you do not need untouched."
+        >
+          <textarea
+            rows={6}
+            value={draft.config}
+            onChange={(event) => patch({ config: event.target.value })}
+            spellCheck={false}
+            className={`${textareaClass} font-mono text-xs`}
+          />
+        </Field>
+      )}
+
+      {showPreview && (
+        <BlockPreview draft={draft} config={config} />
+      )}
 
       <ErrorNote message={error} />
 
@@ -304,16 +331,197 @@ function BlockEditor({
           {submitLabel}
         </Button>
         {onDelete && (
-          <Button
-            variant="danger"
-            size="sm"
-            disabled={saving || deleting}
-            onClick={() => void remove()}
-          >
+          <Button variant="danger" size="sm" disabled={saving || deleting} onClick={() => void remove()}>
             Delete
           </Button>
         )}
       </div>
+    </div>
+  )
+}
+
+/** Human-friendly product picker: search the catalogue, click to attach, chips to
+ *  remove. The block still stores plain ids, so the API is unchanged. */
+function ProductPicker({ value, onChange }: { value: Picked[]; onChange: (next: Picked[]) => void }) {
+  const [term, setTerm] = useState('')
+  const [results, setResults] = useState<AdminProduct[]>([])
+  const [searching, setSearching] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const query = term.trim()
+    if (query.length < 2) {
+      setResults([])
+      setSearching(false)
+      return
+    }
+    let cancelled = false
+    setSearching(true)
+    const timer = window.setTimeout(() => {
+      adminApi
+        .catalog(query)
+        .then(({ products }) => {
+          if (cancelled) return
+          setResults(products.slice(0, 6))
+          setError(null)
+        })
+        .catch((err: unknown) => {
+          if (cancelled) return
+          setResults([])
+          setError(err instanceof Error ? err.message : 'Search failed')
+        })
+        .finally(() => {
+          if (!cancelled) setSearching(false)
+        })
+    }, 250)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [term])
+
+  const chosen = new Set(value.map((item) => item.id))
+
+  return (
+    <div className="rounded-[2px] border border-line bg-canvas p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-xs font-extrabold uppercase tracking-wide text-brand-200">Products in this block</p>
+        <span className="text-xs text-brand-300">{value.length}/10</span>
+        {value.length > 0 && (
+          <Button type="button" size="sm" variant="ghost" className="ml-auto" onClick={() => onChange([])}>
+            Clear all
+          </Button>
+        )}
+      </div>
+
+      {value.length === 0 ? (
+        <p className="mt-2 text-xs text-brand-200">
+          Nothing attached yet — search below and click a game to add it.
+        </p>
+      ) : (
+        <ul className="mt-2 flex flex-wrap gap-2">
+          {value.map((item, index) => (
+            <li key={item.id} className="flex items-center gap-2 rounded-[2px] border border-line bg-surface px-2 py-1">
+              <span className="text-[0.625rem] font-bold text-brand-300">{index + 1}</span>
+              <img src={item.coverUrl} alt="" className="h-8 w-6 rounded-[2px] object-cover" />
+              <span className="max-w-40 truncate text-xs font-semibold text-white">{item.title}</span>
+              <button
+                type="button"
+                aria-label={`Remove ${item.title}`}
+                onClick={() => onChange(value.filter((entry) => entry.id !== item.id))}
+                className="text-sm leading-none text-brand-300 hover:text-danger"
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="mt-3">
+        <Input
+          value={term}
+          onChange={(event) => setTerm(event.target.value)}
+          placeholder="Search a game to add…"
+          aria-label="Search products to add to this block"
+        />
+        {error && <div className="mt-2"><ErrorNote message={error} /></div>}
+        {searching && <p className="mt-2 text-xs text-brand-200">Searching…</p>}
+        {!searching && results.length > 0 && (
+          <ul className="mt-2 divide-y divide-line overflow-hidden rounded-[2px] border border-line">
+            {results.map((product) => (
+              <li key={product.id} className="flex items-center gap-2 px-2 py-1.5">
+                <img src={product.coverUrl} alt="" className="h-8 w-6 rounded-[2px] object-cover" />
+                <span className="min-w-0 flex-1 truncate text-xs font-semibold text-white">{product.title}</span>
+                {chosen.has(product.id) ? (
+                  <Badge tone="success">added</Badge>
+                ) : (
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={value.length >= 10}
+                    onClick={() =>
+                      onChange([...value, { id: product.id, title: product.title, coverUrl: product.coverUrl }])
+                    }
+                  >
+                    Add
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** Renders the block with the draft values, using the same component the homepage
+ *  uses, so what you see here is what ships. */
+function BlockPreview({ draft, config }: { draft: BlockDraft; config: Record<string, unknown> }) {
+  const [cards, setCards] = useState<HomeBlockData['products']>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const autoSourced = config.source === 'new_releases'
+  const ids = draft.products.map((product) => product.id).join(',')
+
+  useEffect(() => {
+    if (autoSourced || ids === '') {
+      setCards([])
+      return
+    }
+    let cancelled = false
+    setLoading(true)
+    adminApi
+      .blockCards(ids.split(',').map(Number))
+      .then(({ cards: fetched }) => {
+        if (cancelled) return
+        setCards(fetched)
+        setError(null)
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return
+        setCards([])
+        setError(err instanceof Error ? err.message : 'Could not build the preview')
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [ids, autoSourced])
+
+  const block: HomeBlockData = {
+    key: draft.key,
+    type: draft.type,
+    title: draft.title,
+    subtitle: draft.subtitle,
+    config,
+    products: cards,
+  }
+
+  return (
+    <div className="rounded-[2px] border border-dashed border-white/30 p-3">
+      <p className="mb-3 text-xs font-extrabold uppercase tracking-wide text-brand-200">
+        Preview — {draft.isVisible ? 'visible on the homepage' : 'hidden, so it would not render'}
+      </p>
+      {autoSourced ? (
+        <Notice tone="info">
+          This block follows the release calendar (<code>source: new_releases</code>), so the live row is filled
+          from products&apos; release dates rather than this list.
+        </Notice>
+      ) : error ? (
+        <ErrorNote message={error} />
+      ) : loading ? (
+        <Skeleton className="h-40 w-full" />
+      ) : draft.products.length === 0 && ['product_carousel', 'platform_strip', 'hero'].includes(draft.type) ? (
+        <Notice tone="warning">Add at least one product to see this block rendered.</Notice>
+      ) : (
+        <div className="pointer-events-none select-none">
+          <HomeBlock block={block} />
+        </div>
+      )}
     </div>
   )
 }
@@ -326,7 +534,11 @@ function draftFromBlock(block: AdminBlock): BlockDraft {
     subtitle: block.subtitle,
     position: String(block.position),
     isVisible: block.isVisible,
-    productIds: block.productIds.join(', '),
+    products: (block.productSummaries ?? []).map((product) => ({
+      id: product.id,
+      title: product.title,
+      coverUrl: product.coverUrl,
+    })),
     config: JSON.stringify(block.config, null, 2),
   }
 }
@@ -339,7 +551,7 @@ function emptyDraft(position: number): BlockDraft {
     subtitle: '',
     position: String(position),
     isVisible: true,
-    productIds: '',
+    products: [],
     config: '{}',
   }
 }
@@ -354,15 +566,6 @@ function parseConfig(text: string): Record<string, unknown> | null {
   }
 }
 
-function parseProductIds(text: string): number[] {
-  return text
-    .split(',')
-    .map((token) => token.trim())
-    .filter((token) => token.length > 0)
-    .map((token) => Number(token))
-    .filter((value) => Number.isFinite(value))
-}
-
 function buildPayload(draft: BlockDraft, config: Record<string, unknown>): BlockPayload {
   const position = Number.parseInt(draft.position, 10)
   return {
@@ -373,12 +576,10 @@ function buildPayload(draft: BlockDraft, config: Record<string, unknown>): Block
     config,
     position: Number.isFinite(position) ? position : 0,
     isVisible: draft.isVisible,
-    productIds: parseProductIds(draft.productIds),
+    productIds: draft.products.map((product) => product.id),
   }
 }
 
 function sortBlocks(blocks: AdminBlock[]): AdminBlock[] {
   return [...blocks].sort((a, b) => a.position - b.position || a.id - b.id)
 }
-
-export { AdminBlocks }

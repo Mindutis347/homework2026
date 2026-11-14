@@ -433,3 +433,38 @@ func (c *Catalog) Related(ctx context.Context, slug string, limit int) ([]models
 	}
 	return out, rows.Err()
 }
+
+// CardsByIDs builds store cards for a hand-picked set of products, in the order
+// the ids were given. The homepage editor uses it to preview a block before it is
+// saved; products without a live offer are omitted, exactly as the homepage would.
+func (c *Catalog) CardsByIDs(ctx context.Context, ids []int64) ([]models.ProductCard, error) {
+	out := []models.ProductCard{}
+	if len(ids) == 0 {
+		return out, nil
+	}
+	rows, err := c.pool.Query(ctx, `
+		WITH `+offerAggCTE+`
+		SELECT p.id, p.slug, p.title, p.cover_url, p.release_date, p.popularity, p.content_type,
+		       a.min_price, a.max_price, a.offer_count, a.best_discount,
+		       a.platform_slugs, a.region_codes
+		FROM products p
+		JOIN offer_agg a ON a.product_id = p.id
+		WHERE p.is_active AND p.id = ANY(@ids)
+		ORDER BY array_position(@ids::bigint[], p.id)`,
+		pgx.NamedArgs{"ids": ids, "platforms": []string{}, "regions": []string{}})
+	if err != nil {
+		return nil, fmt.Errorf("cards by ids: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var item models.ProductCard
+		if err := rows.Scan(&item.ID, &item.Slug, &item.Title, &item.CoverURL, &item.ReleaseDate,
+			&item.Popularity, &item.ContentType, &item.MinPriceCents, &item.MaxPriceCents,
+			&item.OfferCount, &item.BestDiscountPercent, &item.Platforms, &item.Regions); err != nil {
+			return nil, err
+		}
+		out = append(out, item)
+	}
+	return out, rows.Err()
+}

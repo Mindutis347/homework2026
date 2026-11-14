@@ -149,6 +149,9 @@ export const adminApi = {
   setTicketStatus: (id: number, status: string) =>
     api.patch<{ status: string }>(`/api/admin/tickets/${id}`, { status }),
   blocks: () => api.get<{ blocks: AdminBlock[] }>('/api/admin/blocks'),
+  // Store cards for a hand-picked product list, used by the homepage preview.
+  blockCards: (ids: number[]) =>
+    api.get<{ cards: ProductCard[] }>(`/api/admin/catalog/cards${queryString({ ids: ids.join(",") })}`),
   updateBlock: (
     id: number,
     payload: {

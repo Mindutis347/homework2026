@@ -109,6 +109,7 @@ func (a *App) Routes() http.Handler {
 	mux.Handle("GET /api/admin/requests", adminOnly(a.handleAdminRequests))
 	mux.Handle("POST /api/admin/requests/{id}/review", adminOnly(a.handleAdminReviewRequest))
 	mux.Handle("GET /api/admin/catalog", adminOnly(a.handleAdminCatalog))
+	mux.Handle("GET /api/admin/catalog/cards", adminOnly(a.handleAdminBlockCards))
 	mux.Handle("PATCH /api/admin/catalog/{id}", adminOnly(a.handleAdminUpdateProduct))
 	mux.Handle("GET /api/admin/summary", adminOnly(a.handleAdminSummary))
 	mux.Handle("GET /api/admin/orders", adminOnly(a.handleAdminOrders))

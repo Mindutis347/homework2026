@@ -601,3 +601,33 @@ func (a *App) handleAdminUpdateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	WriteJSON(w, http.StatusOK, map[string]any{"product": product})
 }
+
+// handleAdminBlockCards returns store cards for a hand-picked product list, so the
+// homepage editor can preview a block without saving it first.
+//
+//	GET /api/admin/catalog/cards?ids=12,34,56
+func (a *App) handleAdminBlockCards(w http.ResponseWriter, r *http.Request) {
+	raw := r.URL.Query().Get("ids")
+	ids := make([]int64, 0, 12)
+	for _, part := range strings.Split(raw, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		id, err := strconv.ParseInt(part, 10, 64)
+		if err != nil || id <= 0 {
+			WriteError(w, Errorf(http.StatusBadRequest, "invalid_query", "ids must be a comma separated list of numbers"))
+			return
+		}
+		ids = append(ids, id)
+		if len(ids) == 12 {
+			break
+		}
+	}
+	cards, err := a.catalog.CardsByIDs(r.Context(), ids)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, map[string]any{"cards": cards})
+}

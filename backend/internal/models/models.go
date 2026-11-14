@@ -67,19 +67,28 @@ type ProductDetail struct {
 	Related     []ProductCard `json:"related"`
 }
 
+// ProductSummary is the minimum a back-office editor needs to show a chosen
+// product: id, name and cover. The public homepage still gets full cards.
+type ProductSummary struct {
+	ID       int64  `json:"id"`
+	Title    string `json:"title"`
+	CoverURL string `json:"coverUrl"`
+}
+
 // HomepageBlock is a marketing block. Content comes from the database; the
 // frontend only decides how a given block `type` renders.
 type HomepageBlock struct {
-	ID         int64          `json:"id"`
-	Key        string         `json:"key"`
-	Type       string         `json:"type"`
-	Title      string         `json:"title"`
-	Subtitle   string         `json:"subtitle"`
-	Config     map[string]any `json:"config"`
-	Position   int            `json:"position"`
-	IsVisible  bool           `json:"isVisible"`
-	ProductIDs []int64        `json:"productIds"`
-	Products   []ProductCard  `json:"products"`
+	ID               int64            `json:"id"`
+	Key              string           `json:"key"`
+	Type             string           `json:"type"`
+	Title            string           `json:"title"`
+	Subtitle         string           `json:"subtitle"`
+	Config           map[string]any   `json:"config"`
+	Position         int              `json:"position"`
+	IsVisible        bool             `json:"isVisible"`
+	ProductIDs       []int64          `json:"productIds"`
+	Products         []ProductCard    `json:"products"`
+	ProductSummaries []ProductSummary `json:"productSummaries,omitempty"`
 }
 
 // SearchSuggestion is a lightweight row for the search dropdown.

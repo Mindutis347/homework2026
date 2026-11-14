@@ -7,13 +7,21 @@ import { discountPercent, formatMoney, isPreorder } from '@/lib/format'
 
 /** Grid card used on the homepage rows, the store and search results. Dark navy
  *  tile with a yellow action bar, following eneba.com's product tile. */
-export function ProductCard({ product, eager = false }: { product: ProductCardType; eager?: boolean }) {
+export function ProductCard({
+  product,
+  eager = false,
+  className = '',
+}: {
+  product: ProductCardType
+  eager?: boolean
+  className?: string
+}) {
   const discount = discountPercent(product.minPriceCents, product.maxPriceCents)
   const preorder = isPreorder(product.releaseDate)
   return (
     <Link
       to={`/products/${product.slug}`}
-      className="group relative flex flex-col overflow-hidden rounded-[2px] bg-brand-900 text-white transition hover:bg-brand-800"
+      className={`group relative flex flex-col overflow-hidden rounded-[2px] bg-brand-900 text-white transition hover:bg-brand-800 ${className}`}
     >
       {product.bestDiscountPercent > 0 && (
         <span className="absolute left-0 top-0 z-10 bg-accent-500 px-2 py-0.5 text-xs font-extrabold text-on-accent">

@@ -163,6 +163,12 @@ function PlatformLogo({ slug }: { slug: string }) {
   )
 }
 
+// Two full rows on a wide screen, three rows of two on a phone. A block may hold
+// more (the auto "new releases" row is filled with twelve) — showing a seventh card
+// alone on a row looks like a mistake, not a shop window.
+const MOBILE_CAROUSEL_LIMIT = 6
+const DESKTOP_CAROUSEL_LIMIT = 10
+
 function CarouselBlock({ block }: { block: HomeBlockData }) {
   if (block.products.length === 0) return null
   const href = str(block.config, 'href')
@@ -190,9 +196,20 @@ function CarouselBlock({ block }: { block: HomeBlockData }) {
         )}
       </div>
 
+      {/* Every product the editor curates, not the first five, up to two full rows. */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {block.products.slice(0, 5).map((product) => (
-          <ProductCard key={product.id} product={product} />
+        {block.products.map((product, index) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            className={
+              index >= DESKTOP_CAROUSEL_LIMIT
+                ? 'hidden'
+                : index >= MOBILE_CAROUSEL_LIMIT
+                  ? 'hidden sm:flex'
+                  : ''
+            }
+          />
         ))}
       </div>
     </section>

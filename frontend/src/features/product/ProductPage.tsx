@@ -152,8 +152,8 @@ export default function ProductPage() {
           className="absolute inset-0 -z-10 bg-gradient-to-t from-brand-600 via-brand-600/90 to-brand-600/70"
         />
 
-        <div className="container-page py-8">
-          <nav className="mb-5 flex items-center gap-2 text-xs text-brand-200">
+        <div className="container-page py-5 lg:py-8">
+          <nav className="mb-3 flex items-center gap-2 text-xs text-brand-200 lg:mb-5">
             <Link to="/" className="hover:text-accent-500">Home</Link>
             <span aria-hidden>/</span>
             <Link to="/store" className="hover:text-accent-500">Store</Link>

@@ -183,18 +183,18 @@ function CarouselBlock({ block }: { block: HomepageBlock }) {
     <section className="container-page mt-10">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="flex items-center gap-2 font-display text-2xl font-extrabold text-brand-900 sm:text-[1.75rem]">
+          <h2 className="flex items-center gap-2 font-display text-2xl font-extrabold text-white sm:text-[1.75rem]">
             {block.title}
             {tone === 'accent' && (
               <span className="rounded-[2px] bg-accent-500 px-2 py-0.5 label-caps text-ink-900">Hot</span>
             )}
           </h2>
-          {block.subtitle && <p className="mt-1 text-sm text-ink-500">{block.subtitle}</p>}
+          {block.subtitle && <p className="mt-1 text-sm text-brand-100">{block.subtitle}</p>}
         </div>
         {href && (
           <Link
             to={href}
-            className="shrink-0 rounded-[2px] border border-line px-4 py-2 text-xs font-extrabold uppercase tracking-wide text-brand-700 transition hover:border-brand-600 hover:bg-brand-600 hover:text-white"
+            className="shrink-0 rounded-[2px] border border-white/40 px-4 py-2 text-xs font-extrabold uppercase tracking-wide text-white transition hover:border-accent-500 hover:text-accent-500"
           >
             View all
           </Link>

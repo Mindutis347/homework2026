@@ -4,7 +4,7 @@ import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAt
  *  index.css, so there is one place to retheme. The shapes are deliberately
  *  sharp (2px) and the CTAs bold and uppercase, following eneba.com. */
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'onDark'
 type ButtonSize = 'sm' | 'md' | 'lg'
 
 const buttonVariants: Record<ButtonVariant, string> = {
@@ -12,6 +12,8 @@ const buttonVariants: Record<ButtonVariant, string> = {
   secondary: 'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800',
   ghost: 'bg-transparent text-ink-700 hover:bg-brand-50 hover:text-brand-700',
   danger: 'bg-danger text-white hover:brightness-110',
+  // For controls that sit directly on the purple canvas rather than in a white card.
+  onDark: 'border border-white/40 bg-transparent text-white hover:border-accent-500 hover:text-accent-500',
 }
 
 const buttonSizes: Record<ButtonSize, string> = {
@@ -205,8 +207,8 @@ export function SectionHeading({
   return (
     <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h2 className="font-display text-xl font-extrabold text-brand-900 sm:text-2xl">{title}</h2>
-        {subtitle && <p className="mt-1 text-sm text-ink-500">{subtitle}</p>}
+        <h2 className="font-display text-xl font-extrabold text-white sm:text-2xl">{title}</h2>
+        {subtitle && <p className="mt-1 text-sm text-brand-100">{subtitle}</p>}
       </div>
       {action}
     </div>

@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { catalogApi } from '@/api/endpoints'
 import type { Offer, ProductDetail } from '@/api/types'
-import { Badge, Button, Card, EmptyState, Skeleton } from '@/components/ui'
+import { Badge, Button, Card, EmptyState, Notice, Skeleton } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
 import { formatDate, formatMoney } from '@/lib/format'
@@ -108,17 +108,17 @@ export default function ProductPage() {
 
   return (
     <div className="container-page py-8">
-      <nav className="mb-5 flex items-center gap-2 text-xs text-ink-500">
-        <Link to="/" className="hover:text-brand-700">Home</Link>
+      <nav className="mb-5 flex items-center gap-2 text-xs text-brand-200">
+        <Link to="/" className="hover:text-accent-500">Home</Link>
         <span aria-hidden>/</span>
-        <Link to="/store" className="hover:text-brand-700">Store</Link>
+        <Link to="/store" className="hover:text-accent-500">Store</Link>
         <span aria-hidden>/</span>
-        <span className="truncate font-medium text-ink-700">{product.title}</span>
+        <span className="truncate font-semibold text-white">{product.title}</span>
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-[300px_1fr]">
         <div>
-          <div className="overflow-hidden rounded-card border border-line bg-surface shadow-card">
+          <div className="overflow-hidden rounded-card border border-white/20 shadow-raised">
             <img src={product.coverUrl} alt={product.title} className="aspect-[3/4] w-full object-cover" />
           </div>
           <Card className="mt-4 space-y-2 p-4 text-sm">
@@ -131,12 +131,12 @@ export default function ProductPage() {
         </div>
 
         <div>
-          <h1 className="font-display text-2xl font-extrabold leading-tight text-ink-900 sm:text-3xl">
+          <h1 className="font-display text-2xl font-extrabold leading-tight text-white sm:text-3xl">
             {product.title}
           </h1>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {platforms.map((p) => (
-              <Badge key={p} tone="brand">{p === 'steam' ? 'Steam' : p === 'nintendo' ? 'Switch' : p}</Badge>
+              <Badge key={p} tone="accent">{p === 'steam' ? 'Steam' : p === 'nintendo' ? 'Switch' : p}</Badge>
             ))}
             {product.genres.map((g) => (
               <Badge key={g} tone="neutral">{g}</Badge>
@@ -144,11 +144,11 @@ export default function ProductPage() {
           </div>
 
           <div className="mt-5 flex flex-wrap items-baseline gap-3">
-            <span className="font-display text-3xl font-extrabold text-brand-700">
+            <span className="font-display text-3xl font-extrabold text-accent-500">
               {formatMoney(product.minPriceCents)}
             </span>
             {product.maxPriceCents > product.minPriceCents && (
-              <span className="text-sm text-ink-500">
+              <span className="text-sm text-brand-100">
                 up to {formatMoney(product.maxPriceCents)} from other sellers
               </span>
             )}
@@ -157,24 +157,22 @@ export default function ProductPage() {
             )}
           </div>
 
-          <p className="mt-5 max-w-2xl text-sm leading-relaxed text-ink-700">{product.description}</p>
+          <p className="mt-5 max-w-2xl text-sm leading-relaxed text-brand-100">{product.description}</p>
 
           {feedback && (
-            <p className="mt-5 rounded-[2px] border border-mint-400/60 bg-mint-100 px-4 py-2.5 text-sm text-[#0b7a5e]">
-              {feedback}
-            </p>
+            <div className="mt-5"><Notice tone="success">{feedback}</Notice></div>
           )}
 
           <section className="mt-8">
             <div className="mb-3 flex flex-wrap items-center gap-3">
-              <h2 className="font-display text-lg font-bold text-ink-900">
+              <h2 className="font-display text-lg font-extrabold text-white">
                 {offers.length} offer{offers.length === 1 ? '' : 's'} from verified sellers
               </h2>
               <div className="ml-auto flex gap-2">
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as 'price' | 'rating')}
-                  className="rounded-[2px] border border-line bg-surface px-2 py-1.5 text-xs font-semibold"
+                  className="rounded-[2px] border border-line bg-surface px-2 py-1.5 text-xs font-bold text-ink-900"
                   aria-label="Sort offers"
                 >
                   <option value="price">Cheapest first</option>
@@ -258,8 +256,10 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
   return (
     <button
       onClick={onClick}
-      className={`rounded-[2px] px-2.5 py-1 text-xs font-bold transition ${
-        active ? 'bg-brand-600 text-white' : 'bg-canvas text-ink-700 hover:bg-brand-50'
+      className={`rounded-[2px] border px-2.5 py-1 text-xs font-bold transition ${
+        active
+          ? 'border-accent-500 bg-accent-500 text-ink-900'
+          : 'border-white/30 text-white hover:border-accent-500 hover:text-accent-500'
       }`}
     >
       {children}

@@ -170,7 +170,7 @@ export default function StorePage() {
         <section>
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <Button
-              variant="ghost"
+              variant="onDark"
               size="sm"
               className="lg:hidden"
               onClick={() => setShowFilters((v) => !v)}
@@ -223,7 +223,7 @@ export default function StorePage() {
               {pageCount > 1 && (
                 <nav className="mt-8 flex items-center justify-center gap-2" aria-label="Pagination">
                   <Button
-                    variant="ghost"
+                    variant="onDark"
                     size="sm"
                     disabled={query.page <= 1}
                     onClick={() => update({ page: query.page - 1 }, false)}
@@ -234,7 +234,7 @@ export default function StorePage() {
                     Page {query.page} of {pageCount}
                   </Badge>
                   <Button
-                    variant="ghost"
+                    variant="onDark"
                     size="sm"
                     disabled={query.page >= pageCount}
                     onClick={() => update({ page: query.page + 1 }, false)}

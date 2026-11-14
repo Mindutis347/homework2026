@@ -77,8 +77,8 @@ styles, so the palette (`#4618AC` chrome, `#1F0A4D` deep surface, `#FAD318` CTA,
 |---|---|
 | Tokens | One `@theme` block in `src/index.css`. Metropolis is Eneba's typeface but not freely licensed, so the stack falls back to Figtree (same geometric skeleton, 400–900). |
 | Chrome | Two-row purple header — logo, white search, EU·EUR, cart, Log in/Register, then a darker catalogue row whose platform links come from `/api/meta`. Dark violet footer with link columns. |
-| Homepage | Full-bleed promo hero, purple platform strip, white slices of dark navy product tiles with a yellow action bar. Block order stays database-owned; positions were patched through the admin API (hero → platform strip → rows). |
-| Components | Yellow uppercase primary buttons, square inputs, 2px cards, small-caps badges, mint "best price" highlight. Every radius in the app was swept from 8–16px down to 2px, keeping circles only for spinners, the avatar and the cart count. |
+| Homepage | Full-bleed promo hero, purple platform strip, then product rows on the same purple canvas — sections are transparent, so the body colour shows through exactly as on eneba.com (whose `main` is also transparent over a `#4618AC` body). Product tiles are dark navy with a yellow action bar. Block order stays database-owned; positions were patched through the admin API (hero → platform strip → rows). |
+| Components | Yellow uppercase primary buttons, square inputs, 2px cards, small-caps badges, mint "best price" highlight. White panels carry dense content (forms, tables, summaries) on top of the purple canvas; anything sitting directly on the canvas uses white type. Every radius in the app was swept from 8–16px down to 2px, keeping circles only for spinners, the avatar and the cart count. |
 
 ### Backend
 

@@ -56,8 +56,10 @@
   }
 
   body {
-    background-color: var(--color-surface);
-    color: var(--color-ink-900);
+    /* eneba.com keeps its brand purple as the page canvas and lets sections sit
+       transparently on it, with dark navy tiles and white type standing out. */
+    background-color: var(--color-brand-600);
+    color: #fff;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }

@@ -166,8 +166,10 @@ Handlers return `*httpx.APIError`; `WriteError` also maps `repo.ErrNotFound` to
   same geometric skeleton and full 400–900 weight range.
 - The chrome follows Eneba's layout: a brand-purple utility row (logo, search,
   account) above a darker catalogue row whose platform links come from
-  `/api/meta`, a full-bleed promo hero, a purple platform strip, then white
-  slices of dark product tiles with yellow action bars. Homepage block order is
+  `/api/meta`, a full-bleed promo hero, a purple platform strip, then product
+  rows. The page canvas itself is the brand purple and sections are transparent,
+  which is how eneba.com is built (`main` has no background); white is reserved
+  for dense panels such as forms, tables and order cards. Homepage block order is
   database-owned; changing the layout means editing block positions, not code.
 
 ## Deployment topology (and the cookie trap)

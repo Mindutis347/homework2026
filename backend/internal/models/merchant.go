@@ -164,3 +164,14 @@ type AdminProduct struct {
 	OfferCount    int        `json:"offerCount"`
 	MinPriceCents int        `json:"minPriceCents"`
 }
+
+// MerchantKey is one key behind a seller's offer.
+type MerchantKey struct {
+	ID             int64      `json:"id"`
+	Code           string     `json:"code"`
+	Status         string     `json:"status"`
+	SoldAt         *time.Time `json:"soldAt"`
+	DisplayedAt    *time.Time `json:"displayedAt"`
+	CreatedAt      time.Time  `json:"createdAt"`
+	OrderReference string     `json:"orderReference,omitempty"`
+}

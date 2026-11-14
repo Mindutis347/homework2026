@@ -7,6 +7,7 @@ import type {
   Cart,
   CatalogQuery,
   HomepageBlock,
+  MerchantKey,
   MerchantOffer,
   MerchantSale,
   MerchantStats,
@@ -98,6 +99,10 @@ export const merchantApi = {
     basePriceCents?: number | null
     isActive?: boolean
   }) => api.post<{ offerId: number; offers: MerchantOffer[] }>('/api/merchant/offers', payload),
+  keys: (offerId: number, status = '') =>
+    api.get<{ keys: MerchantKey[] }>(`/api/merchant/offers/${offerId}/keys${queryString({ status })}`),
+  deleteKeys: (offerId: number, ids: number[]) =>
+    api.post<{ deleted: number; offers: MerchantOffer[] }>(`/api/merchant/offers/${offerId}/keys/delete`, { ids }),
   uploadKeys: (offerId: number, bulk: string) =>
     api.post<{ inserted: number; skipped: number; offers: MerchantOffer[] }>(
       `/api/merchant/offers/${offerId}/keys`,

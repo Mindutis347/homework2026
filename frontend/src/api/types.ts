@@ -302,3 +302,14 @@ export type AdminProduct = {
   offerCount: number
   minPriceCents: number
 }
+
+/** One key behind a seller offer. */
+export type MerchantKey = {
+  id: number
+  code: string
+  status: "available" | "sold"
+  soldAt: string | null
+  displayedAt: string | null
+  createdAt: string
+  orderReference?: string
+}

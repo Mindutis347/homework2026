@@ -96,6 +96,8 @@ func (a *App) Routes() http.Handler {
 	mux.Handle("GET /api/merchant/offers", merchantOnly(a.handleMerchantOffers))
 	mux.Handle("POST /api/merchant/offers", merchantOnly(a.handleMerchantUpsertOffer))
 	mux.Handle("POST /api/merchant/offers/{id}/keys", merchantOnly(a.handleMerchantUploadKeys))
+	mux.Handle("GET /api/merchant/offers/{id}/keys", merchantOnly(a.handleMerchantOfferKeys))
+	mux.Handle("POST /api/merchant/offers/{id}/keys/delete", merchantOnly(a.handleMerchantDeleteKeys))
 	mux.Handle("GET /api/merchant/sales", merchantOnly(a.handleMerchantSales))
 	mux.Handle("GET /api/merchant/products", merchantOnly(a.handleSearchProductsForPicker))
 	mux.Handle("GET /api/merchant/requests", merchantOnly(a.handleMerchantRequests))

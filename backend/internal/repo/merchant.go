@@ -277,3 +277,80 @@ func (m *Merchant) Requests(ctx context.Context, merchantID int64) ([]models.Pro
 	}
 	return out, rows.Err()
 }
+
+// OfferKeys lists the keys behind one of the seller's offers, newest first within
+// each status. Sold keys carry the order reference they went out with, and the
+// display stamp so a seller can see whether the buyer has looked at the code.
+func (m *Merchant) OfferKeys(ctx context.Context, sellerID, offerID int64, status string) ([]models.MerchantKey, error) {
+	rows, err := m.pool.Query(ctx, `
+		SELECT k.id, k.key_code, k.status, k.sold_at, k.displayed_at, k.created_at,
+		       COALESCE(od.reference, '')
+		FROM inventory_keys k
+		JOIN offers o ON o.id = k.offer_id
+		LEFT JOIN order_items oi ON oi.id = k.order_item_id
+		LEFT JOIN orders od      ON od.id = oi.order_id
+		WHERE k.offer_id = $1 AND o.seller_id = $2
+		  AND ($3 = '' OR k.status = $3)
+		ORDER BY k.status ASC, k.id DESC
+		LIMIT 500`, offerID, sellerID, status)
+	if err != nil {
+		return nil, fmt.Errorf("list offer keys: %w", err)
+	}
+	defer rows.Close()
+
+	out := []models.MerchantKey{}
+	for rows.Next() {
+		var k models.MerchantKey
+		if err := rows.Scan(&k.ID, &k.Code, &k.Status, &k.SoldAt, &k.DisplayedAt,
+			&k.CreatedAt, &k.OrderReference); err != nil {
+			return nil, err
+		}
+		out = append(out, k)
+	}
+	return out, rows.Err()
+}
+
+// DeleteKeys removes unsold keys from an offer in one batch and keeps the offer's
+// stock counter in step, since upload increments it. Sold keys are never touched:
+// they belong to a buyer's order.
+func (m *Merchant) DeleteKeys(ctx context.Context, sellerID, offerID int64, ids []int64) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	if len(ids) > 500 {
+		return 0, fmt.Errorf("%w: at most 500 keys per batch", ErrInvalidReference)
+	}
+
+	tx, err := m.pool.Begin(ctx)
+	if err != nil {
+		return 0, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	var owned bool
+	if err := tx.QueryRow(ctx,
+		`SELECT EXISTS (SELECT 1 FROM offers WHERE id = $1 AND seller_id = $2)`,
+		offerID, sellerID).Scan(&owned); err != nil {
+		return 0, err
+	}
+	if !owned {
+		return 0, ErrNotFound
+	}
+
+	tag, err := tx.Exec(ctx, `
+		DELETE FROM inventory_keys
+		WHERE id = ANY($1::bigint[]) AND offer_id = $2 AND status = 'available'`,
+		ids, offerID)
+	if err != nil {
+		return 0, fmt.Errorf("delete keys: %w", err)
+	}
+	deleted := int(tag.RowsAffected())
+	if deleted > 0 {
+		if _, err := tx.Exec(ctx, `
+			UPDATE offers SET stock = GREATEST(stock - $2, 0), updated_at = now() WHERE id = $1`,
+			offerID, deleted); err != nil {
+			return 0, fmt.Errorf("adjust stock: %w", err)
+		}
+	}
+	return deleted, tx.Commit(ctx)
+}

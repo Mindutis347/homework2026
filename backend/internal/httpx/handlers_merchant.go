@@ -237,3 +237,72 @@ func splitKeys(bulk string) []string {
 	}
 	return out
 }
+
+// handleMerchantOfferKeys lists the keys behind one of the seller's offers, with
+// their status, when they sold and whether the buyer has revealed the code.
+//
+//	GET /api/merchant/offers/{id}/keys?status=available|sold
+func (a *App) handleMerchantOfferKeys(w http.ResponseWriter, r *http.Request) {
+	user := UserFrom(r.Context())
+	offerID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_path", "offer id must be a number"))
+		return
+	}
+	status := r.URL.Query().Get("status")
+	switch status {
+	case "", "available", "sold":
+	default:
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_query", "status must be available or sold"))
+		return
+	}
+	keys, err := a.merchant.OfferKeys(r.Context(), user.UserID, offerID, status)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, map[string]any{"keys": keys})
+}
+
+// handleMerchantDeleteKeys removes unsold keys in one batch. Sold keys are never
+// deletable: they belong to somebody's order.
+//
+//	POST /api/merchant/offers/{id}/keys/delete {"ids":[1,2,3]}
+func (a *App) handleMerchantDeleteKeys(w http.ResponseWriter, r *http.Request) {
+	user := UserFrom(r.Context())
+	offerID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_path", "offer id must be a number"))
+		return
+	}
+	var body struct {
+		IDs []int64 `json:"ids"`
+	}
+	if err := DecodeJSON(w, r, &body); err != nil {
+		WriteError(w, err)
+		return
+	}
+	if len(body.IDs) == 0 {
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "choose at least one key"))
+		return
+	}
+	deleted, err := a.merchant.DeleteKeys(r.Context(), user.UserID, offerID, body.IDs)
+	if err != nil {
+		if errors.Is(err, repo.ErrNotFound) {
+			WriteError(w, ErrNotFound)
+			return
+		}
+		if errors.Is(err, repo.ErrInvalidReference) {
+			WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "at most 500 keys per batch"))
+			return
+		}
+		WriteError(w, err)
+		return
+	}
+	offers, err := a.merchant.Offers(r.Context(), user.UserID)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, map[string]any{"deleted": deleted, "offers": offers})
+}

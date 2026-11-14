@@ -71,6 +71,8 @@ is required from the browser.
 | GET | `/api/merchant/offers` | own listings with key counts |
 | POST | `/api/merchant/offers` | `{productId, platformSlug, regionCode, priceCents, basePriceCents?, isActive?}` (upsert) |
 | POST | `/api/merchant/offers/{id}/keys` | `{bulk}` or `{codes: []}` → `{inserted, skipped}` |
+| GET | `/api/merchant/offers/{id}/keys?status=` | every key behind an offer: code, `available`/`sold`, sold date, the order it left on, and whether the buyer revealed it |
+| POST | `/api/merchant/offers/{id}/keys/delete` | `{ids:[…]}` → `{deleted, offers}`. Only `available` keys are removed (max 500 per batch) and the offer's stock counter is decremented to match |
 | GET | `/api/merchant/sales` | last 25 sold lines |
 | GET | `/api/merchant/products?q=` | product picker |
 | GET | `/api/merchant/requests` | own catalog proposals |

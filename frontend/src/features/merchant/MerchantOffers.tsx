@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { catalogApi, merchantApi } from '@/api/endpoints'
 import type { MerchantOffer, Meta, ProductCard } from '@/api/types'
 import { ContentTypeBadge } from '@/components/ContentTypeBadge'
+import { OfferKeys } from '@/features/merchant/OfferKeys'
 import {
   Badge,
   Button,
@@ -33,6 +34,7 @@ export default function MerchantOffers() {
   const [metaError, setMetaError] = useState<string | null>(null)
 
   const [openOfferId, setOpenOfferId] = useState<number | null>(null)
+  const [keysOfferId, setKeysOfferId] = useState<number | null>(null)
   const [bulk, setBulk] = useState('')
   const [uploadingId, setUploadingId] = useState<number | null>(null)
   const [keyFeedback, setKeyFeedback] = useState<string | null>(null)
@@ -452,11 +454,28 @@ export default function MerchantOffers() {
                         </Badge>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Button size="sm" variant="ghost" onClick={() => toggleKeyPanel(offer.id)}>
-                          {openOfferId === offer.id ? 'Close' : 'Upload keys'}
-                        </Button>
+                        <div className="flex flex-wrap justify-end gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setKeysOfferId(keysOfferId === offer.id ? null : offer.id)}
+                          >
+                            {keysOfferId === offer.id ? 'Hide keys' : 'Keys'}
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => toggleKeyPanel(offer.id)}>
+                            {openOfferId === offer.id ? 'Close' : 'Upload keys'}
+                          </Button>
+                        </div>
                       </td>
                     </tr>
+
+                    {keysOfferId === offer.id && (
+                      <tr className="bg-canvas/60">
+                        <td colSpan={7} className="px-4 py-4">
+                          <OfferKeys offer={offer} onOffers={setOffers} />
+                        </td>
+                      </tr>
+                    )}
 
                     {openOfferId === offer.id && (
                       <tr className="bg-canvas/60">

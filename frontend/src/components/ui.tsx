@@ -207,7 +207,7 @@ export function PageBand({
   children?: ReactNode
 }) {
   return (
-    <header className="bg-brand-600 py-8 text-white">
+    <header className="bg-brand-600 py-5 text-white sm:py-8">
       <div className="container-page">
         {eyebrow && <p className="label-caps text-brand-200">{eyebrow}</p>}
         <h1 className="mt-1 font-display text-2xl font-extrabold sm:text-[2rem]">{title}</h1>

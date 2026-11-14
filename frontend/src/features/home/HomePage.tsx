@@ -51,7 +51,7 @@ export default function HomePage() {
 
   if (error) {
     return (
-      <div className="container-page py-16">
+      <div className="container-page py-8 sm:py-16">
         <Card className="p-8 text-center">
           <h1 className="font-display text-xl font-extrabold text-white">The catalogue is unavailable</h1>
           <p className="mt-2 text-sm text-ink-500">{error}</p>

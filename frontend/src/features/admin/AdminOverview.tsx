@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { adminApi } from '@/api/endpoints'
 import type { SalesSummary } from '@/api/types'
+import { TableShell } from '@/components/TableShell'
 import { Card, EmptyState, SectionHeading, Skeleton } from '@/components/ui'
 import { formatEuro } from '@/lib/format'
 
@@ -36,7 +37,7 @@ export default function AdminOverview() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-24 w-full" />
           ))}
@@ -61,7 +62,7 @@ export default function AdminOverview() {
     <div className="space-y-8">
       <section>
         <SectionHeading title="Sales overview" subtitle={`${summary.activeSellers} active seller${summary.activeSellers === 1 ? '' : 's'}`} />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
           <Tile label="Orders" value={String(summary.orders)} />
           <Tile label="Units sold" value={String(summary.unitsSold)} />
           <Tile label="Gross revenue" value={formatEuro(summary.grossCents)} />
@@ -76,8 +77,9 @@ export default function AdminOverview() {
         {summary.topSellers.length === 0 ? (
           <EmptyState title="No seller activity yet" description="Seller performance appears once keys are sold." />
         ) : (
-          <Card className="overflow-x-auto">
-            <table className="w-full min-w-[560px] text-sm">
+          <Card>
+            <TableShell>
+            <table className="w-full min-w-[380px] text-sm sm:min-w-[560px]">
               <thead>
                 <tr className="border-b border-line text-left text-xs font-bold uppercase tracking-wide text-ink-500">
                   <th scope="col" className="px-4 py-3">Store</th>
@@ -97,6 +99,7 @@ export default function AdminOverview() {
                 ))}
               </tbody>
             </table>
+            </TableShell>
           </Card>
         )}
       </section>

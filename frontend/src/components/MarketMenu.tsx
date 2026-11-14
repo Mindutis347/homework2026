@@ -51,7 +51,7 @@ export function MarketMenu() {
         <div
           role="dialog"
           aria-label="Choose market"
-          className="absolute right-0 z-50 mt-2 w-72 rounded-[2px] border border-line bg-surface p-3 text-white shadow-raised"
+          className="fixed inset-x-0 bottom-0 z-50 max-h-[75vh] overflow-y-auto rounded-t-lg border border-line bg-surface p-4 text-white shadow-raised sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-full sm:mt-2 sm:max-h-none sm:w-72 sm:overflow-visible sm:rounded-[2px] sm:p-3"
         >
           <p className="label-caps text-brand-300">Keys you can activate</p>
           <ul className="mt-2 space-y-1">

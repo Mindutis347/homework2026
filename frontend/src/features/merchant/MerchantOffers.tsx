@@ -403,16 +403,17 @@ export default function MerchantOffers() {
         />
       ) : (
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[860px] text-left text-sm">
+          <div>
+            <TableShell>
+            <table className="w-full min-w-[520px] text-left text-sm sm:min-w-[860px]">
               <thead className="bg-canvas text-xs font-bold uppercase tracking-wide text-ink-500">
                 <tr>
                   <th scope="col" className="px-4 py-3">Product</th>
                   <th scope="col" className="px-4 py-3">Platform / region</th>
                   <th scope="col" className="px-4 py-3 text-right">Price</th>
                   <th scope="col" className="px-4 py-3 text-right">Keys available</th>
-                  <th scope="col" className="px-4 py-3 text-right">Keys sold</th>
-                  <th scope="col" className="px-4 py-3">Status</th>
+                  <th scope="col" className="hidden px-4 py-3 text-right sm:table-cell">Keys sold</th>
+                  <th scope="col" className="hidden px-4 py-3 sm:table-cell">Status</th>
                   <th scope="col" className="px-4 py-3" />
                 </tr>
               </thead>
@@ -447,8 +448,8 @@ export default function MerchantOffers() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-right text-ink-700">{offer.availableKeys}</td>
-                      <td className="px-4 py-3 text-right text-ink-700">{offer.soldKeys}</td>
-                      <td className="px-4 py-3">
+                      <td className="hidden px-4 py-3 text-right text-ink-700 sm:table-cell">{offer.soldKeys}</td>
+                      <td className="hidden px-4 py-3 sm:table-cell">
                         <Badge tone={offer.isActive ? 'success' : 'neutral'}>
                           {offer.isActive ? 'active' : 'inactive'}
                         </Badge>
@@ -531,6 +532,7 @@ export default function MerchantOffers() {
                 ))}
               </tbody>
             </table>
+            </TableShell>
           </div>
         </Card>
       )}
@@ -539,3 +541,4 @@ export default function MerchantOffers() {
 }
 
 export { MerchantOffers }
+import { TableShell } from '@/components/TableShell'

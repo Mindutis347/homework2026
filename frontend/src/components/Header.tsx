@@ -28,8 +28,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 shadow-[0_1px_0_rgb(255_255_255_/_0.08)]">
       <div className="bg-brand-600 text-white">
-        <div className="container-page flex h-16 items-center gap-3 sm:gap-5">
-          <Link to="/" className="shrink-0 font-display text-[1.4rem] font-extrabold lowercase tracking-tight text-white">
+        <div className="container-page flex h-16 items-center gap-2 sm:gap-5">
+          <Link to="/" className="shrink-0 font-display text-[1.15rem] font-extrabold lowercase tracking-tight text-white sm:text-[1.4rem]">
             keyforge<span className="text-accent-500">.</span>
           </Link>
 
@@ -37,20 +37,24 @@ export function Header() {
             <SearchBar key={searchTerm} initialValue={searchTerm} />
           </div>
 
-          <div className="ml-auto flex items-center gap-1 sm:gap-2">
+          <div className="ml-auto flex items-center gap-0.5 sm:gap-2">
             <MarketMenu />
 
             <CartMenu />
 
             {user ? <AccountMenu /> : (
-              <div className="flex items-center gap-2 text-xs font-bold">
-                <Link to="/sign-in" className="px-2 text-white hover:text-accent-500">
-                  Log in
+              <div className="flex items-center gap-1 text-xs font-bold sm:gap-2">
+                <Link
+                  to="/sign-in"
+                  aria-label="Log in"
+                  className="flex size-9 items-center justify-center rounded-[2px] text-white hover:text-accent-500 sm:size-auto sm:px-2"
+                >
+                  <PersonIcon />
+                  <span className="hidden sm:block">Log in</span>
                 </Link>
-                <span aria-hidden className="text-brand-300">|</span>
                 <Link
                   to="/sign-up"
-                  className="rounded-[2px] bg-accent-500 px-3 py-2 uppercase tracking-wide text-on-accent hover:bg-accent-400"
+                  className="rounded-[2px] bg-accent-500 px-2.5 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-wide text-on-accent hover:bg-accent-400 sm:px-3 sm:py-2 sm:text-xs"
                 >
                   Register
                 </Link>
@@ -99,6 +103,26 @@ export function Header() {
         </div>
       </div>
     </header>
+  )
+}
+
+/** Phones show an icon instead of the word, so the row fits down to 320 px. */
+function PersonIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      aria-hidden
+      className="sm:mr-1.5"
+    >
+      <circle cx="12" cy="8.5" r="3.5" />
+      <path d="M4.5 20c.8-3.6 3.8-5.5 7.5-5.5s6.7 1.9 7.5 5.5" />
+    </svg>
   )
 }
 

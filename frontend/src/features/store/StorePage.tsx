@@ -201,7 +201,7 @@ export default function StorePage() {
         subtitle={loading ? 'Loading catalogue…' : `${total} game${total === 1 ? '' : 's'} with live offers`}
       />
 
-      <div className="container-page py-8">
+      <div className="container-page py-4 sm:py-8">
         <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
           <aside className={`${showFilters ? 'block' : 'hidden'} lg:block`}>
             <Card className="space-y-6 p-4 lg:sticky lg:top-32 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto">

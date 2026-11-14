@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { adminApi } from '@/api/endpoints'
 import type { AdminUser, User } from '@/api/types'
+import { TableShell } from '@/components/TableShell'
 import { Badge, Card, EmptyState, ErrorNote, Input, SectionHeading, Select, Skeleton } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
 import { formatDate, formatEuro } from '@/lib/format'
@@ -98,17 +99,18 @@ export default function AdminUsers() {
           description="Try a different name, email fragment or clear the search field."
         />
       ) : (
-        <Card className="overflow-x-auto">
-          <table className="w-full min-w-[900px] text-sm">
+        <Card>
+          <TableShell>
+          <table className="w-full min-w-[520px] text-sm sm:min-w-[900px]">
             <thead>
               <tr className="border-b border-line text-left text-xs font-bold uppercase tracking-wide text-ink-500">
                 <th scope="col" className="px-4 py-3">Name</th>
                 <th scope="col" className="px-4 py-3">Email</th>
                 <th scope="col" className="px-4 py-3">Role</th>
                 <th scope="col" className="px-4 py-3">Verified</th>
-                <th scope="col" className="px-4 py-3 text-right">Orders</th>
-                <th scope="col" className="px-4 py-3 text-right">Spent</th>
-                <th scope="col" className="px-4 py-3">Joined</th>
+                <th scope="col" className="hidden px-4 py-3 text-right sm:table-cell">Orders</th>
+                <th scope="col" className="hidden px-4 py-3 text-right sm:table-cell">Spent</th>
+                <th scope="col" className="hidden px-4 py-3 sm:table-cell">Joined</th>
                 <th scope="col" className="px-4 py-3">Role control</th>
               </tr>
             </thead>
@@ -130,9 +132,9 @@ export default function AdminUsers() {
                         {row.isVerified ? 'verified' : 'unverified'}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-right text-ink-700">{row.orders}</td>
-                    <td className="px-4 py-3 text-right text-ink-700">{formatEuro(row.spentCents)}</td>
-                    <td className="px-4 py-3 text-ink-500">{formatDate(row.createdAt)}</td>
+                    <td className="hidden px-4 py-3 text-right text-ink-700 sm:table-cell">{row.orders}</td>
+                    <td className="hidden px-4 py-3 text-right text-ink-700 sm:table-cell">{formatEuro(row.spentCents)}</td>
+                    <td className="hidden px-4 py-3 text-ink-500 sm:table-cell">{formatDate(row.createdAt)}</td>
                     <td className="px-4 py-3">
                       <Select
                         value={row.role}
@@ -158,6 +160,7 @@ export default function AdminUsers() {
               })}
             </tbody>
           </table>
+          </TableShell>
         </Card>
       )}
     </div>

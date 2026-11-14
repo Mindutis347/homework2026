@@ -58,7 +58,7 @@ function HeroBlock({ block }: { block: HomeBlockData }) {
       )}
       <div className="absolute inset-0 bg-gradient-to-r from-brand-900 via-brand-800/85 to-brand-600/30" />
 
-      <div className="container-page relative flex min-h-[360px] flex-col justify-center py-12 sm:min-h-[420px] sm:py-16">
+      <div className="container-page relative flex min-h-[240px] flex-col justify-center py-8 sm:min-h-[420px] sm:py-16">
         <div className="max-w-2xl">
           {str(block.config, 'badge') && (
             <span className="inline-flex rounded-[2px] bg-accent-500 px-2.5 py-1 label-caps text-on-accent">

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { adminApi } from '@/api/endpoints'
 import type { AdminOrder, SalesSummary } from '@/api/types'
+import { TableShell } from '@/components/TableShell'
 import { Badge, Card, EmptyState, SectionHeading, Skeleton } from '@/components/ui'
 import { formatDate, formatEuro } from '@/lib/format'
 
@@ -50,7 +51,7 @@ export default function AdminOrders() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-20 w-full" />
           ))}
@@ -68,7 +69,7 @@ export default function AdminOrders() {
     <div>
       <SectionHeading title="Orders & ledger" subtitle="Gross takings, the platform cut and what sellers are owed." />
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-3">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <LedgerTile label="Gross takings" value={summary ? formatEuro(summary.grossCents) : formatEuro(0)} />
         <LedgerTile label="Platform commission" value={summary ? formatEuro(summary.commissionCents) : formatEuro(0)} />
         <LedgerTile label="Seller payouts" value={summary ? formatEuro(summary.payoutCents) : formatEuro(0)} />
@@ -77,33 +78,35 @@ export default function AdminOrders() {
       {orders.length === 0 ? (
         <EmptyState title="No orders yet" description="Orders appear here as soon as a customer checks out." />
       ) : (
-        <Card className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-sm">
-            <thead>
-              <tr className="border-b border-line text-left text-xs font-bold uppercase tracking-wide text-ink-500">
-                <th scope="col" className="px-4 py-3">Reference</th>
-                <th scope="col" className="px-4 py-3">Buyer</th>
-                <th scope="col" className="px-4 py-3">Status</th>
-                <th scope="col" className="px-4 py-3 text-right">Items</th>
-                <th scope="col" className="px-4 py-3 text-right">Total</th>
-                <th scope="col" className="px-4 py-3">Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order.reference} className="border-b border-line last:border-0">
-                  <td className="px-4 py-3 font-mono text-xs font-semibold text-ink-900">{order.reference}</td>
-                  <td className="px-4 py-3 text-ink-700">{order.buyerEmail}</td>
-                  <td className="px-4 py-3">
-                    <Badge tone={statusTone(order.status)}>{order.status}</Badge>
-                  </td>
-                  <td className="px-4 py-3 text-right text-ink-700">{order.items}</td>
-                  <td className="px-4 py-3 text-right font-semibold text-ink-900">{formatEuro(order.totalCents)}</td>
-                  <td className="px-4 py-3 text-ink-500">{formatDate(order.createdAt)}</td>
+        <Card>
+          <TableShell>
+            <table className="w-full min-w-[460px] text-sm sm:min-w-[720px]">
+              <thead>
+                <tr className="border-b border-line text-left text-xs font-bold uppercase tracking-wide text-ink-500">
+                  <th scope="col" className="px-4 py-3">Reference</th>
+                  <th scope="col" className="px-4 py-3">Buyer</th>
+                  <th scope="col" className="px-4 py-3">Status</th>
+                  <th scope="col" className="hidden px-4 py-3 text-right sm:table-cell">Items</th>
+                  <th scope="col" className="px-4 py-3 text-right">Total</th>
+                  <th scope="col" className="hidden px-4 py-3 sm:table-cell">Created</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {orders.map((order) => (
+                  <tr key={order.reference} className="border-b border-line last:border-0">
+                    <td className="whitespace-nowrap px-4 py-3 font-mono text-xs font-semibold text-ink-900">{order.reference}</td>
+                    <td className="max-w-[10rem] truncate px-4 py-3 text-ink-700">{order.buyerEmail}</td>
+                    <td className="px-4 py-3">
+                      <Badge tone={statusTone(order.status)}>{order.status}</Badge>
+                    </td>
+                    <td className="hidden px-4 py-3 text-right text-ink-700 sm:table-cell">{order.items}</td>
+                    <td className="px-4 py-3 text-right font-semibold text-ink-900">{formatEuro(order.totalCents)}</td>
+                    <td className="hidden px-4 py-3 text-ink-500 sm:table-cell">{formatDate(order.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </TableShell>
         </Card>
       )}
     </div>

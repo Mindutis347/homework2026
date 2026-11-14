@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { merchantApi } from '@/api/endpoints'
 import type { MerchantSale, MerchantStats } from '@/api/types'
+import { TableShell } from '@/components/TableShell'
 import { Card, EmptyState, ErrorNote, SectionHeading, Skeleton } from '@/components/ui'
 import { formatDate, formatEuro } from '@/lib/format'
 
@@ -92,8 +93,9 @@ export default function MerchantOverview() {
           />
         ) : (
           <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left text-sm">
+            <div>
+              <TableShell>
+              <table className="w-full min-w-[420px] text-left text-sm sm:min-w-[720px]">
                 <thead className="bg-canvas text-xs font-bold uppercase tracking-wide text-ink-500">
                   <tr>
                     <th scope="col" className="px-4 py-3">Order</th>
@@ -123,6 +125,7 @@ export default function MerchantOverview() {
                   ))}
                 </tbody>
               </table>
+              </TableShell>
             </div>
           </Card>
         )}

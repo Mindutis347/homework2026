@@ -377,7 +377,14 @@ func (c *Catalog) Meta(ctx context.Context) (models.Meta, error) {
 	err = c.pool.QueryRow(ctx, `
 		SELECT COALESCE(MIN(price_cents), 0), COALESCE(MAX(price_cents), 0)
 		FROM offers WHERE is_active AND stock > 0`).Scan(&m.PriceRange.MinCents, &m.PriceRange.MaxCents)
-	return m, err
+	if err != nil {
+		return m, err
+	}
+
+	if m.Tax, err = c.TaxInfo(ctx); err != nil {
+		return m, err
+	}
+	return m, nil
 }
 
 // Related lists products that share genres with the given one, most shared tags
@@ -467,4 +474,21 @@ func (c *Catalog) CardsByIDs(ctx context.Context, ids []int64) ([]models.Product
 		out = append(out, item)
 	}
 	return out, rows.Err()
+}
+
+// TaxInfo is the public view of the admin's tax settings: enough for the
+// storefront to say "tax is added at checkout" without quoting amounts early.
+func (c *Catalog) TaxInfo(ctx context.Context) (models.MetaTax, error) {
+	var t models.MetaTax
+	err := c.pool.QueryRow(ctx, `
+		SELECT apply_on_purchase, purchase_tax_bp, apply_on_topup, topup_tax_bp
+		FROM tax_settings WHERE id`).Scan(&t.ApplyOnPurchase, &t.PurchaseTaxBasisPoints,
+		&t.ApplyOnTopup, &t.TopupTaxBasisPoints)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return models.MetaTax{}, nil
+	}
+	if err != nil {
+		return t, fmt.Errorf("read tax info: %w", err)
+	}
+	return t, nil
 }

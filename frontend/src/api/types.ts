@@ -9,6 +9,13 @@ export type Meta = {
   platforms: Platform[]
   regions: Region[]
   genres: Genre[]
+  /** Public tax flags, so copy can warn about checkout tax without quoting amounts. */
+  tax: {
+    applyOnPurchase: boolean
+    purchaseTaxBasisPoints: number
+    applyOnTopup: boolean
+    topupTaxBasisPoints: number
+  }
   priceRange: { minCents: number; maxCents: number }
 }
 

@@ -27,27 +27,72 @@ type Orders struct {
 
 func NewOrders(pool *pgxpool.Pool) *Orders { return &Orders{pool: pool} }
 
+const orderColumns = `id, reference, status, subtotal_cents, tax_cents, tax_bp, total_cents, currency,
+		       payment_method, created_at, paid_at`
+
 // Load returns one order with its items and the metadata of their keys. Key
 // values are deliberately absent: they are only returned by RevealKeys.
 func LoadOrder(ctx context.Context, q Querier, orderID int64) (models.Order, error) {
-	var o models.Order
-	o.Items = []models.OrderItem{}
-
-	err := q.QueryRow(ctx, `
-		SELECT id, reference, status, subtotal_cents, tax_cents, tax_bp, total_cents, currency,
-		       payment_method, created_at, paid_at
-		FROM orders WHERE id = $1`, orderID,
-	).Scan(&o.ID, &o.Reference, &o.Status, &o.SubtotalCents, &o.TaxCents, &o.TaxBasisPoints, &o.TotalCents, &o.Currency,
-		&o.PaymentMethod, &o.CreatedAt, &o.PaidAt)
+	orders, err := loadOrders(ctx, q, []int64{orderID})
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return o, ErrNotFound
-		}
-		return o, fmt.Errorf("load order: %w", err)
+		return models.Order{}, err
+	}
+	if len(orders) == 0 {
+		return models.Order{Items: []models.OrderItem{}}, ErrNotFound
+	}
+	return orders[0], nil
+}
+
+// loadOrders reads the given orders in three queries total — the order rows,
+// their items, and the key metadata — and returns them in the order of the ids
+// given, skipping any that no longer exist. Batching matters here because the
+// database is remote: the library costs three round trips no matter how many
+// orders the buyer has, instead of three per order.
+func loadOrders(ctx context.Context, q Querier, ids []int64) ([]models.Order, error) {
+	if len(ids) == 0 {
+		return []models.Order{}, nil
 	}
 
-	rows, err := q.Query(ctx, `
-		SELECT oi.id, oi.product_id, p.slug, oi.product_title, p.cover_url, oi.platform_name,
+	rows, err := q.Query(ctx, `SELECT `+orderColumns+` FROM orders WHERE id = ANY($1)`, ids)
+	if err != nil {
+		return nil, fmt.Errorf("load orders: %w", err)
+	}
+	defer rows.Close()
+
+	byID := make(map[int64]models.Order, len(ids))
+	for rows.Next() {
+		var o models.Order
+		o.Items = []models.OrderItem{}
+		if err := rows.Scan(&o.ID, &o.Reference, &o.Status, &o.SubtotalCents, &o.TaxCents, &o.TaxBasisPoints,
+			&o.TotalCents, &o.Currency, &o.PaymentMethod, &o.CreatedAt, &o.PaidAt); err != nil {
+			return nil, fmt.Errorf("scan order: %w", err)
+		}
+		byID[o.ID] = o
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("load orders: %w", err)
+	}
+	rows.Close()
+
+	out := make([]models.Order, 0, len(ids))
+	orderIDs := make([]int64, 0, len(ids))
+	for _, id := range ids {
+		if o, ok := byID[id]; ok {
+			out = append(out, o)
+			orderIDs = append(orderIDs, id)
+		}
+	}
+	if len(out) == 0 {
+		return out, nil
+	}
+
+	orderPos := make(map[int64]int, len(out))
+	for i, o := range out {
+		orderPos[o.ID] = i
+	}
+
+	itemRows, err := q.Query(ctx, `
+		SELECT oi.order_id, oi.id, oi.product_id, p.slug, oi.product_title, p.cover_url, oi.platform_name,
 		       oi.region_code, COALESCE(NULLIF(sp.store_name, ''), u.display_name),
 		       oi.unit_price_cents, oi.quantity, oi.commission_cents, oi.seller_payout_cents,
 		       oi.status
@@ -55,71 +100,82 @@ func LoadOrder(ctx context.Context, q Querier, orderID int64) (models.Order, err
 		JOIN products p ON p.id = oi.product_id
 		JOIN users u    ON u.id = oi.seller_id
 		LEFT JOIN seller_profiles sp ON sp.user_id = oi.seller_id
-		WHERE oi.order_id = $1
-		ORDER BY oi.id`, orderID)
+		WHERE oi.order_id = ANY($1)
+		ORDER BY oi.order_id, oi.id`, orderIDs)
 	if err != nil {
-		return o, fmt.Errorf("load order items: %w", err)
+		return nil, fmt.Errorf("load order items: %w", err)
 	}
-	defer rows.Close()
+	defer itemRows.Close()
 
-	itemIndex := map[int64]int{}
-	for rows.Next() {
+	type itemRef struct{ order, item int }
+	itemPos := map[int64]itemRef{}
+	itemIDsInPlay := make([]int64, 0, len(orderIDs)*2)
+	for itemRows.Next() {
+		var orderID int64
 		var it models.OrderItem
 		var itemStatus string
 		it.Keys = []models.OrderKey{}
-		if err := rows.Scan(&it.ID, &it.ProductID, &it.ProductSlug, &it.ProductTitle, &it.CoverURL,
+		if err := itemRows.Scan(&orderID, &it.ID, &it.ProductID, &it.ProductSlug, &it.ProductTitle, &it.CoverURL,
 			&it.PlatformName, &it.RegionCode, &it.SellerStore, &it.UnitPriceCents, &it.Quantity,
 			&it.CommissionCents, &it.SellerPayoutCents, &itemStatus); err != nil {
-			return o, err
+			return nil, err
 		}
 		it.Refunded = itemStatus == "refunded"
-		itemIndex[it.ID] = len(o.Items)
-		o.Items = append(o.Items, it)
-	}
-	if err := rows.Err(); err != nil {
-		return o, err
-	}
-	if len(o.Items) == 0 {
-		return o, nil
-	}
-
-	keyRows, err := q.Query(ctx, `
-		SELECT order_item_id, id, displayed_at
-		FROM inventory_keys
-		WHERE order_item_id = ANY($1)
-		ORDER BY order_item_id, id`, itemIDs(o.Items))
-	if err != nil {
-		return o, fmt.Errorf("load keys: %w", err)
-	}
-	defer keyRows.Close()
-
-	for keyRows.Next() {
-		var itemID int64
-		var key models.OrderKey
-		if err := keyRows.Scan(&itemID, &key.ID, &key.DisplayedAt); err != nil {
-			return o, err
-		}
-		idx, ok := itemIndex[itemID]
+		pos, ok := orderPos[orderID]
 		if !ok {
 			continue
 		}
-		o.Items[idx].Keys = append(o.Items[idx].Keys, key)
-		// A line is "displayed" once any of its keys has been shown.
-		if key.DisplayedAt != nil && (o.Items[idx].DisplayedAt == nil || key.DisplayedAt.Before(*o.Items[idx].DisplayedAt)) {
-			shown := *key.DisplayedAt
-			o.Items[idx].DisplayedAt = &shown
-		}
+		itemPos[it.ID] = itemRef{order: pos, item: len(out[pos].Items)}
+		itemIDsInPlay = append(itemIDsInPlay, it.ID)
+		out[pos].Items = append(out[pos].Items, it)
 	}
-	if err := keyRows.Err(); err != nil {
-		return o, err
+	if err := itemRows.Err(); err != nil {
+		return nil, err
+	}
+	itemRows.Close()
+
+	if len(itemIDsInPlay) > 0 {
+		keyRows, err := q.Query(ctx, `
+			SELECT order_item_id, id, displayed_at
+			FROM inventory_keys
+			WHERE order_item_id = ANY($1)
+			ORDER BY order_item_id, id`, itemIDsInPlay)
+		if err != nil {
+			return nil, fmt.Errorf("load keys: %w", err)
+		}
+		defer keyRows.Close()
+
+		for keyRows.Next() {
+			var itemID int64
+			var key models.OrderKey
+			if err := keyRows.Scan(&itemID, &key.ID, &key.DisplayedAt); err != nil {
+				return nil, err
+			}
+			ref, ok := itemPos[itemID]
+			if !ok {
+				continue
+			}
+			item := &out[ref.order].Items[ref.item]
+			item.Keys = append(item.Keys, key)
+			// A line is "displayed" once any of its keys has been shown.
+			if key.DisplayedAt != nil && (item.DisplayedAt == nil || key.DisplayedAt.Before(*item.DisplayedAt)) {
+				shown := *key.DisplayedAt
+				item.DisplayedAt = &shown
+			}
+		}
+		if err := keyRows.Err(); err != nil {
+			return nil, err
+		}
 	}
 
 	// Refunds are only possible while the buyer has seen nothing.
-	for i := range o.Items {
-		item := &o.Items[i]
-		item.Refundable = o.Status == "paid" && !item.Refunded && item.DisplayedAt == nil
+	for i := range out {
+		for j := range out[i].Items {
+			item := &out[i].Items[j]
+			item.Refundable = out[i].Status == "paid" && !item.Refunded && item.DisplayedAt == nil
+		}
 	}
-	return o, nil
+	return out, nil
 }
 
 func itemIDs(items []models.OrderItem) []int64 {
@@ -151,13 +207,9 @@ func (r *Orders) ListByUser(ctx context.Context, userID int64) ([]models.Order, 
 		return nil, err
 	}
 
-	out := make([]models.Order, 0, len(ids))
-	for _, id := range ids {
-		order, err := LoadOrder(ctx, r.pool, id)
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, order)
+	out, err := loadOrders(ctx, r.pool, ids)
+	if err != nil {
+		return nil, err
 	}
 	return out, nil
 }

@@ -15,7 +15,7 @@ is required from the browser.
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/api/health` | liveness + DB ping |
-| GET | `/api/meta` | platforms, regions, genres, price range |
+| GET | `/api/meta` | platforms, regions, genres, price range, and a `tax` block `{applyOnTopup, topupTaxBasisPoints, applyOnPurchase, purchaseTaxBasisPoints}` so the storefront can state the checkout tax before it is charged |
 | GET | `/api/homepage` | visible blocks with resolved products. A block whose config has `"source":"new_releases"` is filled from the release calendar instead of its curated list: upcoming titles first (soonest release), then the most recently released |
 | GET | `/api/products` | `q, platform, region, genre, contentType, minPriceCents, maxPriceCents, sort, page, pageSize`. `platform`, `region` and `genre` are repeatable (or comma-separated) and match **any** of the supplied values; `contentType` is one of `full`, `dlc`, `both`; `minPriceCents`/`maxPriceCents` bound the product's cheapest offer |
 | GET | `/api/products/{slug}` | product detail + competing offers, plus `related` — up to 8 cards ranked by shared genres (non-increasing), then popularity |

@@ -36,7 +36,7 @@ const STATUS_TONE: Record<Ticket['status'], 'accent' | 'brand' | 'success'> = {
 
 /** Customer support: file a ticket against an order and follow its status. */
 export default function SupportPage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [params] = useSearchParams()
   const [orders, setOrders] = useState<Order[]>([])
   const [tickets, setTickets] = useState<Ticket[]>([])
@@ -75,7 +75,7 @@ export default function SupportPage() {
     return () => {
       cancelled = true
     }
-  }, [user])
+  }, [user, authLoading])
 
   async function submit(event: React.FormEvent) {
     event.preventDefault()
@@ -108,6 +108,17 @@ export default function SupportPage() {
     } finally {
       setSending(false)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div>
+        <PageBand eyebrow="Your account" title="Support" subtitle="Loading your orders…" />
+        <div className="container-page space-y-3 py-8">
+          {Array.from({ length: 2 }).map((_, index) => <Skeleton key={index} className="h-28 w-full" />)}
+        </div>
+      </div>
+    )
   }
 
   if (!user) {
@@ -178,9 +189,11 @@ export default function SupportPage() {
               <Field
                 label="Related order"
                 hint={
-                  orders.length === 0
-                    ? 'You have no orders yet — leave this empty for account questions.'
-                    : 'Optional, but it helps us find your purchase faster.'
+                  loading
+                    ? 'Loading your orders…'
+                    : orders.length === 0
+                      ? 'You have no orders yet — leave this empty for account questions.'
+                      : 'Optional, but it helps us find your purchase faster.'
                 }
               >
                 <Select value={orderId} onChange={(event) => setOrderId(event.target.value)}>

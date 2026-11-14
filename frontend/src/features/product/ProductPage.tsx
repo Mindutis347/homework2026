@@ -24,6 +24,11 @@ export default function ProductPage() {
   const [sort, setSort] = useState<'price' | 'rating'>('price')
   const [busyOffer, setBusyOffer] = useState<number | null>(null)
   const [feedback, setFeedback] = useState<string | null>(null)
+  const [tax, setTax] = useState<{ applyOnPurchase: boolean; purchaseTaxBasisPoints: number } | null>(null)
+
+  useEffect(() => {
+    catalogApi.meta().then((meta) => setTax(meta.tax)).catch(() => undefined)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -158,6 +163,13 @@ export default function ProductPage() {
               <Badge tone="accent">Save {product.bestDiscountPercent}%</Badge>
             )}
           </div>
+
+          <p className="mt-2 max-w-2xl text-xs text-brand-200">
+            {tax && tax.applyOnPurchase && tax.purchaseTaxBasisPoints > 0
+              ? `Card payments add ${tax.purchaseTaxBasisPoints / 100}% tax at checkout — paying from your shop wallet adds none. `
+              : ""}
+            Keys stay hidden until you display them, and every purchase is refundable up until then.
+          </p>
 
           <div className="mt-5 max-w-2xl">
             <RichText text={product.description} />

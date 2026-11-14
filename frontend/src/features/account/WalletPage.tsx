@@ -23,7 +23,7 @@ const PRESETS = [1000, 2500, 5000]
 /** Prepaid shop wallet: top up with the simulated card, then pay without a card
  *  at checkout (and without transaction tax, which is the demo's incentive). */
 export default function WalletPage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [wallet, setWallet] = useState<Wallet | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -34,10 +34,13 @@ export default function WalletPage() {
   const [receipt, setReceipt] = useState<{ credited: number; tax: number; charged: number } | null>(null)
 
   useEffect(() => {
+    // The balance is unknown until the session resolves; do not show €0.00.
+    if (authLoading) return
     if (!user) {
       setLoading(false)
       return
     }
+    setLoading(true)
     let cancelled = false
     walletApi
       .get()
@@ -56,7 +59,7 @@ export default function WalletPage() {
     return () => {
       cancelled = true
     }
-  }, [user])
+  }, [user, authLoading])
 
   async function topUp(event: React.FormEvent) {
     event.preventDefault()
@@ -78,6 +81,17 @@ export default function WalletPage() {
     } finally {
       setToppingUp(false)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div>
+        <PageBand eyebrow="Your account" title="Shop wallet" subtitle="Loading your balance…" />
+        <div className="container-page space-y-3 py-8">
+          {Array.from({ length: 2 }).map((_, index) => <Skeleton key={index} className="h-28 w-full" />)}
+        </div>
+      </div>
+    )
   }
 
   if (!user) {

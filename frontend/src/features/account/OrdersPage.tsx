@@ -11,18 +11,21 @@ import { formatMoney } from '@/lib/format'
 /** Order history / game library: every purchase with its revealable keys, plus a
  *  direct line to support for each order and each game in it. */
 export default function OrdersPage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // While the session is being restored we know nothing yet: keep the skeleton.
+    if (authLoading) return
     if (!user) {
       setLoading(false)
       return
     }
     // Tickets ride along so an order can show that a request is already open.
+    setLoading(true)
     Promise.all([orderApi.list(), ticketApi.list()])
       .then(([orderResult, ticketResult]) => {
         setOrders(orderResult.orders)
@@ -30,7 +33,7 @@ export default function OrdersPage() {
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Could not load orders'))
       .finally(() => setLoading(false))
-  }, [user])
+  }, [user, authLoading])
 
   const ticketsByOrder = new Map<string, Ticket>()
   for (const ticket of tickets) {
@@ -42,6 +45,17 @@ export default function OrdersPage() {
   // Revealing a key or refunding a line changes the order, so swap in the fresh copy.
   function replaceOrder(updated: Order) {
     setOrders((prev) => prev.map((order) => (order.id === updated.id ? updated : order)))
+  }
+
+  if (authLoading) {
+    return (
+      <div>
+        <PageBand eyebrow="Your account" title="Your library" subtitle="Loading your purchases…" />
+        <div className="container-page space-y-3 py-8">
+          {Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} className="h-28 w-full" />)}
+        </div>
+      </div>
+    )
   }
 
   if (!user) {

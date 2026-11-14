@@ -144,7 +144,11 @@ export default function CheckoutPage() {
               <div className="grid gap-2 sm:grid-cols-2">
                 {([
                   { value: "card", label: "Card", hint: "Taxes apply" },
-                  { value: "wallet", label: "Shop wallet", hint: "No taxes" },
+                  {
+                    value: "wallet",
+                    label: "Shop wallet",
+                    hint: quote ? `${formatMoney(quote.walletBalanceCents)} available · no tax` : "No tax",
+                  },
                 ] as const).map((option) => (
                   <button
                     key={option.value}
@@ -165,11 +169,16 @@ export default function CheckoutPage() {
 
               {method === "wallet" ? (
                 <div className="space-y-2">
-                  <p className="text-sm text-brand-100">
-                    Balance:{" "}
-                    <span className="font-extrabold text-white">
-                      {formatMoney(quote?.walletBalanceCents ?? 0)}
+                  <p className="flex flex-wrap items-baseline gap-2 text-sm text-brand-100">
+                    <span>
+                      Balance:{" "}
+                      <span className="font-extrabold text-white">
+                        {formatMoney(quote?.walletBalanceCents ?? 0)}
+                      </span>
                     </span>
+                    <Link to="/account/wallet" className="text-xs font-extrabold uppercase tracking-wide text-accent-500 hover:underline">
+                      Top up
+                    </Link>
                   </p>
                   {quote && quote.walletBalanceCents < quote.totalCents && (
                     <Notice tone="warning">

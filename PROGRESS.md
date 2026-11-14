@@ -31,6 +31,30 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Taxes | Admin sets two rates in percent — one for top-ups, one for card purchases — each with an on/off switch (`/admin/settings`). Tax is never baked into storefront prices; it appears only in the checkout summary and on the receipt. Wallet payments are always tax-free. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, **catalogue editor** (title, copy, art, developer/publisher, release date, content type, genres, visibility — slug stays fixed), sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, and a homepage block editor with a **product picker**, collapsed config JSON and a **live preview** of the block. Descriptions support light formatting (bold, italic, lists, headings). |
 
+### Honest states and honest prices (session 6)
+
+Four pain points from a customer walkthrough:
+
+- **No false empty states.** Library, Support and Wallet used to render "No purchases yet" / "You have
+  no orders yet" / a €0.00 balance on the first paint, because the session was still being restored and
+  the page treated "no user yet" as "no data". Each page now waits for `authLoading` to settle and shows
+  skeletons instead. Measured in headless Chrome: at 500–3500 ms the library shows 3 skeletons and no
+  empty state, then 11 orders at 2.5 s (before the fix the same probe saw the empty state at 0.6–3 s).
+- **Tax is not a surprise.** The product page and the cart both state, under the price, that card
+  payments add the configured purchase tax at checkout and a wallet payment adds none, next to the
+  key/refund rule. Both sentences read their rates from `GET /api/meta`, so they follow the admin's
+  settings instead of hardcoding 5%.
+- **The refund window is visible while it exists.** "Keys stay hidden until you display them, and every
+  purchase is refundable up until then" now appears before you buy, not only in the library afterwards.
+- **The wallet shows its balance before you pick it.** The checkout wallet option reads
+  `€77.03 available · no tax` while still unselected, and selecting it adds a Top up link.
+
+`GET /api/orders` was also rebuilt as a batched loader: the library used to call `LoadOrder` per order
+and each `LoadOrder` runs three queries, so 14 orders meant 42 round trips to a remote database
+(3.76 s measured). It is now three queries regardless of order count — 0.46 s for the same payload,
+byte-identical response. `LoadOrder` delegates to the same loader, so checkout and single-order reads
+share one code path.
+
 ### Coherent page chrome and the SQL injection audit (session 5)
 
 Every page now opens with the same purple `PageBand` (Store, Cart, Checkout, order confirmation, Library,
@@ -202,7 +226,8 @@ Known limitations, deliberately accepted and documented in `docs/architecture.md
 
 - Role and verification live in the JWT, so an admin's promotion takes effect on the user's next
   sign-in (`GET /api/auth/me` re-reads the DB, which is how the UI notices).
-- Order history loads keys per order (`N+1`); fine at demo scale, one joined query at real scale.
+- Order history is three queries per load (orders, items, keys) — batched in session 6; the merchant
+  key inspector and the admin order list still load per row and are fine at demo scale.
 - No rate limiting on `/api/auth/*` — first thing to add before real traffic.
 - Render free tier sleeps after ~15 min; first request takes 30–50 s. Reads retry up to 3× with a
   "server is starting up" message; mutations are not retried (checkout is safe via `Idempotency-Key`).

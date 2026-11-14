@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
+import { catalogApi } from '@/api/endpoints'
 import { Badge, Button, Card, EmptyState, Notice, PageBand } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
@@ -9,6 +11,11 @@ export default function CartPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { cart, loading, setQuantity, remove, clear, error } = useCart()
+  const [tax, setTax] = useState<{ applyOnPurchase: boolean; purchaseTaxBasisPoints: number } | null>(null)
+
+  useEffect(() => {
+    catalogApi.meta().then((meta) => setTax(meta.tax)).catch(() => undefined)
+  }, [])
 
   if (loading && cart.items.length === 0) {
     return (
@@ -120,6 +127,14 @@ export default function CartPage() {
                 <Row label="Total" value={formatMoney(cart.subtotalCents)} strong />
               </div>
             </div>
+            <p className="text-xs text-brand-200">
+              {tax && tax.applyOnPurchase && tax.purchaseTaxBasisPoints > 0
+                ? `Card payments add ${tax.purchaseTaxBasisPoints / 100}% tax at checkout; paying from your shop wallet adds none.`
+                : "No transaction tax on this order."}
+            </p>
+            <p className="text-xs text-brand-200">
+              Keys stay hidden until you display them, and the purchase stays refundable until then.
+            </p>
             <Badge tone="neutral">Simulated payment — no real money</Badge>
             <Button
               className="w-full"

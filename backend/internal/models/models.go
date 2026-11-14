@@ -119,10 +119,20 @@ type Genre struct {
 
 // Meta is the filter vocabulary the store UI needs, served from the database so
 // the frontend has no hardcoded platform/region/genre lists.
+// MetaTax tells the storefront whether a card payment will carry tax, so copy can
+// warn about it without quoting prices before checkout.
+type MetaTax struct {
+	ApplyOnPurchase        bool `json:"applyOnPurchase"`
+	PurchaseTaxBasisPoints int  `json:"purchaseTaxBasisPoints"`
+	ApplyOnTopup           bool `json:"applyOnTopup"`
+	TopupTaxBasisPoints    int  `json:"topupTaxBasisPoints"`
+}
+
 type Meta struct {
 	Platforms  []Platform `json:"platforms"`
 	Regions    []Region   `json:"regions"`
 	Genres     []Genre    `json:"genres"`
+	Tax        MetaTax    `json:"tax"`
 	PriceRange struct {
 		MinCents int `json:"minCents"`
 		MaxCents int `json:"maxCents"`

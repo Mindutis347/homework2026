@@ -101,6 +101,7 @@ type DailySales struct {
 type Ticket struct {
 	ID              int64     `json:"id"`
 	UserEmail       string    `json:"userEmail"`
+	UserName        string    `json:"userName"`
 	OrderReference  string    `json:"orderReference,omitempty"`
 	Subject         string    `json:"subject"`
 	Body            string    `json:"body"`
@@ -108,6 +109,30 @@ type Ticket struct {
 	Status          string    `json:"status"`
 	RefundRequested bool      `json:"refundRequested"`
 	CreatedAt       time.Time `json:"createdAt"`
+}
+
+// TicketAttachment describes a picture on a message. The bytes are fetched from
+// their own endpoint so a thread payload stays small.
+type TicketAttachment struct {
+	ID    int64  `json:"id"`
+	Mime  string `json:"mime"`
+	Bytes int    `json:"bytes"`
+}
+
+// TicketMessage is one reply in a support conversation.
+type TicketMessage struct {
+	ID          int64              `json:"id"`
+	AuthorRole  string             `json:"authorRole"`
+	AuthorName  string             `json:"authorName"`
+	Body        string             `json:"body"`
+	CreatedAt   time.Time          `json:"createdAt"`
+	Attachments []TicketAttachment `json:"attachments"`
+}
+
+// TicketThread is one ticket together with its conversation.
+type TicketThread struct {
+	Ticket   Ticket          `json:"ticket"`
+	Messages []TicketMessage `json:"messages"`
 }
 
 // AdminOrder is a platform-wide order row.

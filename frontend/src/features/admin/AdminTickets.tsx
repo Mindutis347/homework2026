@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { adminApi } from '@/api/endpoints'
 import type { Ticket } from '@/api/types'
 import { Badge, Card, EmptyState, ErrorNote, SectionHeading, Select, Skeleton } from '@/components/ui'
+import { TicketThread } from '@/features/support/TicketThread'
 import { formatDate } from '@/lib/format'
 
 type StatusFilter = '' | 'open' | 'in_progress' | 'resolved'
@@ -26,6 +27,7 @@ const STATUS_TONE: Record<Ticket['status'], 'accent' | 'brand' | 'success'> = {
 export default function AdminTickets() {
   const [status, setStatus] = useState<StatusFilter>('open')
   const [tickets, setTickets] = useState<Ticket[]>([])
+  const [openThread, setOpenThread] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<number | null>(null)
@@ -132,12 +134,14 @@ export default function AdminTickets() {
                 </div>
               </div>
 
-              <details className="mt-3 border-t border-line pt-3">
-                <summary className="cursor-pointer text-sm font-semibold text-accent-500">
-                  Show message
-                </summary>
-                <p className="mt-2 whitespace-pre-wrap text-sm text-ink-700">{ticket.body}</p>
-              </details>
+              <button
+                type="button"
+                onClick={() => setOpenThread(openThread === ticket.id ? null : ticket.id)}
+                className="mt-3 border-t border-line pt-3 text-left text-xs font-extrabold uppercase tracking-wide text-accent-500 hover:underline"
+              >
+                {openThread === ticket.id ? 'Hide conversation' : 'Conversation & reply'}
+              </button>
+              {openThread === ticket.id && <TicketThread ticket={ticket} />}
             </Card>
           ))}
         </div>

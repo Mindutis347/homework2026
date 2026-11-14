@@ -1,10 +1,13 @@
 package httpx
 
 import (
+	"encoding/base64"
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
+	"github.com/mindutis347/keyforge/backend/internal/models"
 	"github.com/mindutis347/keyforge/backend/internal/repo"
 )
 
@@ -334,4 +337,162 @@ func (a *App) handleMyTickets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	WriteJSON(w, http.StatusOK, map[string]any{"tickets": tickets})
+}
+
+// --- support conversations --------------------------------------------------
+
+const (
+	maxTicketAttachments = 3
+	maxAttachmentBytes   = 1_500_000
+	maxTicketBodyLen     = 4000
+	// Base64 inflates by roughly a third, and the envelope adds a little more.
+	maxTicketReplyBytes = 8 << 20
+)
+
+var allowedImageTypes = map[string]bool{
+	"image/png":  true,
+	"image/jpeg": true,
+	"image/webp": true,
+	"image/gif":  true,
+}
+
+type ticketReplyBody struct {
+	Body        string `json:"body"`
+	Attachments []struct {
+		Mime string `json:"mime"`
+		Data string `json:"data"` // base64 of the image bytes
+	} `json:"attachments"`
+}
+
+// handleTicketThread returns one ticket with its conversation. A customer sees
+// only their own tickets; an admin sees any.
+//
+//	GET /api/tickets/{id}
+func (a *App) handleTicketThread(w http.ResponseWriter, r *http.Request) {
+	user := UserFrom(r.Context())
+	ticketID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_path", "ticket id must be a number"))
+		return
+	}
+	thread, err := a.ticketThread(r, ticketID, user)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, map[string]any{"thread": thread})
+}
+
+// handleTicketReply appends a message to the conversation. The author side is
+// derived from the caller's role, never from the payload.
+//
+//	POST /api/tickets/{id}/messages {"body","attachments":[{"mime","data"}]}
+func (a *App) handleTicketReply(w http.ResponseWriter, r *http.Request) {
+	user := UserFrom(r.Context())
+	ticketID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_path", "ticket id must be a number"))
+		return
+	}
+
+	// Ownership first: a customer may only write into their own ticket.
+	if _, err := a.admin.TicketForViewer(r.Context(), ticketID, user.UserID, user.IsAdmin()); err != nil {
+		WriteError(w, err)
+		return
+	}
+
+	var body ticketReplyBody
+	if err := DecodeJSONMax(w, r, &body, maxTicketReplyBytes); err != nil {
+		WriteError(w, err)
+		return
+	}
+	text := strings.TrimSpace(body.Body)
+	if len(text) > maxTicketBodyLen {
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "message is too long"))
+		return
+	}
+	if text == "" && len(body.Attachments) == 0 {
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "write a message or attach a picture"))
+		return
+	}
+	if len(body.Attachments) > maxTicketAttachments {
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "at most three pictures per message"))
+		return
+	}
+
+	attachments := make([]repo.AttachmentInput, 0, len(body.Attachments))
+	for _, att := range body.Attachments {
+		raw, err := base64.StdEncoding.DecodeString(att.Data)
+		if err != nil {
+			WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "picture data must be base64"))
+			return
+		}
+		if len(raw) == 0 {
+			continue
+		}
+		if len(raw) > maxAttachmentBytes {
+			WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "each picture must be 1.5 MB or smaller"))
+			return
+		}
+		// Trust the sniffed type, not the declared one, so a script cannot be
+		// uploaded by claiming to be an image.
+		sniffed := http.DetectContentType(raw)
+		if !allowedImageTypes[sniffed] {
+			WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "only PNG, JPEG, WebP or GIF pictures are accepted"))
+			return
+		}
+		attachments = append(attachments, repo.AttachmentInput{Mime: sniffed, Bytes: len(raw), Data: raw})
+	}
+
+	role := "customer"
+	if user.IsAdmin() {
+		role = "staff"
+	}
+	if _, err := a.admin.AddTicketMessage(r.Context(), ticketID, user.UserID, role, text, attachments); err != nil {
+		WriteError(w, err)
+		return
+	}
+
+	thread, err := a.ticketThread(r, ticketID, user)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusCreated, map[string]any{"thread": thread})
+}
+
+// handleTicketAttachment streams one picture from a conversation.
+//
+//	GET /api/tickets/attachments/{id}
+func (a *App) handleTicketAttachment(w http.ResponseWriter, r *http.Request) {
+	user := UserFrom(r.Context())
+	attachmentID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_path", "attachment id must be a number"))
+		return
+	}
+	mime, data, err := a.admin.Attachment(r.Context(), attachmentID, user.UserID, user.IsAdmin())
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", mime)
+	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+	w.Header().Set("Cache-Control", "private, max-age=300")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(data)
+}
+
+// ticketThread assembles the ticket and its messages for one viewer.
+func (a *App) ticketThread(r *http.Request, ticketID int64, user *Principal) (models.TicketThread, error) {
+	ticket, err := a.admin.TicketForViewer(r.Context(), ticketID, user.UserID, user.IsAdmin())
+	if err != nil {
+		return models.TicketThread{}, err
+	}
+	messages, err := a.admin.TicketMessages(r.Context(), ticketID)
+	if err != nil {
+		return models.TicketThread{}, err
+	}
+	return models.TicketThread{Ticket: ticket, Messages: messages}, nil
 }

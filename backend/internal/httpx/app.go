@@ -85,6 +85,9 @@ func (a *App) Routes() http.Handler {
 	mux.Handle("POST /api/orders/{id}/items/{itemId}/refund", authUser(a.handleRefundItem))
 	mux.Handle("POST /api/tickets", verifiedUser(a.handleCreateTicket))
 	mux.Handle("GET /api/tickets", verifiedUser(a.handleMyTickets))
+	mux.Handle("GET /api/tickets/attachments/{id}", verifiedUser(a.handleTicketAttachment))
+	mux.Handle("GET /api/tickets/{id}", verifiedUser(a.handleTicketThread))
+	mux.Handle("POST /api/tickets/{id}/messages", verifiedUser(a.handleTicketReply))
 
 	// Merchant portal
 	mux.Handle("GET /api/merchant/stats", merchantOnly(a.handleMerchantStats))

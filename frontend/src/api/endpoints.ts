@@ -18,6 +18,7 @@ import type {
   SalesSummary,
   SearchSuggestion,
   Ticket,
+  TicketThread,
   User,
 } from '@/api/types'
 
@@ -156,4 +157,10 @@ export const ticketApi = {
     category: Ticket['category']
     orderId?: number
   }) => api.post<{ status: string }>('/api/tickets', payload),
+  thread: (id: number) => api.get<{ thread: TicketThread }>(`/api/tickets/${id}`),
+  reply: (
+    id: number,
+    payload: { body: string; attachments: { mime: string; data: string }[] },
+  ) => api.post<{ thread: TicketThread }>(`/api/tickets/${id}/messages`, payload),
+  attachmentUrl: (attachmentId: number) => `/api/tickets/attachments/${attachmentId}`,
 }

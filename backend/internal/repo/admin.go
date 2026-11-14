@@ -376,7 +376,7 @@ func (a *Admin) Orders(ctx context.Context, limit int) ([]models.AdminOrder, err
 }
 
 const ticketColumns = `
-		SELECT t.id, u.email, COALESCE(od.reference, ''), t.subject, t.body,
+		SELECT t.id, u.email, u.display_name, COALESCE(od.reference, ''), t.subject, t.body,
 		       t.category, t.status, t.refund_requested, t.created_at
 		FROM support_tickets t
 		JOIN users u ON u.id = t.user_id
@@ -390,7 +390,7 @@ func collectTickets(rows pgx.Rows) ([]models.Ticket, error) {
 	out := []models.Ticket{}
 	for rows.Next() {
 		var t models.Ticket
-		if err := rows.Scan(&t.ID, &t.UserEmail, &t.OrderReference, &t.Subject, &t.Body,
+		if err := rows.Scan(&t.ID, &t.UserEmail, &t.UserName, &t.OrderReference, &t.Subject, &t.Body,
 			&t.Category, &t.Status, &t.RefundRequested, &t.CreatedAt); err != nil {
 			return nil, err
 		}

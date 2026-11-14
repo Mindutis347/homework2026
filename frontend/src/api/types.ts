@@ -227,6 +227,7 @@ export type SalesSummary = {
 export type Ticket = {
   id: number
   userEmail: string
+  userName: string
   orderReference?: string
   subject: string
   body: string
@@ -234,6 +235,27 @@ export type Ticket = {
   status: 'open' | 'in_progress' | 'resolved'
   refundRequested: boolean
   createdAt: string
+}
+
+/** A picture on a ticket message; the bytes come from /api/tickets/attachments/{id}. */
+export type TicketAttachment = {
+  id: number
+  mime: string
+  bytes: number
+}
+
+export type TicketMessage = {
+  id: number
+  authorRole: 'customer' | 'staff'
+  authorName: string
+  body: string
+  createdAt: string
+  attachments: TicketAttachment[]
+}
+
+export type TicketThread = {
+  ticket: Ticket
+  messages: TicketMessage[]
 }
 
 export type AdminOrder = {

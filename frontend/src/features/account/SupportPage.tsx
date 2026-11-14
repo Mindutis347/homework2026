@@ -18,6 +18,7 @@ import {
   Skeleton,
 } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
+import { TicketThread } from '@/features/support/TicketThread'
 import { formatDate, formatMoney } from '@/lib/format'
 
 const CATEGORIES: { value: Ticket['category']; label: string }[] = [
@@ -39,6 +40,7 @@ export default function SupportPage() {
   const [params] = useSearchParams()
   const [orders, setOrders] = useState<Order[]>([])
   const [tickets, setTickets] = useState<Ticket[]>([])
+  const [openThread, setOpenThread] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -248,12 +250,14 @@ export default function SupportPage() {
                     {ticket.orderReference ? `Order ${ticket.orderReference} · ` : ''}
                     opened {formatDate(ticket.createdAt)}
                   </p>
-                  <details className="mt-2">
-                    <summary className="cursor-pointer text-sm font-semibold text-accent-500">
-                      Show message
-                    </summary>
-                    <p className="mt-2 whitespace-pre-wrap text-sm text-ink-700">{ticket.body}</p>
-                  </details>
+                  <button
+                    type="button"
+                    onClick={() => setOpenThread(openThread === ticket.id ? null : ticket.id)}
+                    className="mt-2 text-xs font-extrabold uppercase tracking-wide text-accent-500 hover:underline"
+                  >
+                    {openThread === ticket.id ? 'Hide conversation' : 'Conversation'}
+                  </button>
+                  {openThread === ticket.id && <TicketThread ticket={ticket} />}
                 </Card>
               ))}
             </div>

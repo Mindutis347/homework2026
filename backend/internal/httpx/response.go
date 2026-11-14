@@ -66,10 +66,17 @@ func WriteError(w http.ResponseWriter, err error) {
 // DecodeJSON reads a JSON request body into dst, rejecting unknown fields and
 // trailing garbage so typos in client payloads fail loudly.
 func DecodeJSON(w http.ResponseWriter, r *http.Request, dst any) error {
+	return DecodeJSONMax(w, r, dst, 1<<20)
+}
+
+// DecodeJSONMax is DecodeJSON with a caller-chosen size ceiling. Uploads need a
+// larger one than ordinary forms, and the cap belongs to the handler that knows
+// what it is accepting.
+func DecodeJSONMax(w http.ResponseWriter, r *http.Request, dst any, maxBytes int64) error {
 	if r.Body == nil {
 		return Errorf(http.StatusBadRequest, "invalid_body", "request body is required")
 	}
-	dec := json.NewDecoder(io.LimitReader(r.Body, 1<<20))
+	dec := json.NewDecoder(io.LimitReader(r.Body, maxBytes))
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(dst); err != nil {
 		return Errorf(http.StatusBadRequest, "invalid_body", "malformed JSON: "+err.Error())

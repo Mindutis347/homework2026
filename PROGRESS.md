@@ -120,6 +120,11 @@ styles, so the palette (`#4618AC` chrome, `#1F0A4D` deep surface, `#FAD318` CTA,
   `{id, displayedAt}`, a reveal returns the code and stamps the time, and refunding afterwards answers
   `409 the key has already been displayed`. The backend e2e also asserts that the key string never
   appears in an order payload, and refunding an undisclosed line restores `offers.stock`.
+- Support conversations verified on the session-5 build: **19/19 API checks** (customer and staff
+  replies, picture round trip, ownership isolation for read/reply/attachment, non-image rejection by
+  sniffing, empty reply and 4-picture limits) and **14/14 in headless Chrome** (real file upload with a
+  preview, reply appears and the box clears, admin sees it and answers, customer sees the answer).
+  On production: the thread route, picture serving and the reopen rule were exercised against ticket 5.
 - Ticket changes exercised over HTTP against the `e2e-test` Neon branch: a foreign order id → 404, a
   nonexistent order id → 404, your own order → 201 with the order reference resolved, `category=refund`
   → `refundRequested = true`, the retired `refundRequested` field → 400, anonymous `GET /api/tickets`

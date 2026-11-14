@@ -71,6 +71,8 @@ func (a *App) Routes() http.Handler {
 	mux.HandleFunc("GET /api/dev/inbox", a.handleDevInbox)
 
 	// Cart — signing in is enough, verification is checked at checkout
+	mux.HandleFunc("POST /api/cart/preview", a.handlePreviewCart)
+	mux.Handle("POST /api/cart/merge", authUser(a.handleMergeCart))
 	mux.Handle("GET /api/cart", authUser(a.handleGetCart))
 	mux.Handle("POST /api/cart", authUser(a.handleAddToCart))
 	mux.Handle("PATCH /api/cart/{offerId}", authUser(a.handleUpdateCartItem))

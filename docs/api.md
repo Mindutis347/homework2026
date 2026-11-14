@@ -40,6 +40,8 @@ is required from the browser.
 
 | Method | Path | Body |
 |---|---|---|
+| POST | `/api/cart/preview` | **public**. `{items:[{offerId,quantity}]}` → a priced cart. Guests keep their cart in the browser and the server prices it, so the client never decides a price |
+| POST | `/api/cart/merge` | signed in. folds a guest cart into the account cart after sign-in |
 | GET | `/api/cart` | — |
 | POST | `/api/cart` | `{offerId, quantity}` |
 | PATCH | `/api/cart/{offerId}` | `{quantity}` |

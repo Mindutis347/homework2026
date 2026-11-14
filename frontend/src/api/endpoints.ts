@@ -54,8 +54,14 @@ export const authApi = {
   logout: () => api.post<{ status: string }>('/api/auth/logout'),
 }
 
+type CartLinePayload = { offerId: number; quantity: number }
+
 export const cartApi = {
   get: () => api.get<Cart>('/api/cart'),
+  // Guests: the server prices the browser-held cart without storing it.
+  preview: (items: CartLinePayload[]) => api.post<Cart>('/api/cart/preview', { items }),
+  // Signing in: fold that cart into the account cart.
+  merge: (items: CartLinePayload[]) => api.post<Cart>('/api/cart/merge', { items }),
   add: (offerId: number, quantity = 1) => api.post<Cart>('/api/cart', { offerId, quantity }),
   setQuantity: (offerId: number, quantity: number) =>
     api.patch<Cart>(`/api/cart/${offerId}`, { quantity }),

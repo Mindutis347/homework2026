@@ -113,3 +113,88 @@ func (c *Cart) Clear(ctx context.Context, userID int64) error {
 	_, err := c.pool.Exec(ctx, `DELETE FROM cart_items WHERE user_id = $1`, userID)
 	return err
 }
+
+// CartLine is one entry a guest keeps in their local cart.
+type CartLine struct {
+	OfferID  int64 `json:"offerId"`
+	Quantity int   `json:"quantity"`
+}
+
+// Preview prices a guest's local cart without storing anything. Prices have to
+// come from the server: a cart kept in the browser must never decide what a game
+// costs.
+func (c *Cart) Preview(ctx context.Context, lines []CartLine) (models.Cart, error) {
+	cart := models.Cart{Items: []models.CartItem{}}
+	if len(lines) == 0 {
+		return cart, nil
+	}
+
+	offerIDs := make([]int64, len(lines))
+	quantities := make([]int16, len(lines))
+	for i, line := range lines {
+		offerIDs[i] = line.OfferID
+		quantities[i] = int16(line.Quantity)
+	}
+
+	rows, err := c.pool.Query(ctx, `
+		SELECT o.id, o.product_id, p.slug, p.title, p.cover_url,
+		       pl.slug, pl.name, r.code,
+		       COALESCE(NULLIF(sp.store_name, ''), u.display_name),
+		       o.price_cents, want.qty::int, o.stock,
+		       o.price_cents * want.qty::int AS line_total
+		FROM unnest($1::bigint[], $2::smallint[]) WITH ORDINALITY AS want(offer_id, qty, ord)
+		JOIN offers o     ON o.id = want.offer_id
+		JOIN products p   ON p.id = o.product_id
+		JOIN platforms pl ON pl.id = o.platform_id
+		JOIN regions r    ON r.id = o.region_id
+		JOIN users u      ON u.id = o.seller_id
+		LEFT JOIN seller_profiles sp ON sp.user_id = o.seller_id
+		WHERE o.is_active AND o.stock > 0
+		ORDER BY want.ord`, offerIDs, quantities)
+	if err != nil {
+		return cart, fmt.Errorf("preview cart: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var it models.CartItem
+		if err := rows.Scan(&it.OfferID, &it.ProductID, &it.Slug, &it.Title, &it.CoverURL,
+			&it.PlatformSlug, &it.PlatformName, &it.RegionCode, &it.SellerStore,
+			&it.UnitPriceCents, &it.Quantity, &it.Stock, &it.LineTotalCents); err != nil {
+			return cart, fmt.Errorf("scan preview item: %w", err)
+		}
+		cart.Items = append(cart.Items, it)
+		cart.ItemCount += it.Quantity
+		cart.SubtotalCents += it.LineTotalCents
+	}
+	return cart, rows.Err()
+}
+
+// Merge folds a guest cart into the signed-in cart, which is what happens right
+// after sign-in. Lines combine, are capped at the 10-per-line limit, and offers
+// that went inactive are skipped rather than erroring the whole merge.
+func (c *Cart) Merge(ctx context.Context, userID int64, lines []CartLine) error {
+	if len(lines) == 0 {
+		return nil
+	}
+	offerIDs := make([]int64, len(lines))
+	quantities := make([]int16, len(lines))
+	for i, line := range lines {
+		offerIDs[i] = line.OfferID
+		quantities[i] = int16(line.Quantity)
+	}
+
+	_, err := c.pool.Exec(ctx, `
+		INSERT INTO cart_items (user_id, offer_id, quantity)
+		SELECT $1, o.id, LEAST(want.qty, o.stock)::smallint
+		FROM unnest($2::bigint[], $3::smallint[]) AS want(offer_id, qty)
+		JOIN offers o ON o.id = want.offer_id AND o.is_active AND o.stock > 0
+		ON CONFLICT (user_id, offer_id)
+		DO UPDATE SET quantity = LEAST(cart_items.quantity + EXCLUDED.quantity, 10)::smallint,
+		              added_at = now()`,
+		userID, offerIDs, quantities)
+	if err != nil {
+		return fmt.Errorf("merge cart: %w", err)
+	}
+	return nil
+}

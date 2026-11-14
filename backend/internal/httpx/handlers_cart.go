@@ -287,3 +287,74 @@ func writeCartError(w http.ResponseWriter, err error) {
 		WriteError(w, err)
 	}
 }
+
+// cartLinesBody is the guest cart a browser keeps locally.
+type cartLinesBody struct {
+	Items []repo.CartLine `json:"items"`
+}
+
+const maxCartLines = 20
+
+// validateCartLines keeps the preview/merge payloads within sane bounds.
+func validateCartLines(items []repo.CartLine) error {
+	if len(items) > maxCartLines {
+		return Errorf(http.StatusBadRequest, "invalid_body", "at most 20 different items in a cart")
+	}
+	for _, item := range items {
+		if item.OfferID <= 0 {
+			return Errorf(http.StatusBadRequest, "invalid_body", "offerId is required")
+		}
+		if item.Quantity < 1 || item.Quantity > 10 {
+			return Errorf(http.StatusBadRequest, "invalid_body", "quantity must be between 1 and 10")
+		}
+	}
+	return nil
+}
+
+// handlePreviewCart prices a guest's local cart. It stores nothing, so a visitor
+// can review a cart before they have an account.
+//
+//	POST /api/cart/preview {"items":[{"offerId":1,"quantity":1}]}
+func (a *App) handlePreviewCart(w http.ResponseWriter, r *http.Request) {
+	var body cartLinesBody
+	if err := DecodeJSON(w, r, &body); err != nil {
+		WriteError(w, err)
+		return
+	}
+	if err := validateCartLines(body.Items); err != nil {
+		WriteError(w, err)
+		return
+	}
+	cart, err := a.cart.Preview(r.Context(), body.Items)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, cart)
+}
+
+// handleMergeCart folds the guest cart into the account cart after sign-in.
+//
+//	POST /api/cart/merge {"items":[{"offerId":1,"quantity":1}]}
+func (a *App) handleMergeCart(w http.ResponseWriter, r *http.Request) {
+	user := UserFrom(r.Context())
+	var body cartLinesBody
+	if err := DecodeJSON(w, r, &body); err != nil {
+		WriteError(w, err)
+		return
+	}
+	if err := validateCartLines(body.Items); err != nil {
+		WriteError(w, err)
+		return
+	}
+	if err := a.cart.Merge(r.Context(), user.UserID, body.Items); err != nil {
+		writeCartError(w, err)
+		return
+	}
+	cart, err := a.cart.Get(r.Context(), user.UserID)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, cart)
+}

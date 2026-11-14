@@ -1,19 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 
 import { catalogApi } from '@/api/endpoints'
 import type { Offer, ProductDetail } from '@/api/types'
 import { ContentTypeBadge } from '@/components/ContentTypeBadge'
 import { Badge, Button, Card, EmptyState, Notice, Skeleton } from '@/components/ui'
-import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
 import { formatDate, formatMoney } from '@/lib/format'
 
 /** The product page: one game, every competing seller offer, compare and buy. */
 export default function ProductPage() {
   const { slug = '' } = useParams()
-  const navigate = useNavigate()
-  const { user } = useAuth()
   const { add } = useCart()
 
   const [product, setProduct] = useState<ProductDetail | null>(null)
@@ -63,10 +60,7 @@ export default function ProductPage() {
   )
 
   async function handleAdd(offer: Offer) {
-    if (!user) {
-      navigate(`/sign-in?next=/products/${slug}`)
-      return
-    }
+    // Guests can fill a cart too; the sign-in prompt belongs at checkout.
     setBusyOffer(offer.id)
     setFeedback(null)
     try {

@@ -10,21 +10,6 @@ export default function CartPage() {
   const { user } = useAuth()
   const { cart, loading, setQuantity, remove, clear, error } = useCart()
 
-  if (!user) {
-    return (
-      <div>
-        <PageBand eyebrow="Bag" title="Your cart" subtitle="Sign in to use your cart." />
-        <div className="container-page py-16">
-          <EmptyState
-            title="Sign in to use your cart"
-            description="Your cart is tied to your account so your keys are always delivered to you."
-            action={<Link to="/sign-in?next=/cart"><Button>Sign in</Button></Link>}
-          />
-        </div>
-      </div>
-    )
-  }
-
   if (loading && cart.items.length === 0) {
     return (
       <div>
@@ -65,6 +50,15 @@ export default function CartPage() {
       </PageBand>
 
       <div className="container-page py-8">
+        {!user && cart.items.length > 0 && (
+          <div className="mb-4">
+            <Notice tone="info">
+              You are shopping as a guest. Your cart is kept in this browser — you will be asked to sign in when
+              you check out.
+            </Notice>
+          </div>
+        )}
+
         {error && (
           <div className="mb-4"><Notice tone="danger">{error}</Notice></div>
         )}
@@ -127,8 +121,12 @@ export default function CartPage() {
               </div>
             </div>
             <Badge tone="neutral">Simulated payment — no real money</Badge>
-            <Button className="w-full" size="lg" onClick={() => navigate('/checkout')}>
-              Continue to checkout
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={() => navigate(user ? '/checkout' : '/sign-in?next=/checkout')}
+            >
+              {user ? 'Continue to checkout' : 'Sign in to check out'}
             </Button>
           </Card>
         </div>

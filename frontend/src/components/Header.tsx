@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 import { catalogApi } from '@/api/endpoints'
 import type { Meta } from '@/api/types'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
+import { formatMoney } from '@/lib/format'
 import { SearchBar } from '@/features/search/SearchBar'
 
 /** Two-row storefront chrome, following eneba.com: a brand-purple utility row
@@ -12,7 +13,6 @@ import { SearchBar } from '@/features/search/SearchBar'
  *  platform links come from the API so the nav reflects what is actually sold. */
 export function Header() {
   const { user } = useAuth()
-  const { cart } = useCart()
   const location = useLocation()
   const searchTerm = new URLSearchParams(location.search).get('q') ?? ''
   const [meta, setMeta] = useState<Meta | null>(null)
@@ -41,22 +41,7 @@ export function Header() {
               EU · EUR
             </span>
 
-            <Link
-              to="/cart"
-              className="relative grid size-10 place-items-center text-white hover:text-accent-500"
-              aria-label={`Cart, ${cart.itemCount} items`}
-            >
-              <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M3 4h2l2.5 11h10L20 7H6" />
-                <circle cx="9.5" cy="19" r="1.4" />
-                <circle cx="17.5" cy="19" r="1.4" />
-              </svg>
-              {cart.itemCount > 0 && (
-                <span className="absolute right-0 top-0.5 grid min-w-4 place-items-center rounded-full bg-accent-500 px-1 text-[0.65rem] font-extrabold leading-4 text-on-accent">
-                  {cart.itemCount}
-                </span>
-              )}
-            </Link>
+            <CartMenu />
 
             {user ? <AccountMenu /> : (
               <div className="flex items-center gap-2 text-xs font-bold">
@@ -121,6 +106,7 @@ export function Header() {
 function AccountMenu() {
   const { user, signOut } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   // Open state is keyed to the current location, so any navigation closes the
   // menu without an effect that would re-render on route changes.
   const locationKey = `${location.pathname}${location.search}`
@@ -192,7 +178,7 @@ function AccountMenu() {
           <button
             onClick={() => {
               close()
-              void signOut()
+              void signOut().then(() => navigate('/'))
             }}
             className="block w-full px-4 py-2 text-left text-sm font-semibold text-brand-100 hover:bg-white/10 hover:text-white"
           >
@@ -222,5 +208,91 @@ function MenuLink({
     >
       {children}
     </Link>
+  )
+}
+
+/** Cart icon with a hover preview: what is in the bag, what it costs, and a way
+ *  in. It works for guests too, since their cart lives in the browser. */
+function CartMenu() {
+  const { cart } = useCart()
+  const [open, setOpen] = useState(false)
+  const timer = useRef<number | null>(null)
+
+  function openNow() {
+    if (timer.current) window.clearTimeout(timer.current)
+    setOpen(true)
+  }
+
+  // A short delay keeps the panel usable while the pointer crosses the gap.
+  function closeSoon() {
+    timer.current = window.setTimeout(() => setOpen(false), 150)
+  }
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={openNow}
+      onMouseLeave={closeSoon}
+      onFocusCapture={openNow}
+      onBlurCapture={closeSoon}
+    >
+      <Link
+        to="/cart"
+        onClick={() => setOpen(false)}
+        className="relative grid size-10 place-items-center text-white hover:text-accent-500"
+        aria-label={`Cart, ${cart.itemCount} items`}
+      >
+        <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <path d="M3 4h2l2.5 11h10L20 7H6" />
+          <circle cx="9.5" cy="19" r="1.4" />
+          <circle cx="17.5" cy="19" r="1.4" />
+        </svg>
+        {cart.itemCount > 0 && (
+          <span className="absolute right-0 top-0.5 grid min-w-4 place-items-center rounded-full bg-accent-500 px-1 text-[0.65rem] font-extrabold leading-4 text-on-accent">
+            {cart.itemCount}
+          </span>
+        )}
+      </Link>
+
+      {open && (
+        <div
+          role="dialog"
+          aria-label="Cart preview"
+          className="absolute right-0 top-full z-50 mt-1 w-80 rounded-[2px] border border-line bg-surface p-3 shadow-raised"
+        >
+          {cart.items.length === 0 ? (
+            <p className="px-1 py-2 text-sm text-brand-100">Your cart is empty.</p>
+          ) : (
+            <>
+              <ul className="max-h-64 space-y-2 overflow-y-auto pr-1">
+                {cart.items.map((item) => (
+                  <li key={item.offerId} className="flex items-center gap-2">
+                    <img src={item.coverUrl} alt="" className="h-12 w-9 shrink-0 rounded-[2px] object-cover" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-bold text-white">{item.title}</p>
+                      <p className="truncate text-[0.6875rem] text-brand-200">
+                        {item.platformName} · {item.regionCode} · ×{item.quantity}
+                      </p>
+                    </div>
+                    <p className="shrink-0 text-xs font-bold text-accent-500">{formatMoney(item.lineTotalCents)}</p>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-3 flex items-baseline justify-between border-t border-line pt-2">
+                <span className="text-xs text-brand-200">Total ({cart.itemCount})</span>
+                <span className="font-display text-sm font-extrabold text-white">{formatMoney(cart.subtotalCents)}</span>
+              </div>
+
+              <Link to="/cart" onClick={() => setOpen(false)} className="mt-2 block">
+                <span className="flex h-9 items-center justify-center rounded-[2px] bg-accent-500 text-xs font-extrabold uppercase tracking-wide text-on-accent hover:bg-accent-400">
+                  View cart
+                </span>
+              </Link>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   )
 }

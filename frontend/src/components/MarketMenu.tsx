@@ -40,7 +40,7 @@ export function MarketMenu() {
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-label={`Market: ${active.label}, prices in ${currency}`}
-        className="flex items-center gap-1.5 rounded-[2px] border border-white/25 px-2.5 py-1.5 text-xs font-bold text-white transition hover:border-accent-500 hover:text-accent-500"
+        className="flex h-10 items-center gap-1.5 rounded-[2px] border border-white/25 px-2.5 text-xs font-bold text-white transition hover:border-accent-500 hover:text-accent-500 sm:h-auto sm:py-1.5"
       >
         <span aria-hidden className="text-sm leading-none">{active.flag}</span>
         <span className="hidden sm:block">{region} · {currency}</span>

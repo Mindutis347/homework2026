@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 
 import { adminApi, catalogApi } from '@/api/endpoints'
 import type { AdminProduct, Meta } from '@/api/types'
+import { CoverThumb } from '@/components/Cover'
 import { ContentTypeBadge } from '@/components/ContentTypeBadge'
 import {
   Badge,
@@ -112,7 +113,7 @@ export default function AdminCatalog() {
           {products.map((product) => (
             <Card key={product.id} className="p-4">
               <div className="flex flex-wrap items-start gap-3">
-                <img src={product.coverUrl} alt="" className="h-20 w-15 shrink-0 rounded-[2px] object-cover" />
+                <CoverThumb productId={product.id} url={product.coverUrl} className="h-20 w-15 shrink-0 rounded-[2px] object-cover" />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="font-display text-base font-bold text-white">{product.title}</h3>

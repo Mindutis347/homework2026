@@ -36,3 +36,40 @@ export function Cover({
     />
   )
 }
+
+/**
+ * Thumbnail for back-office lists. Same idea as `Cover`, but a product without
+ * artwork gets a placeholder box instead of an empty `src` — an empty string is
+ * not "no image" to a browser, it means "the current page".
+ */
+export function CoverThumb({
+  productId,
+  url,
+  className = '',
+  label = 'No cover',
+}: {
+  productId?: number
+  url?: string
+  className?: string
+  label?: string
+}) {
+  if (!url) {
+    return (
+      <div className={`grid place-items-center bg-canvas text-center text-[0.6rem] leading-tight text-ink-300 ${className}`}>
+        {label}
+      </div>
+    )
+  }
+  return (
+    <Cover
+      productId={productId}
+      url={url}
+      alt=""
+      sizes="80px"
+      widths={[160, 240]}
+      fallbackWidth={160}
+      loading="lazy"
+      className={className}
+    />
+  )
+}

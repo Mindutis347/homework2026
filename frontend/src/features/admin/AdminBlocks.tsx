@@ -1,3 +1,4 @@
+import { CoverThumb } from '@/components/Cover'
 import { useEffect, useState } from 'react'
 
 import { adminApi } from '@/api/endpoints'
@@ -403,7 +404,7 @@ function ProductPicker({ value, onChange }: { value: Picked[]; onChange: (next: 
           {value.map((item, index) => (
             <li key={item.id} className="flex items-center gap-2 rounded-[2px] border border-line bg-surface px-2 py-1">
               <span className="text-[0.625rem] font-bold text-brand-300">{index + 1}</span>
-              <img src={item.coverUrl} alt="" className="h-8 w-6 rounded-[2px] object-cover" />
+              <CoverThumb productId={item.id} url={item.coverUrl} className="h-8 w-6 rounded-[2px] object-cover" label="" />
               <span className="max-w-40 truncate text-xs font-semibold text-white">{item.title}</span>
               <button
                 type="button"
@@ -431,7 +432,7 @@ function ProductPicker({ value, onChange }: { value: Picked[]; onChange: (next: 
           <ul className="mt-2 divide-y divide-line overflow-hidden rounded-[2px] border border-line">
             {results.map((product) => (
               <li key={product.id} className="flex items-center gap-2 px-2 py-1.5">
-                <img src={product.coverUrl} alt="" className="h-8 w-6 rounded-[2px] object-cover" />
+                <CoverThumb productId={product.id} url={product.coverUrl} className="h-8 w-6 rounded-[2px] object-cover" label="" />
                 <span className="min-w-0 flex-1 truncate text-xs font-semibold text-white">{product.title}</span>
                 {chosen.has(product.id) ? (
                   <Badge tone="success">added</Badge>

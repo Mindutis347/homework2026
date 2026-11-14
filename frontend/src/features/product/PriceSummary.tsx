@@ -37,7 +37,7 @@ export function PriceSummary({
   const preorder = isPreorder(releaseDate)
 
   return (
-    <div className="mt-4 rounded-[2px] border border-white/15 bg-brand-800/50 p-3.5 lg:mt-5 lg:p-4">
+    <div className="mt-4 max-w-xl rounded-[2px] border border-white/15 bg-brand-800/50 p-3.5 lg:mt-5 lg:p-4">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <span className="font-display text-3xl font-extrabold text-accent-500">
           {formatMoney(cheapest.priceCents)}

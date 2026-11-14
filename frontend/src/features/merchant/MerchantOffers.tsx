@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 
 import { catalogApi, merchantApi } from '@/api/endpoints'
 import type { MerchantOffer, Meta, ProductCard } from '@/api/types'
+import { CoverThumb } from '@/components/Cover'
 import { ContentTypeBadge } from '@/components/ContentTypeBadge'
 import { OfferKeys } from '@/features/merchant/OfferKeys'
 import {
@@ -255,7 +256,7 @@ export default function MerchantOffers() {
             >
               {picked ? (
                 <div className="flex items-center gap-3 rounded-[2px] border border-line bg-canvas px-3 py-2">
-                  <img src={picked.coverUrl} alt="" className="h-12 w-9 rounded object-cover" />
+                  <CoverThumb productId={picked.id} url={picked.coverUrl} className="h-12 w-9 rounded object-cover" label="" />
                   <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink-900">
                     {picked.title}
                   </span>
@@ -297,7 +298,7 @@ export default function MerchantOffers() {
                       }
                       className="flex w-full items-center gap-3 border-b border-line px-3 py-2 text-left last:border-b-0 hover:bg-white/10"
                     >
-                      <img src={product.coverUrl} alt="" className="h-10 w-7 rounded-[2px] object-cover" />
+                      <CoverThumb productId={product.id} url={product.coverUrl} className="h-10 w-7 rounded-[2px] object-cover" label="" />
                       <span className="min-w-0 flex-1 truncate text-sm font-medium text-white">
                         {product.title}
                       </span>
@@ -423,7 +424,7 @@ export default function MerchantOffers() {
                     <tr className="align-middle hover:bg-canvas/60">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <img src={offer.coverUrl} alt="" className="h-12 w-9 rounded object-cover" />
+                          <CoverThumb productId={offer.productId} url={offer.coverUrl} className="h-12 w-9 rounded object-cover" label="" />
                           <div className="min-w-0">
                             <Link
                               to={`/products/${offer.productSlug}`}

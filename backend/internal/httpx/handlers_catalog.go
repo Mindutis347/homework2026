@@ -3,6 +3,7 @@ package httpx
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/mindutis347/keyforge/backend/internal/repo"
 )
@@ -20,20 +21,45 @@ func intParam(r *http.Request, key string) (*int, error) {
 	return &v, nil
 }
 
+// multiParam reads a repeatable query parameter. Values may be repeated
+// (?platform=steam&platform=xbox) or comma-separated (?platform=steam,xbox), and
+// a single value keeps working, so old links and the filter UI both read fine.
+func multiParam(r *http.Request, key string) []string {
+	raw := r.URL.Query()[key]
+	out := make([]string, 0, len(raw))
+	seen := make(map[string]bool, len(raw))
+	for _, value := range raw {
+		for _, part := range strings.Split(value, ",") {
+			part = strings.TrimSpace(part)
+			if part == "" || seen[part] {
+				continue
+			}
+			seen[part] = true
+			out = append(out, part)
+			if len(out) == 20 { // a sane ceiling for a filter list
+				return out
+			}
+		}
+	}
+	return out
+}
+
 // handleListProducts serves the store catalog.
 //
 //	GET /api/products?q=&platform=&region=&genre=&minPriceCents=&maxPriceCents=
 //	                 &sort=popular|price_asc|price_desc|newest|discount|title|relevance
 //	                 &page=1&pageSize=24
+//
+// platform, region and genre accept several values, repeated or comma-separated.
 func (a *App) handleListProducts(w http.ResponseWriter, r *http.Request) {
 	filter := repo.CatalogFilter{
-		Search:   r.URL.Query().Get("q"),
-		Platform: r.URL.Query().Get("platform"),
-		Region:   r.URL.Query().Get("region"),
-		Genre:    r.URL.Query().Get("genre"),
-		Sort:     r.URL.Query().Get("sort"),
-		Page:     1,
-		PageSize: 24,
+		Search:    strings.TrimSpace(r.URL.Query().Get("q")),
+		Platforms: multiParam(r, "platform"),
+		Regions:   multiParam(r, "region"),
+		Genres:    multiParam(r, "genre"),
+		Sort:      r.URL.Query().Get("sort"),
+		Page:      1,
+		PageSize:  24,
 	}
 
 	var err error

@@ -269,9 +269,10 @@ export type AdminOrder = {
 
 export type CatalogQuery = {
   q?: string
-  platform?: string
-  region?: string
-  genre?: string
+  /** Repeatable: several platforms/regions/genres narrow the catalogue to any of them. */
+  platform?: string[]
+  region?: string[]
+  genre?: string[]
   minPriceCents?: number
   maxPriceCents?: number
   sort?: string

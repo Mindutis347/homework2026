@@ -23,13 +23,15 @@ type Catalog struct {
 
 func NewCatalog(pool *pgxpool.Pool) *Catalog { return &Catalog{pool: pool} }
 
-// CatalogFilter is the fully-resolved store query. Empty strings and nil
-// pointers mean "no filter", which keeps the SQL readable via @named params.
+// CatalogFilter is the fully-resolved store query. Empty strings, empty slices
+// and nil pointers all mean "no filter", which keeps the SQL readable via
+// @named params. Platform, region and genre are lists: an empty list matches
+// everything, a non-empty one matches any of its values.
 type CatalogFilter struct {
 	Search        string
-	Platform      string
-	Region        string
-	Genre         string
+	Platforms     []string
+	Regions       []string
+	Genres        []string
 	MinPriceCents *int
 	MaxPriceCents *int
 	Sort          string
@@ -77,8 +79,8 @@ const offerAggCTE = `
 		  AND o.stock > 0
 		  -- Platform/region filters narrow which offers contribute to the
 		  -- displayed price, so a "PlayStation" filter never shows a Steam price.
-		  AND (@platform = '' OR pl.slug = @platform)
-		  AND (@region   = '' OR r.code  = @region)
+		  AND (cardinality(@platforms::text[]) = 0 OR pl.slug = ANY(@platforms::text[]))
+		  AND (cardinality(@regions::text[])   = 0 OR r.code  = ANY(@regions::text[]))
 		GROUP BY o.product_id
 	)`
 
@@ -115,10 +117,10 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 		       OR similarity(p.title, @search) > 0.25
 		       OR word_similarity(@search, p.title) > 0.6
 		       OR `+titleAcronymExpr+` LIKE lower(@search) || '%%')
-		  AND (@genre = '' OR EXISTS (
+		  AND (cardinality(@genres::text[]) = 0 OR EXISTS (
 		       SELECT 1 FROM product_genres pg
 		       JOIN genres g ON g.id = pg.genre_id
-		       WHERE pg.product_id = p.id AND g.slug = @genre))
+		       WHERE pg.product_id = p.id AND g.slug = ANY(@genres::text[])))
 		  AND (@min_price::int IS NULL OR a.min_price >= @min_price)
 		  AND (@max_price::int IS NULL OR a.min_price <= @max_price)
 		ORDER BY %s
@@ -126,9 +128,9 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 
 	args := pgx.NamedArgs{
 		"search":    strings.TrimSpace(f.Search),
-		"platform":  f.Platform,
-		"region":    f.Region,
-		"genre":     f.Genre,
+		"platforms": f.Platforms,
+		"regions":   f.Regions,
+		"genres":    f.Genres,
 		"min_price": f.MinPriceCents,
 		"max_price": f.MaxPriceCents,
 		"limit":     pg.PageSize,

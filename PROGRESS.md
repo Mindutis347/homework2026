@@ -18,7 +18,7 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Area | What works |
 |---|---|
 | Homepage | 7 blocks fetched from `homepage_blocks` and rendered by `type` (hero, product_carousel, category_tiles, banner). Nothing about the landing page is hardcoded in React. |
-| Store | Platform / region / genre / max-price filters, 6 sort modes, pagination, all filter state in the URL so views are shareable. |
+| Store | Platform / region / genre filters are **multi-select** (URL holds repeated params, so a view with Steam+Xbox and EU+US is shareable), any number of genres, and a **price range** (from/to in euro, both ends optional). The filter panel has its own title search next to the header search, 6 sort modes, and pagination. All filter state lives in the URL. |
 | Search | Global dropdown + store results, typo tolerant via `pg_trgm` (`eleden ring` → Elden Ring at 64%, `cyberpuk` → Cyberpunk 2077 at 78%). Title initialisms resolve too, computed in SQL: `gta` → Grand Theft Auto V, `bg3` → Baldur's Gate 3, `rdr2` → Red Dead Redemption 2. |
 | Product page | Game details, genres, developer/publisher, competing offers from several sellers with platform/region chips, cheapest-offer highlighting, stock. |
 | Cart | Add, change quantity (1–10), remove, clear; totals always re-read from live offers, never cached prices. |

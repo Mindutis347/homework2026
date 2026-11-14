@@ -102,10 +102,18 @@ export const api = {
 }
 
 /** Builds `?a=1&b=2`, skipping empty values so filters stay clean. */
-export function queryString(params: Record<string, string | number | boolean | null | undefined>): string {
+export function queryString(params: Record<string, string | number | boolean | null | undefined | string[]>): string {
   const search = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) {
     if (value === null || value === undefined || value === '') continue
+    // Arrays become repeated parameters (?platform=steam&platform=xbox), which
+    // the API accepts alongside the older comma-separated form.
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item !== '') search.append(key, item)
+      }
+      continue
+    }
     search.set(key, String(value))
   }
   const encoded = search.toString()

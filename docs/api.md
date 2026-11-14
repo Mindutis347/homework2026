@@ -17,7 +17,7 @@ is required from the browser.
 | GET | `/api/health` | liveness + DB ping |
 | GET | `/api/meta` | platforms, regions, genres, price range |
 | GET | `/api/homepage` | visible blocks with resolved products |
-| GET | `/api/products` | `q, platform, region, genre, minPriceCents, maxPriceCents, sort, page, pageSize` |
+| GET | `/api/products` | `q, platform, region, genre, minPriceCents, maxPriceCents, sort, page, pageSize`. `platform`, `region` and `genre` are repeatable (or comma-separated) and match **any** of the supplied values; `minPriceCents`/`maxPriceCents` bound the product's cheapest offer |
 | GET | `/api/products/{slug}` | product detail + competing offers |
 | GET | `/api/search?q=&limit=` | fuzzy suggestions with match scores: trigrams tolerate typos (`eleden ring`), prefix/`ILIKE` catches partial names (`cyberpu`), and title initialisms resolve abbreviations (`gta`, `bg3`, `rdr2`) |
 

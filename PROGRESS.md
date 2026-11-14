@@ -132,8 +132,8 @@ styles, so the palette (`#4618AC` chrome, `#1F0A4D` deep surface, `#FAD318` CTA,
 
 ### Repository
 
-`github.com/Mindutis347/homework2026`, branch `main`, 11 commits, 98 tracked files.
-Latest: `fix(admin): blank homepage tab and product detach on save`. Deployed and verified in session 2.
+`github.com/Mindutis347/homework2026`, branch `main`, 30 commits, 108 tracked files.
+Latest: `docs: merge session 2 into the agent chat log`. Deployed and verified after every milestone.
 
 ---
 
@@ -182,12 +182,14 @@ Session 2 added the support feature and fixed two bugs found with it:
 | Admin → Homepage was a blank page | `AdminBlocks` read `block.products.length`, but `GET /api/admin/blocks` returns `productIds` with `products: null` (the editor never needs hydrated cards) — a render-time TypeError unmounted the route | A separate `AdminBlock` type exposing `productIds`, plus the backend normalising `products` to `[]` |
 | Saving a homepage block would detach its products | Same field: the editor's "Product IDs" input was built from `block.products`, so it rendered empty and saved `productIds: []` | Editor now seeds that input from `block.productIds` |
 
-Pending, in order of importance:
+Pending:
 
-1. **Rotate the Render API key.** It was pasted into the agent chat, and that chat is a submission
-   artifact. Revoke it at Render → Account Settings → API Keys. Nothing depends on it. (Still open
-   as of session 2.)
-2. Optional: delete the `e2e-test` Neon branch instead of waiting for its TTL.
+1. Optional: delete the `e2e-test` Neon branch instead of waiting for its TTL.
+2. Optional: one final `/export` at the end of the current session (see §4).
+
+The Render API key that was pasted into this chat has been **revoked** and every export of the
+transcript is key-free (the paste reads "render api key redacted"; 0 occurrences of the key pattern
+across the merged log). Both sessions are merged into `agent-chat-history.md`.
 
 One deliberate API change in session 2: `POST /api/tickets` no longer accepts `refundRequested`. The
 refund flag is derived from `category == "refund"` server-side, so the queue's refund badge can never
@@ -218,13 +220,19 @@ Known limitations, deliberately accepted and documented in `docs/architecture.md
 
 ## 4. Exact next step
 
-Both Vercel and Render are live and verified, so the only open item is housekeeping:
+The key is revoked and the log is merged, so nothing is blocking submission:
 
 ```bash
-# Revoke the Render API key (Render → Account Settings → API Keys). Still open.
+# one last export of the current session, then replace (not append) its section
+/export
 ```
 
-The assignment deliverables are complete: repo, public URL, demo accounts, architecture notes, API
-reference, and the chat history. If build time remains, the highest-value work is rate limiting on
-`/api/auth/*` — the one gap flagged before real traffic. After that, ticket message threads (the one
-deliberate limitation left in the support feature).
+That last point matters: a Kimi export is **cumulative per session**, and session 2 was already
+merged as a 943-message snapshot (`…-002300`). A newer export of the same session repeats everything
+up to 00:23 and adds the rest, so append it and the conversation appears twice. Either keep the
+current snapshot and stop, or `/export`, cut the new body from the "## Session 2" marker and paste
+it in place of the existing session-2 block.
+
+With that, the deliverables are complete: repository, public URL, demo accounts, architecture
+notes, API reference and chat history. If build time remains, the highest-value work is rate
+limiting on `/api/auth/*` — the one gap flagged before real traffic.

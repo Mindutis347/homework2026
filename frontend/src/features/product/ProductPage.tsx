@@ -6,7 +6,7 @@ import type { Offer, ProductDetail } from '@/api/types'
 import { ContentTypeBadge } from '@/components/ContentTypeBadge'
 import { Badge, Button, Card, EmptyState, Notice, Skeleton } from '@/components/ui'
 import { useCart } from '@/features/cart/CartContext'
-import { formatDate, formatMoney } from '@/lib/format'
+import { formatDate, formatMoney, isPreorder } from '@/lib/format'
 
 /** The product page: one game, every competing seller offer, compare and buy. */
 export default function ProductPage() {
@@ -128,10 +128,12 @@ export default function ProductPage() {
 
         <div>
           <h1 className="font-display text-2xl font-extrabold leading-tight text-white sm:text-3xl">
+            {isPreorder(product.releaseDate) && <span className="mr-2 text-accent-500">Pre-order</span>}
             {product.title}
           </h1>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <ContentTypeBadge type={product.contentType} />
+            {isPreorder(product.releaseDate) && <Badge tone="accent">Pre-order</Badge>}
             {platforms.map((p) => (
               <Badge key={p} tone="accent">{p === 'steam' ? 'Steam' : p === 'nintendo' ? 'Switch' : p}</Badge>
             ))}

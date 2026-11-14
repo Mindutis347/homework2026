@@ -2,12 +2,13 @@ import { Link } from 'react-router-dom'
 
 import type { ProductCard as ProductCardType } from '@/api/types'
 import { ContentTypeTag } from '@/components/ContentTypeBadge'
-import { discountPercent, formatMoney } from '@/lib/format'
+import { discountPercent, formatMoney, isPreorder } from '@/lib/format'
 
 /** Grid card used on the homepage rows, the store and search results. Dark navy
  *  tile with a yellow action bar, following eneba.com's product tile. */
 export function ProductCard({ product, eager = false }: { product: ProductCardType; eager?: boolean }) {
   const discount = discountPercent(product.minPriceCents, product.maxPriceCents)
+  const preorder = isPreorder(product.releaseDate)
   return (
     <Link
       to={`/products/${product.slug}`}
@@ -19,7 +20,12 @@ export function ProductCard({ product, eager = false }: { product: ProductCardTy
         </span>
       )}
       <ContentTypeTag type={product.contentType} />
-      <div className="aspect-[3/4] overflow-hidden bg-brand-800">
+      <div className="relative aspect-[3/4] overflow-hidden bg-brand-800">
+        {preorder && (
+          <span className="absolute bottom-1 left-1 z-10 rounded-[2px] bg-accent-500 px-2 py-0.5 text-[0.625rem] font-extrabold uppercase tracking-wide text-on-accent shadow-card">
+            Pre-order
+          </span>
+        )}
         <img
           src={product.coverUrl}
           alt={product.title}
@@ -31,6 +37,7 @@ export function ProductCard({ product, eager = false }: { product: ProductCardTy
       <div className="flex flex-1 flex-col gap-1 p-3">
         <p className="label-caps truncate text-brand-200">{product.platforms.map(platformLabel).join(' · ')}</p>
         <h3 className="line-clamp-2 text-sm font-bold leading-snug group-hover:text-accent-300">
+          {preorder && <span className="mr-1 text-accent-500">Pre-order</span>}
           {product.title}
         </h3>
         <div className="mt-auto flex items-baseline gap-1.5 pt-1.5">

@@ -161,7 +161,7 @@ func (a *Admin) adminUserByID(ctx context.Context, userID int64) (models.AdminUs
 func (a *Admin) Requests(ctx context.Context, status string) ([]models.ProductRequest, error) {
 	rows, err := a.pool.Query(ctx, `
 		SELECT pr.id, pr.merchant_id, u.display_name, pr.title,
-		       pl.slug, r.code, pr.cover_url, pr.description, pr.status, pr.admin_note,
+		       pl.slug, r.code, pr.cover_url, pr.description, pr.content_type, pr.status, pr.admin_note,
 		       p.slug, pr.created_at, pr.reviewed_at
 		FROM product_requests pr
 		JOIN users u      ON u.id = pr.merchant_id
@@ -180,7 +180,7 @@ func (a *Admin) Requests(ctx context.Context, status string) ([]models.ProductRe
 	for rows.Next() {
 		var p models.ProductRequest
 		if err := rows.Scan(&p.ID, &p.MerchantID, &p.MerchantName, &p.Title, &p.PlatformSlug,
-			&p.RegionCode, &p.CoverURL, &p.Description, &p.Status, &p.AdminNote,
+			&p.RegionCode, &p.CoverURL, &p.Description, &p.ContentType, &p.Status, &p.AdminNote,
 			&p.ProductSlug, &p.CreatedAt, &p.ReviewedAt); err != nil {
 			return nil, err
 		}
@@ -197,10 +197,10 @@ func (a *Admin) ReviewRequest(ctx context.Context, requestID, adminID int64, app
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
-	var title, description, coverURL, status string
+	var title, description, coverURL, status, contentType string
 	err = tx.QueryRow(ctx, `
-		SELECT title, description, cover_url, status FROM product_requests WHERE id = $1 FOR UPDATE`,
-		requestID).Scan(&title, &description, &coverURL, &status)
+		SELECT title, description, cover_url, status, content_type FROM product_requests WHERE id = $1 FOR UPDATE`,
+		requestID).Scan(&title, &description, &coverURL, &status, &contentType)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return models.ProductRequest{}, ErrNotFound
 	}
@@ -220,10 +220,10 @@ func (a *Admin) ReviewRequest(ctx context.Context, requestID, adminID int64, app
 		}
 		var id int64
 		err = tx.QueryRow(ctx, `
-			INSERT INTO products (slug, title, description, cover_url, hero_url, developer, publisher)
-			VALUES ($1, $2, $3, $4, $4, '', '')
+			INSERT INTO products (slug, title, description, cover_url, hero_url, developer, publisher, content_type)
+			VALUES ($1, $2, $3, $4, $4, '', '', $5)
 			ON CONFLICT (slug) DO NOTHING
-			RETURNING id`, slug, title, description, coverURL).Scan(&id)
+			RETURNING id`, slug, title, description, coverURL, contentType).Scan(&id)
 		if errors.Is(err, pgx.ErrNoRows) {
 			// Slug already exists: reuse the existing product instead of failing.
 			if err := tx.QueryRow(ctx, `SELECT id FROM products WHERE slug = $1`, slug).Scan(&id); err != nil {
@@ -254,7 +254,7 @@ func (a *Admin) requestByID(ctx context.Context, id int64) (models.ProductReques
 	var p models.ProductRequest
 	err := a.pool.QueryRow(ctx, `
 		SELECT pr.id, pr.merchant_id, u.display_name, pr.title,
-		       pl.slug, r.code, pr.cover_url, pr.description, pr.status, pr.admin_note,
+		       pl.slug, r.code, pr.cover_url, pr.description, pr.content_type, pr.status, pr.admin_note,
 		       p.slug, pr.created_at, pr.reviewed_at
 		FROM product_requests pr
 		JOIN users u      ON u.id = pr.merchant_id
@@ -263,7 +263,7 @@ func (a *Admin) requestByID(ctx context.Context, id int64) (models.ProductReques
 		LEFT JOIN products p ON p.id = pr.product_id
 		WHERE pr.id = $1`, id,
 	).Scan(&p.ID, &p.MerchantID, &p.MerchantName, &p.Title, &p.PlatformSlug, &p.RegionCode,
-		&p.CoverURL, &p.Description, &p.Status, &p.AdminNote, &p.ProductSlug, &p.CreatedAt, &p.ReviewedAt)
+		&p.CoverURL, &p.Description, &p.ContentType, &p.Status, &p.AdminNote, &p.ProductSlug, &p.CreatedAt, &p.ReviewedAt)
 	return p, err
 }
 

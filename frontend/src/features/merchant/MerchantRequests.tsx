@@ -15,6 +15,7 @@ import {
   Select,
   Skeleton,
 } from '@/components/ui'
+import { ContentTypeBadge } from '@/components/ContentTypeBadge'
 import { formatDate } from '@/lib/format'
 
 const textareaClass =
@@ -38,6 +39,7 @@ export default function MerchantRequests() {
   const [coverUrl, setCoverUrl] = useState('')
   const [platformSlug, setPlatformSlug] = useState('')
   const [regionCode, setRegionCode] = useState('')
+  const [contentType, setContentType] = useState<'full' | 'dlc' | 'both'>('full')
   const [formError, setFormError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -93,6 +95,7 @@ export default function MerchantRequests() {
         coverUrl: coverUrl.trim(),
         platformSlug,
         regionCode,
+        contentType,
       })
       setRequests((current) => [request, ...current])
       setTitle('')
@@ -138,7 +141,10 @@ export default function MerchantRequests() {
                 <Card key={request.id} className="p-4">
                   <div className="flex flex-wrap items-start gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-ink-900">{request.title}</p>
+                      <p className="flex flex-wrap items-center gap-2 font-semibold text-ink-900">
+                        {request.title}
+                        <ContentTypeBadge type={request.contentType} />
+                      </p>
                       <p className="mt-1 text-xs text-ink-500">
                         {request.platformSlug} · {request.regionCode} · submitted {formatDate(request.createdAt)}
                       </p>
@@ -207,6 +213,17 @@ export default function MerchantRequests() {
                 onChange={(event) => setCoverUrl(event.target.value)}
                 placeholder="https://…/cover.jpg"
               />
+            </Field>
+
+            <Field
+              label="What is it"
+              hint="Buyers see this on the store, so the catalogue stays honest."
+            >
+              <Select value={contentType} onChange={(event) => setContentType(event.target.value as 'full' | 'dlc' | 'both')}>
+                <option value="full">Full game</option>
+                <option value="dlc">DLC / add-on</option>
+                <option value="both">Game + DLC bundle</option>
+              </Select>
             </Field>
 
             <div className="grid gap-4 sm:grid-cols-2">

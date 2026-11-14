@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 
 import { catalogApi, merchantApi } from '@/api/endpoints'
 import type { MerchantOffer, Meta, ProductCard } from '@/api/types'
+import { ContentTypeBadge } from '@/components/ContentTypeBadge'
 import {
   Badge,
   Button,
@@ -294,11 +295,14 @@ export default function MerchantOffers() {
                       }
                       className="flex w-full items-center gap-3 border-b border-line px-3 py-2 text-left last:border-b-0 hover:bg-white/10"
                     >
-                      <img src={product.coverUrl} alt="" className="h-10 w-7 rounded object-cover" />
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink-900">
+                      <img src={product.coverUrl} alt="" className="h-10 w-7 rounded-[2px] object-cover" />
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-white">
                         {product.title}
                       </span>
-                      <span className="text-xs text-ink-500">{product.offerCount} offers</span>
+                      <ContentTypeBadge type={product.contentType} />
+                      <span className="text-xs text-brand-200">
+                        {product.offerCount === 0 ? "no offers yet" : `${product.offerCount} offers`}
+                      </span>
                     </button>
                   ))}
                 {!searching && !searchError && results.length === 0 && (

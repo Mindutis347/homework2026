@@ -17,6 +17,12 @@ const SORT_OPTIONS = [
   { value: 'title', label: 'Title A–Z' },
 ]
 
+const CONTENT_TYPES = [
+  { value: 'full', label: 'Full game' },
+  { value: 'dlc', label: 'DLC' },
+  { value: 'both', label: 'Game + DLC' },
+]
+
 const PAGE_SIZE = 24
 
 /** Reads a repeatable filter from the URL. Repeated parameters and the older
@@ -60,6 +66,7 @@ export default function StorePage() {
   const platforms = useMemo(() => multiValues(params, 'platform'), [params])
   const regions = useMemo(() => multiValues(params, 'region'), [params])
   const genres = useMemo(() => multiValues(params, 'genre'), [params])
+  const contentTypes = useMemo(() => multiValues(params, 'contentType'), [params])
   const queryText = params.get('q') ?? ''
   const minCents = Number(params.get('minPriceCents') ?? '') || undefined
   const maxCents = Number(params.get('maxPriceCents') ?? '') || undefined
@@ -73,12 +80,13 @@ export default function StorePage() {
       platform: platforms,
       region: regions,
       genre: genres,
+      contentType: contentTypes,
       minPriceCents: minCents,
       maxPriceCents: maxCents,
       sort: params.get('sort') ?? 'popular',
       page: Number(params.get('page') ?? 1),
     }),
-    [params, queryText, platforms, regions, genres, minCents, maxCents],
+    [params, queryText, platforms, regions, genres, contentTypes, minCents, maxCents],
   )
 
   useEffect(() => {
@@ -168,6 +176,11 @@ export default function StorePage() {
     ...platforms.map((slug) => ({ key: 'platform', value: slug, label: label.platform(slug) })),
     ...regions.map((code) => ({ key: 'region', value: code, label: label.region(code) })),
     ...genres.map((slug) => ({ key: 'genre', value: slug, label: label.genre(slug) })),
+    ...contentTypes.map((value) => ({
+      key: 'contentType',
+      value,
+      label: CONTENT_TYPES.find((option) => option.value === value)?.label ?? value,
+    })),
     ...(minCents ? [{ key: 'minPriceCents', label: `from ${formatMoney(minCents)}` }] : []),
     ...(maxCents ? [{ key: 'maxPriceCents', label: `up to ${formatMoney(maxCents)}` }] : []),
   ]
@@ -256,6 +269,23 @@ export default function StorePage() {
                       onClick={() => toggleFilter('platform', platform.slug)}
                     >
                       {platform.name}
+                    </FilterChip>
+                  ))}
+                </div>
+              </FilterGroup>
+
+              <FilterGroup title="Content" hint="Full game, add-on, or both">
+                <div className="flex flex-wrap gap-1.5">
+                  <FilterChip active={contentTypes.length === 0} onClick={() => clearParam('contentType')}>
+                    All
+                  </FilterChip>
+                  {CONTENT_TYPES.map((option) => (
+                    <FilterChip
+                      key={option.value}
+                      active={contentTypes.includes(option.value)}
+                      onClick={() => toggleFilter('contentType', option.value)}
+                    >
+                      {option.label}
                     </FilterChip>
                   ))}
                 </div>

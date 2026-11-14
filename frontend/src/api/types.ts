@@ -22,6 +22,8 @@ export type ProductCard = {
   minPriceCents: number
   maxPriceCents: number
   offerCount: number
+  /** full = base game, dlc = add-on only, both = base game plus its DLC. */
+  contentType: "full" | "dlc" | "both"
   platforms: string[]
   regions: string[]
   bestDiscountPercent: number
@@ -51,6 +53,7 @@ export type Offer = {
 
 export type ProductDetail = ProductCard & {
   description: string
+  contentType: "full" | "dlc" | "both"
   heroUrl: string
   developer: string
   publisher: string
@@ -193,6 +196,7 @@ export type ProductRequest = {
   regionCode: string
   coverUrl: string
   description: string
+  contentType: 'full' | 'dlc' | 'both'
   status: 'pending' | 'approved' | 'rejected'
   adminNote: string
   productSlug: string | null
@@ -273,6 +277,7 @@ export type CatalogQuery = {
   platform?: string[]
   region?: string[]
   genre?: string[]
+  contentType?: string[]
   minPriceCents?: number
   maxPriceCents?: number
   sort?: string

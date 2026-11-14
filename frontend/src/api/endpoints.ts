@@ -106,6 +106,7 @@ export const merchantApi = {
     coverUrl: string
     platformSlug: string
     regionCode: string
+    contentType: string
   }) => api.post<{ request: ProductRequest }>('/api/merchant/requests', payload),
 }
 

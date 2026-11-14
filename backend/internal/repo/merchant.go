@@ -206,15 +206,15 @@ func (m *Merchant) Sales(ctx context.Context, sellerID int64, limit int) ([]mode
 }
 
 // CreateRequest submits a new catalog title for admin approval.
-func (m *Merchant) CreateRequest(ctx context.Context, merchantID int64, title, description, coverURL, platformSlug, regionCode string) (models.ProductRequest, error) {
+func (m *Merchant) CreateRequest(ctx context.Context, merchantID int64, title, description, coverURL, platformSlug, regionCode, contentType string) (models.ProductRequest, error) {
 	var id int64
 	err := m.pool.QueryRow(ctx, `
-		INSERT INTO product_requests (merchant_id, title, description, cover_url, platform_id, region_id)
-		SELECT $1, $2, $3, $4, pl.id, r.id
+		INSERT INTO product_requests (merchant_id, title, description, cover_url, platform_id, region_id, content_type)
+		SELECT $1, $2, $3, $4, pl.id, r.id, $7
 		FROM platforms pl, regions r
 		WHERE pl.slug = $5 AND r.code = $6
 		RETURNING id`,
-		merchantID, title, description, coverURL, platformSlug, regionCode,
+		merchantID, title, description, coverURL, platformSlug, regionCode, contentType,
 	).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return models.ProductRequest{}, ErrInvalidReference
@@ -231,7 +231,7 @@ func (m *Merchant) RequestByID(ctx context.Context, id int64) (models.ProductReq
 	var p models.ProductRequest
 	err := m.pool.QueryRow(ctx, `
 		SELECT pr.id, pr.merchant_id, u.display_name, pr.title,
-		       pl.slug, r.code, pr.cover_url, pr.description, pr.status, pr.admin_note,
+		       pl.slug, r.code, pr.cover_url, pr.description, pr.content_type, pr.status, pr.admin_note,
 		       p.slug, pr.created_at, pr.reviewed_at
 		FROM product_requests pr
 		JOIN users u      ON u.id = pr.merchant_id
@@ -240,7 +240,7 @@ func (m *Merchant) RequestByID(ctx context.Context, id int64) (models.ProductReq
 		LEFT JOIN products p ON p.id = pr.product_id
 		WHERE pr.id = $1`, id,
 	).Scan(&p.ID, &p.MerchantID, &p.MerchantName, &p.Title, &p.PlatformSlug, &p.RegionCode,
-		&p.CoverURL, &p.Description, &p.Status, &p.AdminNote, &p.ProductSlug, &p.CreatedAt, &p.ReviewedAt)
+		&p.CoverURL, &p.Description, &p.ContentType, &p.Status, &p.AdminNote, &p.ProductSlug, &p.CreatedAt, &p.ReviewedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return p, ErrNotFound
 	}
@@ -251,7 +251,7 @@ func (m *Merchant) RequestByID(ctx context.Context, id int64) (models.ProductReq
 func (m *Merchant) Requests(ctx context.Context, merchantID int64) ([]models.ProductRequest, error) {
 	rows, err := m.pool.Query(ctx, `
 		SELECT pr.id, pr.merchant_id, u.display_name, pr.title,
-		       pl.slug, r.code, pr.cover_url, pr.description, pr.status, pr.admin_note,
+		       pl.slug, r.code, pr.cover_url, pr.description, pr.content_type, pr.status, pr.admin_note,
 		       p.slug, pr.created_at, pr.reviewed_at
 		FROM product_requests pr
 		JOIN users u      ON u.id = pr.merchant_id

@@ -32,11 +32,16 @@ type CatalogFilter struct {
 	Platforms     []string
 	Regions       []string
 	Genres        []string
+	ContentTypes  []string
 	MinPriceCents *int
 	MaxPriceCents *int
 	Sort          string
 	Page          int
 	PageSize      int
+	// IncludeUnlisted keeps products that have no live offers yet. The storefront
+	// never wants those, but a merchant listing a freshly approved catalogue entry
+	// does: that product exists before any offer points at it.
+	IncludeUnlisted bool
 }
 
 // titleAcronymExpr builds a product title's initialism in SQL — "Grand Theft
@@ -99,24 +104,35 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 		order = sortClauses["popular"]
 	}
 
+	// The storefront only lists products that someone actually sells, so the
+	// aggregate is an inner join by default; the merchant picker flips it to a
+	// left join so an approved-but-unlisted product is selectable.
+	join := "JOIN offer_agg a ON a.product_id = p.id"
+	if f.IncludeUnlisted {
+		join = "LEFT JOIN offer_agg a ON a.product_id = p.id"
+	}
+
 	query := fmt.Sprintf(`
 		WITH %s
 		SELECT p.id, p.slug, p.title, p.cover_url, p.release_date, p.popularity,
-		       a.min_price, a.max_price, a.offer_count, a.best_discount,
-		       a.platform_slugs, a.region_codes,
+		       COALESCE(a.min_price, 0), COALESCE(a.max_price, 0),
+		       COALESCE(a.offer_count, 0), COALESCE(a.best_discount, 0),
+		       COALESCE(a.platform_slugs, '{}'), COALESCE(a.region_codes, '{}'),
+		       p.content_type,
 		       COUNT(*) OVER() AS total,
 		       CASE WHEN @search = '' THEN 0
 		            ELSE GREATEST(similarity(p.title, @search),
 		                 CASE WHEN `+titleAcronymExpr+` LIKE lower(@search) || '%%' THEN 0.9 ELSE 0 END)
 		       END AS score
 		FROM products p
-		JOIN offer_agg a ON a.product_id = p.id
+		%s
 		WHERE p.is_active
 		  AND (@search = ''
 		       OR p.title ILIKE '%%' || @search || '%%'
 		       OR similarity(p.title, @search) > 0.25
 		       OR word_similarity(@search, p.title) > 0.6
 		       OR `+titleAcronymExpr+` LIKE lower(@search) || '%%')
+		  AND (cardinality(@content_types::text[]) = 0 OR p.content_type = ANY(@content_types::text[]))
 		  AND (cardinality(@genres::text[]) = 0 OR EXISTS (
 		       SELECT 1 FROM product_genres pg
 		       JOIN genres g ON g.id = pg.genre_id
@@ -124,17 +140,18 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 		  AND (@min_price::int IS NULL OR a.min_price >= @min_price)
 		  AND (@max_price::int IS NULL OR a.min_price <= @max_price)
 		ORDER BY %s
-		LIMIT @limit OFFSET @offset`, offerAggCTE, order)
+		LIMIT @limit OFFSET @offset`, offerAggCTE, join, order)
 
 	args := pgx.NamedArgs{
-		"search":    strings.TrimSpace(f.Search),
-		"platforms": f.Platforms,
-		"regions":   f.Regions,
-		"genres":    f.Genres,
-		"min_price": f.MinPriceCents,
-		"max_price": f.MaxPriceCents,
-		"limit":     pg.PageSize,
-		"offset":    (pg.Page - 1) * pg.PageSize,
+		"search":        strings.TrimSpace(f.Search),
+		"platforms":     nonNil(f.Platforms),
+		"regions":       nonNil(f.Regions),
+		"genres":        nonNil(f.Genres),
+		"content_types": nonNil(f.ContentTypes),
+		"min_price":     f.MinPriceCents,
+		"max_price":     f.MaxPriceCents,
+		"limit":         pg.PageSize,
+		"offset":        (pg.Page - 1) * pg.PageSize,
 	}
 
 	rows, err := c.pool.Query(ctx, query, args)
@@ -150,7 +167,7 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 		if err := rows.Scan(
 			&item.ID, &item.Slug, &item.Title, &item.CoverURL, &item.ReleaseDate, &item.Popularity,
 			&item.MinPriceCents, &item.MaxPriceCents, &item.OfferCount, &item.BestDiscountPercent,
-			&item.Platforms, &item.Regions, &total, &score,
+			&item.Platforms, &item.Regions, &item.ContentType, &total, &score,
 		); err != nil {
 			return pg, fmt.Errorf("scan product: %w", err)
 		}
@@ -160,19 +177,28 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 	return pg, rows.Err()
 }
 
+// nonNil turns a missing filter list into an empty one so the SQL guards see
+// cardinality 0 instead of NULL.
+func nonNil(values []string) []string {
+	if values == nil {
+		return []string{}
+	}
+	return values
+}
+
 // GetBySlug loads a product with its genres and every live offer.
 func (c *Catalog) GetBySlug(ctx context.Context, slug string) (models.ProductDetail, error) {
 	d := models.ProductDetail{Genres: []string{}, Offers: []models.Offer{}}
 
 	err := c.pool.QueryRow(ctx, `
 		SELECT p.id, p.slug, p.title, p.description, p.cover_url, p.hero_url,
-		       p.developer, p.publisher, p.release_date, p.popularity
+		       p.developer, p.publisher, p.release_date, p.popularity, p.content_type
 		FROM products p
 		WHERE p.slug = @slug AND p.is_active`,
 		pgx.NamedArgs{"slug": slug},
 	).Scan(
 		&d.ID, &d.Slug, &d.Title, &d.Description, &d.CoverURL, &d.HeroURL,
-		&d.Developer, &d.Publisher, &d.ReleaseDate, &d.Popularity,
+		&d.Developer, &d.Publisher, &d.ReleaseDate, &d.Popularity, &d.ContentType,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return d, ErrNotFound

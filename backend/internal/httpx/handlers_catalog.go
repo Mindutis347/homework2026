@@ -53,13 +53,14 @@ func multiParam(r *http.Request, key string) []string {
 // platform, region and genre accept several values, repeated or comma-separated.
 func (a *App) handleListProducts(w http.ResponseWriter, r *http.Request) {
 	filter := repo.CatalogFilter{
-		Search:    strings.TrimSpace(r.URL.Query().Get("q")),
-		Platforms: multiParam(r, "platform"),
-		Regions:   multiParam(r, "region"),
-		Genres:    multiParam(r, "genre"),
-		Sort:      r.URL.Query().Get("sort"),
-		Page:      1,
-		PageSize:  24,
+		Search:       strings.TrimSpace(r.URL.Query().Get("q")),
+		Platforms:    multiParam(r, "platform"),
+		Regions:      multiParam(r, "region"),
+		Genres:       multiParam(r, "genre"),
+		ContentTypes: multiParam(r, "contentType"),
+		Sort:         r.URL.Query().Get("sort"),
+		Page:         1,
+		PageSize:     24,
 	}
 
 	var err error

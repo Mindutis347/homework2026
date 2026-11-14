@@ -156,7 +156,7 @@ func (a *App) handleMerchantRequests(w http.ResponseWriter, r *http.Request) {
 
 // handleMerchantCreateRequest proposes a new catalog title.
 //
-//	POST /api/merchant/requests {"title","description","coverUrl","platformSlug","regionCode"}
+//	POST /api/merchant/requests {"title","description","coverUrl","platformSlug","regionCode","contentType"}
 func (a *App) handleMerchantCreateRequest(w http.ResponseWriter, r *http.Request) {
 	user := UserFrom(r.Context())
 	var body struct {
@@ -165,6 +165,7 @@ func (a *App) handleMerchantCreateRequest(w http.ResponseWriter, r *http.Request
 		CoverURL     string `json:"coverUrl"`
 		PlatformSlug string `json:"platformSlug"`
 		RegionCode   string `json:"regionCode"`
+		ContentType  string `json:"contentType"`
 	}
 	if err := DecodeJSON(w, r, &body); err != nil {
 		WriteError(w, err)
@@ -175,9 +176,19 @@ func (a *App) handleMerchantCreateRequest(w http.ResponseWriter, r *http.Request
 		WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "title is required"))
 		return
 	}
+	// What kind of catalogue entry this is: a full game, a DLC, or a package that
+	// includes the base game and its DLC.
+	switch body.ContentType {
+	case "", "full":
+		body.ContentType = "full"
+	case "dlc", "both":
+	default:
+		WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "contentType must be full, dlc or both"))
+		return
+	}
 
 	req, err := a.merchant.CreateRequest(r.Context(), user.UserID, body.Title, body.Description,
-		body.CoverURL, body.PlatformSlug, body.RegionCode)
+		body.CoverURL, body.PlatformSlug, body.RegionCode, body.ContentType)
 	if errors.Is(err, repo.ErrInvalidReference) {
 		WriteError(w, Errorf(http.StatusBadRequest, "invalid_reference", "unknown platform or region"))
 		return
@@ -198,6 +209,9 @@ func (a *App) handleSearchProductsForPicker(w http.ResponseWriter, r *http.Reque
 		Page:     1,
 		PageSize: 12,
 		Sort:     "relevance",
+		// A product the admin just approved has no offers yet — which is exactly
+		// when a merchant needs to find it here.
+		IncludeUnlisted: true,
 	})
 	if err != nil {
 		WriteError(w, err)

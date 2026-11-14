@@ -51,6 +51,7 @@ type ProductRequest struct {
 	RegionCode   string     `json:"regionCode"`
 	CoverURL     string     `json:"coverUrl"`
 	Description  string     `json:"description"`
+	ContentType  string     `json:"contentType"`
 	Status       string     `json:"status"`
 	AdminNote    string     `json:"adminNote"`
 	ProductSlug  *string    `json:"productSlug"`

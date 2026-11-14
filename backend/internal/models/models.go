@@ -26,6 +26,7 @@ type ProductCard struct {
 	MinPriceCents int        `json:"minPriceCents"`
 	MaxPriceCents int        `json:"maxPriceCents"`
 	OfferCount    int        `json:"offerCount"`
+	ContentType   string     `json:"contentType"`
 	Platforms     []string   `json:"platforms"`
 	Regions       []string   `json:"regions"`
 	// BestDiscountPercent is the deepest markdown across the product's offers.

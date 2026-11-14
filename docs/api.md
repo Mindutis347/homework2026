@@ -17,7 +17,7 @@ is required from the browser.
 | GET | `/api/health` | liveness + DB ping |
 | GET | `/api/meta` | platforms, regions, genres, price range |
 | GET | `/api/homepage` | visible blocks with resolved products |
-| GET | `/api/products` | `q, platform, region, genre, minPriceCents, maxPriceCents, sort, page, pageSize`. `platform`, `region` and `genre` are repeatable (or comma-separated) and match **any** of the supplied values; `minPriceCents`/`maxPriceCents` bound the product's cheapest offer |
+| GET | `/api/products` | `q, platform, region, genre, contentType, minPriceCents, maxPriceCents, sort, page, pageSize`. `platform`, `region` and `genre` are repeatable (or comma-separated) and match **any** of the supplied values; `contentType` is one of `full`, `dlc`, `both`; `minPriceCents`/`maxPriceCents` bound the product's cheapest offer |
 | GET | `/api/products/{slug}` | product detail + competing offers |
 | GET | `/api/search?q=&limit=` | fuzzy suggestions with match scores: trigrams tolerate typos (`eleden ring`), prefix/`ILIKE` catches partial names (`cyberpu`), and title initialisms resolve abbreviations (`gta`, `bg3`, `rdr2`) |
 
@@ -72,7 +72,7 @@ is required from the browser.
 | GET | `/api/merchant/sales` | last 25 sold lines |
 | GET | `/api/merchant/products?q=` | product picker |
 | GET | `/api/merchant/requests` | own catalog proposals |
-| POST | `/api/merchant/requests` | `{title, description, coverUrl, platformSlug, regionCode}` |
+| POST | `/api/merchant/requests` | `{title, description, coverUrl, platformSlug, regionCode, contentType}` — contentType is `full`, `dlc` or `both` and becomes the product's type on approval |
 
 ## Admin (`admin`, verified)
 

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { catalogApi } from '@/api/endpoints'
 import type { Offer, ProductDetail } from '@/api/types'
+import { ContentTypeBadge } from '@/components/ContentTypeBadge'
 import { Badge, Button, Card, EmptyState, Notice, Skeleton } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
@@ -122,6 +123,7 @@ export default function ProductPage() {
             <img src={product.coverUrl} alt={product.title} className="aspect-[3/4] w-full object-cover" />
           </div>
           <Card className="mt-4 space-y-2 p-4 text-sm">
+            <Detail label="Includes" value={product.contentType === 'dlc' ? 'Add-on (needs the base game)' : product.contentType === 'both' ? 'Base game + DLC' : 'Full game'} />
             <Detail label="Developer" value={product.developer || '—'} />
             <Detail label="Publisher" value={product.publisher || '—'} />
             <Detail label="Released" value={formatDate(product.releaseDate)} />
@@ -135,6 +137,7 @@ export default function ProductPage() {
             {product.title}
           </h1>
           <div className="mt-3 flex flex-wrap items-center gap-2">
+            <ContentTypeBadge type={product.contentType} />
             {platforms.map((p) => (
               <Badge key={p} tone="accent">{p === 'steam' ? 'Steam' : p === 'nintendo' ? 'Switch' : p}</Badge>
             ))}

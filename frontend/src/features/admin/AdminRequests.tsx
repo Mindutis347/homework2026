@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { adminApi } from '@/api/endpoints'
 import type { ProductRequest } from '@/api/types'
 import { Badge, Button, Card, EmptyState, ErrorNote, SectionHeading, Skeleton } from '@/components/ui'
+import { ContentTypeBadge } from '@/components/ContentTypeBadge'
 import { formatDate } from '@/lib/format'
 
 type StatusFilter = '' | 'pending' | 'approved' | 'rejected'
@@ -132,7 +133,10 @@ export default function AdminRequests() {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-display text-base font-bold text-ink-900">{request.title}</h3>
+                      <h3 className="flex flex-wrap items-center gap-2 font-display text-base font-bold text-ink-900">
+                        {request.title}
+                        <ContentTypeBadge type={request.contentType} />
+                      </h3>
                       <Badge tone={STATUS_TONE[request.status]}>{request.status}</Badge>
                     </div>
                     <p className="mt-1 text-xs text-ink-500">

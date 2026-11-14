@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 
 import type { ProductCard as ProductCardType } from '@/api/types'
+import { ContentTypeTag } from '@/components/ContentTypeBadge'
 import { discountPercent, formatMoney } from '@/lib/format'
 
 /** Grid card used on the homepage rows, the store and search results. Dark navy
@@ -17,6 +18,7 @@ export function ProductCard({ product, eager = false }: { product: ProductCardTy
           -{product.bestDiscountPercent}%
         </span>
       )}
+      <ContentTypeTag type={product.contentType} />
       <div className="aspect-[3/4] overflow-hidden bg-brand-800">
         <img
           src={product.coverUrl}

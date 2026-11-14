@@ -31,6 +31,35 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Taxes | Admin sets two rates in percent — one for top-ups, one for card purchases — each with an on/off switch (`/admin/settings`). Tax is never baked into storefront prices; it appears only in the checkout summary and on the receipt. Wallet payments are always tax-free. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, **catalogue editor** (title, copy, art, developer/publisher, release date, content type, genres, visibility — slug stays fixed), sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, and a homepage block editor with a **product picker**, collapsed config JSON and a **live preview** of the block. Descriptions support light formatting (bold, italic, lists, headings). |
 
+### Visual QA pass (sessions 10–12)
+
+A browser sweep of every route at 1440×900 and 390×844 — 44 page loads (22 routes × 2
+viewports), covering guest, customer, merchant and admin — checking horizontal overflow,
+broken images, console errors and collapsed panels. **Zero overflow and zero runtime
+exceptions** at either size; the remaining flags are inline nav links inside the 44 px
+nav strip, which is a link bar rather than a control.
+
+Bugs it caught and closed:
+
+- **Merchant catalogue requests answered 500 for every seller** — the list query selected
+  `content_type` into 13 scan destinations, so Postgres rejected every row and the portal
+  showed "something went wrong". Fixed, with `TestMerchantCatalogRequestFlow` covering
+  list → propose → review → approve → product.
+- **`<img src="">`** in the admin catalogue: a product with no artwork made the browser
+  request the current page and logged a React warning. All back-office and merchant
+  thumbnails now use `CoverThumb`, which draws a placeholder box instead.
+- **Header overflow risk**: at 360 px the Register button ended one pixel from the edge.
+  Smaller logo on phones, icon sign-in, compact Register — it now clears by 11–16 px down
+  to 320 px.
+- **Market picker opened off-screen** (`left: −113 px`): it is a bottom sheet on phones
+  now, fully inside the viewport.
+- **Wide tables** (720–900 px) got `TableShell`: least-important columns hide below 640 px,
+  the rest scrolls with an edge fade and a one-line hint.
+- Density: two-up stat tiles, tighter page bands, a shorter hero — roughly 250 px less dead
+  space before the first product on a phone.
+- Portal section strip fades at both edges while scrolled; a phone also scrolls the active
+  tab into view.
+
 ### Product page rebuild (session 9)
 
 The page was reviewed against eneba.com's own listing (fetched and inspected, not remembered) and

@@ -53,6 +53,9 @@ func run() error {
 		if err := db.Seed(ctx, pool, games, cfg.JWTSecret); err != nil {
 			return err
 		}
+		if err := db.EnsureDemoRequest(ctx, pool); err != nil {
+			return err
+		}
 	}
 
 	srv := &http.Server{

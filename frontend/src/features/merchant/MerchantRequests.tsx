@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 
 import { catalogApi, merchantApi } from '@/api/endpoints'
 import type { Meta, ProductRequest } from '@/api/types'
@@ -165,7 +166,14 @@ export default function MerchantRequests() {
 
                   {request.status === 'approved' && request.productSlug && (
                     <p className="mt-2 text-xs font-semibold text-mint-400">
-                      Live in the catalog — create an offer for it on the Offers &amp; keys tab.
+                      Live in the catalog —{' '}
+                      <Link
+                        to={`/products/${request.productSlug}`}
+                        className="underline underline-offset-2 hover:text-mint-300"
+                      >
+                        view the listing
+                      </Link>{' '}
+                      or create an offer for it on the Offers &amp; keys tab.
                     </p>
                   )}
                 </Card>

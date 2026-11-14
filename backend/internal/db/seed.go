@@ -546,3 +546,40 @@ func keyCode(parts ...any) string {
 	enc = strings.TrimRight(enc, "=")
 	return strings.Join([]string{enc[0:4], enc[4:8], enc[8:12], enc[12:16]}, "-")
 }
+
+// demoRequestProduct is the catalogue title the demo seller's reviewed request
+// points at: one with offers, so the merchant can go straight to listing it.
+const demoRequestProduct = "elden-ring"
+
+// EnsureDemoRequest gives the first demo seller one already-reviewed catalogue
+// request. Without it a reviewer opening the merchant portal sees an empty list
+// and cannot tell the approve flow ever works.
+//
+// It is idempotent and safe on every boot: it inserts only when that seller has
+// neither an approved request nor one for the same title, so restarts and
+// redeploys add nothing.
+func EnsureDemoRequest(ctx context.Context, pool *pgxpool.Pool) error {
+	_, err := pool.Exec(ctx, `
+		INSERT INTO product_requests (
+			merchant_id, title, description, cover_url, platform_id, region_id,
+			content_type, status, admin_note, reviewed_by, reviewed_at, product_id)
+		SELECT seller.id, p.title, p.description, p.cover_url, pl.id, r.id,
+		       p.content_type, 'approved',
+		       'Approved — the title is in the catalogue, list your keys against it.',
+		       admin.id, now(), p.id
+		FROM users seller
+		JOIN users admin    ON admin.email = $1
+		JOIN products p     ON p.slug = $3
+		JOIN platforms pl   ON pl.slug = 'steam'
+		JOIN regions r      ON r.code = 'GLOBAL'
+		WHERE seller.email = $2
+		  AND NOT EXISTS (
+		        SELECT 1 FROM product_requests pr
+		        WHERE pr.merchant_id = seller.id
+		          AND (pr.status = 'approved' OR pr.title = p.title))`,
+		AdminEmail, fmt.Sprintf(demoMerchantAt, 1), demoRequestProduct)
+	if err != nil {
+		return fmt.Errorf("ensure demo request: %w", err)
+	}
+	return nil
+}

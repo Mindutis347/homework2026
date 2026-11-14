@@ -269,7 +269,7 @@ func (m *Merchant) Requests(ctx context.Context, merchantID int64) ([]models.Pro
 	for rows.Next() {
 		var p models.ProductRequest
 		if err := rows.Scan(&p.ID, &p.MerchantID, &p.MerchantName, &p.Title,
-			&p.PlatformSlug, &p.RegionCode, &p.CoverURL, &p.Description, &p.Status,
+			&p.PlatformSlug, &p.RegionCode, &p.CoverURL, &p.Description, &p.ContentType, &p.Status,
 			&p.AdminNote, &p.ProductSlug, &p.CreatedAt, &p.ReviewedAt); err != nil {
 			return nil, err
 		}

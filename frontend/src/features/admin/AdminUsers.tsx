@@ -4,7 +4,7 @@ import { adminApi } from '@/api/endpoints'
 import type { AdminUser, User } from '@/api/types'
 import { Badge, Card, EmptyState, ErrorNote, Input, SectionHeading, Select, Skeleton } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
-import { formatDate, formatMoney } from '@/lib/format'
+import { formatDate, formatEuro } from '@/lib/format'
 
 const ROLES: User['role'][] = ['customer', 'merchant', 'admin']
 
@@ -131,7 +131,7 @@ export default function AdminUsers() {
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-right text-ink-700">{row.orders}</td>
-                    <td className="px-4 py-3 text-right text-ink-700">{formatMoney(row.spentCents)}</td>
+                    <td className="px-4 py-3 text-right text-ink-700">{formatEuro(row.spentCents)}</td>
                     <td className="px-4 py-3 text-ink-500">{formatDate(row.createdAt)}</td>
                     <td className="px-4 py-3">
                       <Select

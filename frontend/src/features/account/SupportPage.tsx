@@ -18,6 +18,8 @@ import {
   Skeleton,
 } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
+import { AttachmentField } from '@/features/support/AttachmentField'
+import type { PendingAttachment } from '@/features/support/AttachmentField'
 import { TicketThread } from '@/features/support/TicketThread'
 import { formatDate, formatMoney } from '@/lib/format'
 
@@ -50,6 +52,7 @@ export default function SupportPage() {
   )
   const [orderId, setOrderId] = useState(params.get('orderId') ?? '')
   const [message, setMessage] = useState('')
+  const [files, setFiles] = useState<PendingAttachment[]>([])
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
@@ -96,10 +99,12 @@ export default function SupportPage() {
         body: message.trim(),
         category,
         orderId: orderId === '' ? undefined : Number(orderId),
+        attachments: files.map((file) => ({ mime: file.mime, data: file.data })),
       })
       setSubject('')
       setMessage('')
       setOrderId('')
+      setFiles([])
       setSent(true)
       const { tickets: refreshed } = await ticketApi.list()
       setTickets(refreshed)
@@ -222,6 +227,13 @@ export default function SupportPage() {
                   This will be flagged as a refund request for the support team.
                 </p>
               )}
+
+              <AttachmentField
+                files={files}
+                onChange={setFiles}
+                onError={setFormError}
+                disabled={!user.isVerified}
+              />
 
               {formError && <ErrorNote message={formError} />}
               {sent && (

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { adminApi } from '@/api/endpoints'
 import type { SalesSummary } from '@/api/types'
 import { Card, EmptyState, SectionHeading, Skeleton } from '@/components/ui'
-import { formatMoney } from '@/lib/format'
+import { formatEuro } from '@/lib/format'
 
 /** Platform-wide sales picture: headline tiles, per-seller ranking and the last
  *  two weeks of volume as a plain bar list. */
@@ -64,10 +64,10 @@ export default function AdminOverview() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Tile label="Orders" value={String(summary.orders)} />
           <Tile label="Units sold" value={String(summary.unitsSold)} />
-          <Tile label="Gross revenue" value={formatMoney(summary.grossCents)} />
-          <Tile label="Platform commission" value={formatMoney(summary.commissionCents)} />
-          <Tile label="Seller payouts" value={formatMoney(summary.payoutCents)} />
-          <Tile label="Average order value" value={formatMoney(summary.avgOrderCents)} />
+          <Tile label="Gross revenue" value={formatEuro(summary.grossCents)} />
+          <Tile label="Platform commission" value={formatEuro(summary.commissionCents)} />
+          <Tile label="Seller payouts" value={formatEuro(summary.payoutCents)} />
+          <Tile label="Average order value" value={formatEuro(summary.avgOrderCents)} />
         </div>
       </section>
 
@@ -91,8 +91,8 @@ export default function AdminOverview() {
                   <tr key={seller.storeName} className="border-b border-line last:border-0">
                     <td className="px-4 py-3 font-semibold text-ink-900">{seller.storeName}</td>
                     <td className="px-4 py-3 text-right text-ink-700">{seller.unitsSold}</td>
-                    <td className="px-4 py-3 text-right text-ink-700">{formatMoney(seller.revenueCents)}</td>
-                    <td className="px-4 py-3 text-right text-ink-700">{formatMoney(seller.commissionCents)}</td>
+                    <td className="px-4 py-3 text-right text-ink-700">{formatEuro(seller.revenueCents)}</td>
+                    <td className="px-4 py-3 text-right text-ink-700">{formatEuro(seller.commissionCents)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -119,7 +119,7 @@ export default function AdminOverview() {
                     />
                   </div>
                   <span className="text-xs text-ink-700">
-                    {entry.orders} order{entry.orders === 1 ? '' : 's'} · {formatMoney(entry.revenueCents)}
+                    {entry.orders} order{entry.orders === 1 ? '' : 's'} · {formatEuro(entry.revenueCents)}
                   </span>
                 </div>
               )

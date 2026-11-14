@@ -12,7 +12,7 @@ import {
   SectionHeading,
   Skeleton,
 } from '@/components/ui'
-import { formatMoney } from '@/lib/format'
+import { formatEuro } from '@/lib/format'
 
 /** Basis points are the storage unit (500 = 5%); the form works in percent. */
 function toPercent(basisPoints: number): string {
@@ -169,26 +169,26 @@ export default function AdminSettings() {
             <ul className="mt-3 space-y-3 text-sm">
               <li>
                 <p className="text-brand-200">
-                  {formatMoney(sampleTopup)} top-up
+                  {formatEuro(sampleTopup)} top-up
                   {applyOnTopup ? ` + ${toPercent(topupBp)}% tax` : ' (no top-up tax)'}
                 </p>
                 <p className="font-extrabold text-white">
-                  card charged {formatMoney(sampleTopup + Math.round((sampleTopup * topupBp) / 10000))}
-                  {' · '}wallet credited {formatMoney(sampleTopup)}
+                  card charged {formatEuro(sampleTopup + Math.round((sampleTopup * topupBp) / 10000))}
+                  {' · '}wallet credited {formatEuro(sampleTopup)}
                 </p>
               </li>
               <li>
                 <p className="text-brand-200">
-                  {formatMoney(samplePurchase)} card purchase
+                  {formatEuro(samplePurchase)} card purchase
                   {applyOnPurchase ? ` + ${toPercent(purchaseBp)}% tax` : ' (no purchase tax)'}
                 </p>
                 <p className="font-extrabold text-white">
-                  charged {formatMoney(samplePurchase + Math.round((samplePurchase * purchaseBp) / 10000))}
+                  charged {formatEuro(samplePurchase + Math.round((samplePurchase * purchaseBp) / 10000))}
                 </p>
               </li>
               <li>
-                <p className="text-brand-200">{formatMoney(samplePurchase)} wallet purchase</p>
-                <p className="font-extrabold text-white">charged {formatMoney(samplePurchase)} · no tax</p>
+                <p className="text-brand-200">{formatEuro(samplePurchase)} wallet purchase</p>
+                <p className="font-extrabold text-white">charged {formatEuro(samplePurchase)} · no tax</p>
               </li>
             </ul>
             <p className="mt-4 text-xs text-brand-200">

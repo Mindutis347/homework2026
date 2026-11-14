@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { ApiClientError } from '@/api/client'
@@ -8,7 +8,7 @@ import { useAuth } from '@/features/auth/AuthContext'
 export default function SignInPage() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const { signIn } = useAuth()
+  const { signIn, user, loading: authLoading } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -16,6 +16,11 @@ export default function SignInPage() {
   const [submitting, setSubmitting] = useState(false)
 
   const next = params.get('next') ?? '/'
+
+  // Someone who is already signed in has nothing to do on this page.
+  useEffect(() => {
+    if (!authLoading && user) navigate(next, { replace: true })
+  }, [authLoading, user, next, navigate])
 
   async function submit(event: React.FormEvent) {
     event.preventDefault()

@@ -6,6 +6,8 @@ import { catalogApi } from '@/api/endpoints'
 import type { Meta, ProductCard as ProductCardType } from '@/api/types'
 import { ProductGrid } from '@/components/ProductCard'
 import { Badge, Button, Card, EmptyState, Input, PageBand, Select, Skeleton } from '@/components/ui'
+import { useCurrency } from '@/features/currency/CurrencyContext'
+import { toDisplayAmount, toEuroCents } from '@/lib/currency'
 import { formatMoney } from '@/lib/format'
 
 const SORT_OPTIONS = [
@@ -38,12 +40,12 @@ function multiValues(params: URLSearchParams, key: string): string[] {
   return out
 }
 
-/** Cents in the URL, euros in the inputs. */
-function eurosFromParam(params: URLSearchParams, key: string): string {
+/** Cents in the URL, amounts in the display currency in the inputs. */
+function amountsFromParam(params: URLSearchParams, key: string): string {
   const raw = params.get(key)
   if (!raw) return ''
   const cents = Number(raw)
-  return Number.isFinite(cents) ? String(cents / 100) : ''
+  return Number.isFinite(cents) ? toDisplayAmount(cents) : ''
 }
 
 /** The store: URL is the source of truth for every filter, so any view is
@@ -51,6 +53,7 @@ function eurosFromParam(params: URLSearchParams, key: string): string {
  *  multi-select; price is a range. */
 export default function StorePage() {
   const [params, setParams] = useSearchParams()
+  const { currency } = useCurrency()
   const [meta, setMeta] = useState<Meta | null>(null)
   const [items, setItems] = useState<ProductCardType[]>([])
   const [total, setTotal] = useState(0)
@@ -71,8 +74,8 @@ export default function StorePage() {
   const minCents = Number(params.get('minPriceCents') ?? '') || undefined
   const maxCents = Number(params.get('maxPriceCents') ?? '') || undefined
   const search = searchDraft ?? queryText
-  const priceFrom = priceDraft?.from ?? eurosFromParam(params, 'minPriceCents')
-  const priceTo = priceDraft?.to ?? eurosFromParam(params, 'maxPriceCents')
+  const priceFrom = priceDraft?.from ?? amountsFromParam(params, 'minPriceCents')
+  const priceTo = priceDraft?.to ?? amountsFromParam(params, 'maxPriceCents')
 
   const query = useMemo(
     () => ({
@@ -158,7 +161,7 @@ export default function StorePage() {
         ['maxPriceCents', priceTo],
       ] as const) {
         const value = Number(raw)
-        if (raw.trim() !== '' && Number.isFinite(value) && value > 0) merged.set(key, String(Math.round(value * 100)))
+        if (raw.trim() !== '' && Number.isFinite(value) && value > 0) merged.set(key, String(toEuroCents(value)))
         else merged.delete(key)
       }
       merged.delete('page')
@@ -217,7 +220,7 @@ export default function StorePage() {
                 </div>
               </form>
 
-              <FilterGroup title="Price range" hint="In euro, both ends optional">
+              <FilterGroup title="Price range" hint={`In ${currency}, both ends optional`}>
                 <form onSubmit={applyPrice} className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Input
@@ -225,7 +228,7 @@ export default function StorePage() {
                       value={priceFrom}
                       onChange={(event) => setPriceDraft({ from: event.target.value, to: priceTo })}
                       placeholder="From"
-                      aria-label="Minimum price in euro"
+                      aria-label={`Minimum price in ${currency}`}
                     />
                     <span aria-hidden className="text-brand-300">–</span>
                     <Input
@@ -233,7 +236,7 @@ export default function StorePage() {
                       value={priceTo}
                       onChange={(event) => setPriceDraft({ from: priceFrom, to: event.target.value })}
                       placeholder="To"
-                      aria-label="Maximum price in euro"
+                      aria-label={`Maximum price in ${currency}`}
                     />
                   </div>
                   <div className="flex items-center gap-2">

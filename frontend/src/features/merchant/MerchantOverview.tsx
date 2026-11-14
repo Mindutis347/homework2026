@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { merchantApi } from '@/api/endpoints'
 import type { MerchantSale, MerchantStats } from '@/api/types'
 import { Card, EmptyState, ErrorNote, SectionHeading, Skeleton } from '@/components/ui'
-import { formatDate, formatMoney } from '@/lib/format'
+import { formatDate, formatEuro } from '@/lib/format'
 
 /** Seller dashboard: top-line numbers plus the latest deliveries. */
 export default function MerchantOverview() {
@@ -73,8 +73,8 @@ export default function MerchantOverview() {
         />
         <StatTile
           label="Revenue"
-          value={formatMoney(stats.revenueCents)}
-          hint={`Your payout ${formatMoney(stats.payoutCents)}`}
+          value={formatEuro(stats.revenueCents)}
+          hint={`Your payout ${formatEuro(stats.payoutCents)}`}
           tone="brand"
         />
       </div>
@@ -114,9 +114,9 @@ export default function MerchantOverview() {
                         {sale.productTitle}
                       </td>
                       <td className="px-4 py-3 text-right text-ink-700">{sale.quantity}</td>
-                      <td className="px-4 py-3 text-right text-ink-700">{formatMoney(sale.unitPriceCents)}</td>
+                      <td className="px-4 py-3 text-right text-ink-700">{formatEuro(sale.unitPriceCents)}</td>
                       <td className="px-4 py-3 text-right font-semibold text-ink-900">
-                        {formatMoney(sale.payoutCents)}
+                        {formatEuro(sale.payoutCents)}
                       </td>
                       <td className="px-4 py-3 text-right text-ink-500">{formatDate(sale.soldAt)}</td>
                     </tr>

@@ -8,6 +8,7 @@ import { Badge, Button, Card, EmptyState, ErrorNote, Field, Input, Notice, PageB
 import { KeyPanel } from '@/features/account/KeyPanel'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
+import { useCurrency } from '@/features/currency/CurrencyContext'
 import { formatMoney } from '@/lib/format'
 
 /**
@@ -17,6 +18,7 @@ import { formatMoney } from '@/lib/format'
 export default function CheckoutPage() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
+  const { currency } = useCurrency()
   const { cart, refresh } = useCart()
 
   const [cardNumber, setCardNumber] = useState('4242 4242 4242 4242')
@@ -238,7 +240,15 @@ export default function CheckoutPage() {
           </form>
 
           <Card className="h-fit space-y-4 p-5 lg:sticky lg:top-32">
-            <h2 className="font-display text-lg font-extrabold text-white">Order summary</h2>
+            <div className="flex items-baseline justify-between gap-2">
+              <h2 className="font-display text-lg font-extrabold text-white">Order summary</h2>
+              <Link
+                to="/cart"
+                className="text-xs font-extrabold uppercase tracking-wide text-accent-500 hover:underline"
+              >
+                Edit cart
+              </Link>
+            </div>
             <div className="space-y-3">
               {cart.items.map((item) => (
                 <div key={item.offerId} className="flex gap-3">
@@ -276,6 +286,11 @@ export default function CheckoutPage() {
                 ? "Paid from your shop wallet — no transaction tax."
                 : "Tax is added on card payments only; a wallet top-up is the tax-free alternative."}
             </p>
+            {currency !== "EUR" && (
+              <p className="text-xs text-brand-200">
+                Prices are shown in {currency} at a fixed demo rate; the simulated charge is always in euro.
+              </p>
+            )}
             <p className="text-xs text-ink-500">
               Keys are reserved and assigned inside a single database transaction. If any key runs out,
               nothing is charged and your cart is kept.

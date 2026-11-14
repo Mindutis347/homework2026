@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { adminApi } from '@/api/endpoints'
 import type { AdminOrder, SalesSummary } from '@/api/types'
 import { Badge, Card, EmptyState, SectionHeading, Skeleton } from '@/components/ui'
-import { formatDate, formatMoney } from '@/lib/format'
+import { formatDate, formatEuro } from '@/lib/format'
 
 function statusTone(status: string): 'success' | 'danger' | 'neutral' | 'accent' {
   switch (status) {
@@ -69,9 +69,9 @@ export default function AdminOrders() {
       <SectionHeading title="Orders & ledger" subtitle="Gross takings, the platform cut and what sellers are owed." />
 
       <div className="mb-6 grid gap-3 sm:grid-cols-3">
-        <LedgerTile label="Gross takings" value={summary ? formatMoney(summary.grossCents) : formatMoney(0)} />
-        <LedgerTile label="Platform commission" value={summary ? formatMoney(summary.commissionCents) : formatMoney(0)} />
-        <LedgerTile label="Seller payouts" value={summary ? formatMoney(summary.payoutCents) : formatMoney(0)} />
+        <LedgerTile label="Gross takings" value={summary ? formatEuro(summary.grossCents) : formatEuro(0)} />
+        <LedgerTile label="Platform commission" value={summary ? formatEuro(summary.commissionCents) : formatEuro(0)} />
+        <LedgerTile label="Seller payouts" value={summary ? formatEuro(summary.payoutCents) : formatEuro(0)} />
       </div>
 
       {orders.length === 0 ? (
@@ -98,7 +98,7 @@ export default function AdminOrders() {
                     <Badge tone={statusTone(order.status)}>{order.status}</Badge>
                   </td>
                   <td className="px-4 py-3 text-right text-ink-700">{order.items}</td>
-                  <td className="px-4 py-3 text-right font-semibold text-ink-900">{formatMoney(order.totalCents)}</td>
+                  <td className="px-4 py-3 text-right font-semibold text-ink-900">{formatEuro(order.totalCents)}</td>
                   <td className="px-4 py-3 text-ink-500">{formatDate(order.createdAt)}</td>
                 </tr>
               ))}

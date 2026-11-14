@@ -5,11 +5,13 @@ import { catalogApi } from '@/api/endpoints'
 import { Badge, Button, Card, EmptyState, Notice, PageBand } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
+import { useCurrency } from '@/features/currency/CurrencyContext'
 import { formatMoney } from '@/lib/format'
 
 export default function CartPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { currency } = useCurrency()
   const { cart, loading, setQuantity, remove, clear, error } = useCart()
   const [tax, setTax] = useState<{ applyOnPurchase: boolean; purchaseTaxBasisPoints: number } | null>(null)
 
@@ -135,6 +137,11 @@ export default function CartPage() {
             <p className="text-xs text-brand-200">
               Keys stay hidden until you display them, and the purchase stays refundable until then.
             </p>
+            {currency !== 'EUR' && (
+              <p className="text-xs text-brand-200">
+                Shown in {currency} at a fixed demo rate — you are charged in euro.
+              </p>
+            )}
             <Badge tone="neutral">Simulated payment — no real money</Badge>
             <Button
               className="w-full"

@@ -5,6 +5,9 @@ import { catalogApi } from '@/api/endpoints'
 import type { Meta } from '@/api/types'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useCart } from '@/features/cart/CartContext'
+import { useCurrency } from '@/features/currency/CurrencyContext'
+import { CURRENCIES } from '@/lib/currency'
+import type { CurrencyCode } from '@/lib/currency'
 import { formatMoney } from '@/lib/format'
 import { SearchBar } from '@/features/search/SearchBar'
 
@@ -13,6 +16,7 @@ import { SearchBar } from '@/features/search/SearchBar'
  *  platform links come from the API so the nav reflects what is actually sold. */
 export function Header() {
   const { user } = useAuth()
+  const { currency, setCurrency } = useCurrency()
   const location = useLocation()
   const searchTerm = new URLSearchParams(location.search).get('q') ?? ''
   const [meta, setMeta] = useState<Meta | null>(null)
@@ -36,10 +40,23 @@ export function Header() {
           </div>
 
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
-            <span className="hidden items-center gap-1.5 px-2 text-xs font-bold text-brand-100 lg:flex">
+            <label className="hidden items-center gap-1.5 px-2 text-xs font-bold text-brand-100 lg:flex">
               <span aria-hidden className="text-sm leading-none">🇪🇺</span>
-              EU · EUR
-            </span>
+              <span>EU ·</span>
+              <select
+                value={currency}
+                onChange={(event) => setCurrency(event.target.value as CurrencyCode)}
+                aria-label="Display currency"
+                title="Prices are shown in this currency and charged in euro."
+                className="cursor-pointer appearance-none bg-transparent text-xs font-bold uppercase tracking-wide text-white outline-none hover:text-accent-500 focus:text-accent-500"
+              >
+                {CURRENCIES.map((code) => (
+                  <option key={code} value={code} className="text-ink-900">
+                    {code}
+                  </option>
+                ))}
+              </select>
+            </label>
 
             <CartMenu />
 

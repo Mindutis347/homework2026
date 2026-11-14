@@ -63,7 +63,7 @@ Product `description` accepts a small Markdown subset, rendered by the storefron
 | GET | `/api/orders/{id}` | one order (404 unless you own it) |
 | POST | `/api/orders/{id}/items/{itemId}/reveal` | returns `{keys, displayedAt}` for that line and stamps the first display. The only response that carries a key value |
 | POST | `/api/orders/{id}/items/{itemId}/refund` | refunds an undisplayed line, returns the recomputed order. 409 once a key has been displayed |
-| POST | `/api/tickets` | verified users only. `{subject, body, category, orderId?}`; `category` is one of `refund`, `delivery`, `account`, `other` and drives the refund flag. 404 when `orderId` is not one of your own orders |
+| POST | `/api/tickets` | verified users only. `{subject, body, category, orderId?, attachments?:[{mime, data}]}`; `category` is one of `refund`, `delivery`, `account`, `other` and drives the refund flag. Pictures use the same limits and sniffing as a reply and are stored with the opening message. 404 when `orderId` is not one of your own orders |
 | GET | `/api/tickets` | your own support tickets with their status, newest first |
 | GET | `/api/tickets/{id}` | one conversation: `{thread: {ticket, messages}}`. Customers see only their own tickets; an admin sees any |
 | POST | `/api/tickets/{id}/messages` | `{body, attachments:[{mime, data}]}` — reply as the customer, or as staff when the caller is an admin. Max 3 pictures, 1.5 MB each, PNG/JPEG/WebP/GIF sniffed server-side. A staff reply moves `open` → `in_progress`; a customer reply reopens `resolved` → `open` |

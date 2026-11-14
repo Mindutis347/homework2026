@@ -206,6 +206,7 @@ export const ticketApi = {
     body: string
     category: Ticket['category']
     orderId?: number
+    attachments?: { mime: string; data: string }[]
   }) => api.post<{ status: string }>('/api/tickets', payload),
   thread: (id: number) => api.get<{ thread: TicketThread }>(`/api/tickets/${id}`),
   reply: (

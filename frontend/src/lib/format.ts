@@ -1,10 +1,24 @@
-/** Money is stored and transported as integer cents; format at the edge only. */
-export function formatMoney(cents: number, currency = 'EUR'): string {
+import { activeCurrency, convertCents } from '@/lib/currency'
+import type { CurrencyCode } from '@/lib/currency'
+
+/**
+ * Money is stored and transported as integer EUR cents; format at the edge only.
+ * Without an explicit currency this prints in the currency the visitor picked,
+ * converted with the demo rates in `lib/currency.ts`.
+ */
+export function formatMoney(cents: number, currency?: CurrencyCode): string {
+  const code = currency ?? activeCurrency()
+  const amount = currency ? cents : convertCents(cents, code)
   return new Intl.NumberFormat('en-IE', {
     style: 'currency',
-    currency,
+    currency: code,
     minimumFractionDigits: 2,
-  }).format(cents / 100)
+  }).format(amount / 100)
+}
+
+/** Platform accounting (payouts, commissions, ledgers) is always in euro. */
+export function formatEuro(cents: number): string {
+  return formatMoney(cents, 'EUR')
 }
 
 export function formatDate(iso: string | null | undefined): string {

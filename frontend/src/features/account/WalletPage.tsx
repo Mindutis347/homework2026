@@ -16,7 +16,7 @@ import {
   Skeleton,
 } from '@/components/ui'
 import { useAuth } from '@/features/auth/AuthContext'
-import { formatMoney } from '@/lib/format'
+import { formatEuro, formatMoney } from '@/lib/format'
 
 const PRESETS = [1000, 2500, 5000]
 
@@ -148,12 +148,12 @@ export default function WalletPage() {
                       variant={Math.round(Number(amount) * 100) === cents ? 'primary' : 'onDark'}
                       onClick={() => setAmount(String(cents / 100))}
                     >
-                      {formatMoney(cents)}
+                      {formatEuro(cents)}
                     </Button>
                   ))}
                 </div>
 
-                <Field label="Amount (EUR)" hint="Between €1 and €500.">
+                <Field label="Amount in euro" hint="Between €1 and €500. The wallet holds euro, whatever display currency you pick.">
                   <Input
                     value={amount}
                     onChange={(event) => setAmount(event.target.value)}
@@ -184,7 +184,7 @@ export default function WalletPage() {
                 )}
 
                 <Button type="submit" loading={toppingUp}>
-                  Top up {amount ? formatMoney(Math.round(Number(amount) * 100)) : ''}
+                  Top up {amount ? formatEuro(Math.round(Number(amount) * 100)) : ''}
                 </Button>
               </form>
             </Card>

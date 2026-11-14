@@ -288,21 +288,23 @@ func (a *App) handleAdminDeleteBlock(w http.ResponseWriter, r *http.Request) {
 	WriteJSON(w, http.StatusNoContent, nil)
 }
 
-// handleCreateTicket lets a signed-in buyer file a support request.
+// handleCreateTicket lets a signed-in buyer file a support request, optionally
+// with pictures of the problem attached to the opening message.
 //
-//	POST /api/tickets {"subject","body","category","orderId"}
+//	POST /api/tickets {"subject","body","category","orderId","attachments":[{"mime","data"}]}
 //
 // The refund flag is derived from the category rather than sent by the client, so
 // the queue's refund filter can never disagree with the category shown beside it.
 func (a *App) handleCreateTicket(w http.ResponseWriter, r *http.Request) {
 	user := UserFrom(r.Context())
 	var body struct {
-		Subject  string `json:"subject"`
-		Body     string `json:"body"`
-		Category string `json:"category"`
-		OrderID  *int64 `json:"orderId"`
+		Subject     string                    `json:"subject"`
+		Body        string                    `json:"body"`
+		Category    string                    `json:"category"`
+		OrderID     *int64                    `json:"orderId"`
+		Attachments []ticketAttachmentPayload `json:"attachments"`
 	}
-	if err := DecodeJSON(w, r, &body); err != nil {
+	if err := DecodeJSONMax(w, r, &body, maxTicketReplyBytes); err != nil {
 		WriteError(w, err)
 		return
 	}
@@ -319,8 +321,13 @@ func (a *App) handleCreateTicket(w http.ResponseWriter, r *http.Request) {
 	if body.Category == "" {
 		body.Category = "other"
 	}
+	attachments, err := parseAttachments(body.Attachments)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
 	if err := a.admin.CreateTicket(r.Context(), user.UserID, body.OrderID, body.Subject,
-		body.Body, body.Category, body.Category == "refund"); err != nil {
+		body.Body, body.Category, body.Category == "refund", attachments); err != nil {
 		WriteError(w, err)
 		return
 	}
@@ -357,12 +364,42 @@ var allowedImageTypes = map[string]bool{
 	"image/gif":  true,
 }
 
+type ticketAttachmentPayload struct {
+	Mime string `json:"mime"`
+	Data string `json:"data"` // base64 of the image bytes
+}
+
 type ticketReplyBody struct {
-	Body        string `json:"body"`
-	Attachments []struct {
-		Mime string `json:"mime"`
-		Data string `json:"data"` // base64 of the image bytes
-	} `json:"attachments"`
+	Body        string                    `json:"body"`
+	Attachments []ticketAttachmentPayload `json:"attachments"`
+}
+
+// parseAttachments validates the pictures sent with a ticket or a reply. The
+// type comes from sniffing the bytes, never from the declared mime, so a script
+// cannot be uploaded by claiming to be an image.
+func parseAttachments(in []ticketAttachmentPayload) ([]repo.AttachmentInput, error) {
+	if len(in) > maxTicketAttachments {
+		return nil, Errorf(http.StatusBadRequest, "invalid_body", "at most three pictures per message")
+	}
+	out := make([]repo.AttachmentInput, 0, len(in))
+	for _, att := range in {
+		raw, err := base64.StdEncoding.DecodeString(att.Data)
+		if err != nil {
+			return nil, Errorf(http.StatusBadRequest, "invalid_body", "picture data must be base64")
+		}
+		if len(raw) == 0 {
+			continue
+		}
+		if len(raw) > maxAttachmentBytes {
+			return nil, Errorf(http.StatusBadRequest, "invalid_body", "each picture must be 1.5 MB or smaller")
+		}
+		sniffed := http.DetectContentType(raw)
+		if !allowedImageTypes[sniffed] {
+			return nil, Errorf(http.StatusBadRequest, "invalid_body", "only PNG, JPEG, WebP or GIF pictures are accepted")
+		}
+		out = append(out, repo.AttachmentInput{Mime: sniffed, Bytes: len(raw), Data: raw})
+	}
+	return out, nil
 }
 
 // handleTicketThread returns one ticket with its conversation. A customer sees
@@ -416,33 +453,11 @@ func (a *App) handleTicketReply(w http.ResponseWriter, r *http.Request) {
 		WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "write a message or attach a picture"))
 		return
 	}
-	if len(body.Attachments) > maxTicketAttachments {
-		WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "at most three pictures per message"))
-		return
-	}
 
-	attachments := make([]repo.AttachmentInput, 0, len(body.Attachments))
-	for _, att := range body.Attachments {
-		raw, err := base64.StdEncoding.DecodeString(att.Data)
-		if err != nil {
-			WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "picture data must be base64"))
-			return
-		}
-		if len(raw) == 0 {
-			continue
-		}
-		if len(raw) > maxAttachmentBytes {
-			WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "each picture must be 1.5 MB or smaller"))
-			return
-		}
-		// Trust the sniffed type, not the declared one, so a script cannot be
-		// uploaded by claiming to be an image.
-		sniffed := http.DetectContentType(raw)
-		if !allowedImageTypes[sniffed] {
-			WriteError(w, Errorf(http.StatusBadRequest, "invalid_body", "only PNG, JPEG, WebP or GIF pictures are accepted"))
-			return
-		}
-		attachments = append(attachments, repo.AttachmentInput{Mime: sniffed, Bytes: len(raw), Data: raw})
+	attachments, err := parseAttachments(body.Attachments)
+	if err != nil {
+		WriteError(w, err)
+		return
 	}
 
 	role := "customer"

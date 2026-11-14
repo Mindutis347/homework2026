@@ -31,6 +31,34 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Taxes | Admin sets two rates in percent — one for top-ups, one for card purchases — each with an on/off switch (`/admin/settings`). Tax is never baked into storefront prices; it appears only in the checkout summary and on the receipt. Wallet payments are always tax-free. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, **catalogue editor** (title, copy, art, developer/publisher, release date, content type, genres, visibility — slug stays fixed), sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, and a homepage block editor with a **product picker**, collapsed config JSON and a **live preview** of the block. Descriptions support light formatting (bold, italic, lists, headings). |
 
+### Polish round (session 7)
+
+Four small gaps from the walkthrough, plus one thing found while testing them:
+
+- **Back to the cart.** Checkout's order summary has an `Edit cart` link; before this the only
+  way to change a quantity was the browser's back button.
+- **The guest cart announces its merge.** A toast (new `ToastProvider`, bottom-right, self-dismissing,
+  one optional link) says "Guest cart saved — your account cart now holds N items" with a View cart
+  link. The merge is also guarded by a ref now, so a StrictMode double-mount cannot merge twice and
+  double the quantities.
+- **Pictures on the opening request.** The support form can attach up to three pictures before the
+  ticket is filed. `CreateTicket` runs in a transaction and stores them on an opening message of its
+  own; the thread folds them into the first bubble, so the customer's request and its screenshot read
+  as one message on both sides. The reply and the form now share one validation helper
+  (`parseAttachments`) and one picker component (`AttachmentField`).
+- **Display currency.** Header selector: EUR / USD / GBP, remembered in localStorage. Every price is
+  still stored, filtered and charged in euro; the switch is a fixed-rate display conversion, stated as
+  such in the cart and at checkout. The store's price range converts the typed amount back to euro
+  cents, so a filter of "60 USD" is €55.56, and the wallet top-up plus the admin/merchant ledgers stay
+  in euro (`formatEuro`) because those are real accounting figures, not catalogue display.
+- **Signing in twice.** `/sign-in` now redirects an already signed-in visitor to `next` instead of
+  showing them the form again.
+
+Verified in headless Chrome: **13/13** on the four items (store prices switch to `$` and stay `$`
+after filtering, the toast appears with its link, `Edit cart` points at `/cart`, the opening picture
+shows inside the first bubble) and **4/4** on the follow-ups (price filter converts 60 USD → 5556 euro
+cents, results stay in dollars, no horizontal overflow at 390 px).
+
 ### Honest states and honest prices (session 6)
 
 Four pain points from a customer walkthrough:

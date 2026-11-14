@@ -441,20 +441,55 @@ func (a *Admin) UpdateTicketStatus(ctx context.Context, id int64, status string)
 // The insert only happens when the referenced order belongs to the caller, so a
 // ticket can never be attached to somebody else's purchase. Returns ErrNotFound
 // when the order does not exist or is not theirs; the handler turns that into 404.
-func (a *Admin) CreateTicket(ctx context.Context, userID int64, orderID *int64, subject, body, category string, refund bool) error {
-	tag, err := a.pool.Exec(ctx, `
-		INSERT INTO support_tickets (user_id, order_id, subject, body, category, refund_requested)
-		SELECT $1::bigint, $2::bigint, $3::text, $4::text, $5::text, $6::boolean
-		WHERE $2::bigint IS NULL
-		   OR EXISTS (SELECT 1 FROM orders WHERE id = $2::bigint AND user_id = $1::bigint)`,
-		userID, orderID, subject, body, category, refund)
+//
+// Pictures sent with the first request are stored on an opening message of their
+// own, which keeps one attachment path for both sides of the conversation. The
+// ticket body stays where the queue reads it, so nothing is duplicated on screen:
+// the thread renders the body as the first bubble, then this picture bubble.
+func (a *Admin) CreateTicket(
+	ctx context.Context, userID int64, orderID *int64, subject, body, category string, refund bool,
+	attachments []AttachmentInput,
+) error {
+	tx, err := a.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	if tag.RowsAffected() == 0 {
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	var ticketID int64
+	err = tx.QueryRow(ctx, `
+		INSERT INTO support_tickets (user_id, order_id, subject, body, category, refund_requested)
+		SELECT $1::bigint, $2::bigint, $3::text, $4::text, $5::text, $6::boolean
+		WHERE $2::bigint IS NULL
+		   OR EXISTS (SELECT 1 FROM orders WHERE id = $2::bigint AND user_id = $1::bigint)
+		RETURNING id`,
+		userID, orderID, subject, body, category, refund).Scan(&ticketID)
+	if errors.Is(err, pgx.ErrNoRows) {
 		return ErrNotFound
 	}
-	return nil
+	if err != nil {
+		return err
+	}
+
+	if len(attachments) > 0 {
+		var messageID int64
+		if err := tx.QueryRow(ctx, `
+			INSERT INTO ticket_messages (ticket_id, author_id, author_role, body)
+			VALUES ($1, $2, 'customer', '')
+			RETURNING id`, ticketID, userID).Scan(&messageID); err != nil {
+			return fmt.Errorf("add opening attachments: %w", err)
+		}
+		for _, att := range attachments {
+			if _, err := tx.Exec(ctx, `
+				INSERT INTO ticket_attachments (message_id, mime, byte_size, data)
+				VALUES ($1, $2, $3, $4)`,
+				messageID, att.Mime, att.Bytes, att.Data); err != nil {
+				return fmt.Errorf("add attachment: %w", err)
+			}
+		}
+	}
+
+	return tx.Commit(ctx)
 }
 
 // --- homepage content management -------------------------------------------

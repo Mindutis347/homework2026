@@ -18,7 +18,7 @@ import {
   Select,
   Skeleton,
 } from '@/components/ui'
-import { formatMoney } from '@/lib/format'
+import { formatEuro } from '@/lib/format'
 
 const textareaClass =
   'w-full rounded-[2px] border border-line bg-surface px-3.5 py-2.5 font-mono text-sm text-ink-900 placeholder:text-ink-300 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200'
@@ -439,10 +439,10 @@ export default function MerchantOffers() {
                         <Badge tone="neutral">{offer.regionCode}</Badge>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <span className="font-semibold text-ink-900">{formatMoney(offer.priceCents)}</span>
+                        <span className="font-semibold text-ink-900">{formatEuro(offer.priceCents)}</span>
                         {offer.basePriceCents !== null && offer.basePriceCents > offer.priceCents && (
                           <span className="ml-2 text-xs text-ink-300 line-through">
-                            {formatMoney(offer.basePriceCents)}
+                            {formatEuro(offer.basePriceCents)}
                           </span>
                         )}
                       </td>

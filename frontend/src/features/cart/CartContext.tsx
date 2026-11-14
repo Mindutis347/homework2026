@@ -1,8 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 
 import { cartApi } from '@/api/endpoints'
 import type { Cart } from '@/api/types'
+import { useToast } from '@/components/Toast'
 import { useAuth } from '@/features/auth/AuthContext'
 
 type CartLine = { offerId: number; quantity: number }
@@ -50,10 +51,14 @@ const CartContext = createContext<CartState | null>(null)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
+  const { notify } = useToast()
   const [cart, setCart] = useState<Cart>(emptyCart)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [guestLines, setGuestLines] = useState<CartLine[]>(() => readGuestLines())
+  // The merge must happen exactly once per sign-in: dev StrictMode mounts the
+  // effect twice and a second merge would double the quantities.
+  const mergedFor = useRef<number | null>(null)
 
   // Guests: re-price the local cart on the server whenever it changes, so totals
   // and stock always come from the database, never from the browser.
@@ -91,10 +96,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
     let cancelled = false
     setLoading(true)
     const pending = readGuestLines()
-    const load = pending.length > 0
+    const shouldMerge = pending.length > 0 && mergedFor.current !== user.id
+    if (shouldMerge) mergedFor.current = user.id
+    const load = shouldMerge
       ? cartApi.merge(pending).then((merged) => {
           writeGuestLines([])
           setGuestLines([])
+          if (!cancelled) {
+            const lines = merged.itemCount === 1 ? '1 item' : `${merged.itemCount} items`
+            notify(`Guest cart saved — your account cart now holds ${lines}.`, {
+              tone: 'success',
+              action: { label: 'View cart', to: '/cart' },
+            })
+          }
           return merged
         })
       : cartApi.get()
@@ -105,6 +119,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setError(null)
       })
       .catch((err: unknown) => {
+        // Let the next visit retry the merge instead of silently dropping it.
+        if (shouldMerge) mergedFor.current = null
         if (cancelled) return
         setError(err instanceof Error ? err.message : 'Could not load your cart')
       })
@@ -114,7 +130,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [user])
+  }, [user, notify])
 
   const refresh = useCallback(async () => {
     if (!user) {

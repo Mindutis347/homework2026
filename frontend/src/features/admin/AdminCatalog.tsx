@@ -17,7 +17,7 @@ import {
   Select,
   Skeleton,
 } from '@/components/ui'
-import { formatMoney } from '@/lib/format'
+import { formatEuro } from '@/lib/format'
 
 const GENRE_LIMIT = 10
 
@@ -123,7 +123,7 @@ export default function AdminCatalog() {
                   </div>
                   <p className="mt-1 text-xs text-brand-200">
                     /{product.slug} · {product.offerCount} offer{product.offerCount === 1 ? '' : 's'}
-                    {product.offerCount > 0 ? ` from ${formatMoney(product.minPriceCents)}` : ''}
+                    {product.offerCount > 0 ? ` from ${formatEuro(product.minPriceCents)}` : ''}
                     {product.genres.length > 0 ? ` · ${product.genres.join(', ')}` : ''}
                   </p>
                 </div>

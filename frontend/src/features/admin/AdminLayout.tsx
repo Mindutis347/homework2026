@@ -11,6 +11,7 @@ const TABS = [
   { to: '/admin/orders', label: 'Orders & ledger', end: false },
   { to: '/admin/tickets', label: 'Support', end: false },
   { to: '/admin/blocks', label: 'Homepage', end: false },
+  { to: '/admin/settings', label: 'Settings', end: false },
 ]
 
 /** Shell for the admin back-office: role gate plus the section tabs. Every

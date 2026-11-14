@@ -149,6 +149,7 @@ export type Order = {
   reference: string
   status: 'pending' | 'paid' | 'failed' | 'refunded'
   subtotalCents: number
+  taxCents: number
   totalCents: number
   currency: string
   paymentMethod: string
@@ -318,4 +319,38 @@ export type MerchantKey = {
   displayedAt: string | null
   createdAt: string
   orderReference?: string
+}
+
+/** One movement on the shop wallet. */
+export type WalletTransaction = {
+  id: number
+  kind: "topup" | "purchase"
+  amountCents: number
+  taxCents: number
+  reference: string
+  createdAt: string
+}
+
+export type Wallet = {
+  balanceCents: number
+  transactions: WalletTransaction[]
+}
+
+/** Demo tax configuration. Rates are basis points: 500 = 5%. */
+export type TaxSettings = {
+  topupTaxBasisPoints: number
+  purchaseTaxBasisPoints: number
+  applyOnTopup: boolean
+  applyOnPurchase: boolean
+  updatedAt: string
+}
+
+/** What checkout shows before paying. */
+export type CheckoutQuote = {
+  method: "card" | "wallet"
+  subtotalCents: number
+  taxBasisPoints: number
+  taxCents: number
+  totalCents: number
+  walletBalanceCents: number
 }

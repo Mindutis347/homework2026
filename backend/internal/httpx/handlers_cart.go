@@ -149,6 +149,11 @@ func (a *App) handleCheckout(w http.ResponseWriter, r *http.Request) {
 			"your card was declined (test card ending 0002 always fails)"))
 		return
 	}
+	if errors.Is(err, service.ErrInsufficientFunds) {
+		WriteError(w, Errorf(http.StatusPaymentRequired, "insufficient_funds",
+			"your wallet balance is too low for this order"))
+		return
+	}
 	if errors.Is(err, service.ErrEmptyCart) {
 		WriteError(w, Errorf(http.StatusBadRequest, "empty_cart", "your cart is empty"))
 		return

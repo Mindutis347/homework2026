@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import { orderApi } from '@/api/endpoints'
 import { ApiClientError } from '@/api/client'
-import type { Order } from '@/api/types'
+import type { CheckoutQuote, Order } from '@/api/types'
 import { Badge, Button, Card, EmptyState, ErrorNote, Field, Input, Notice, PageBand } from '@/components/ui'
 import { KeyPanel } from '@/features/account/KeyPanel'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -24,6 +24,9 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [order, setOrder] = useState<Order | null>(null)
+  const [method, setMethod] = useState<"card" | "wallet">("card")
+  const [quote, setQuote] = useState<CheckoutQuote | null>(null)
+  const [quoting, setQuoting] = useState(true)
 
   // One key per checkout attempt-group: retrying a double-submit replays the
   // same order instead of charging twice.
@@ -33,12 +36,30 @@ export default function CheckoutPage() {
     if (!authLoading && !user) navigate('/sign-in?next=/checkout', { replace: true })
   }, [authLoading, user, navigate])
 
+  useEffect(() => {
+    if (!user) return
+    let cancelled = false
+    setQuoting(true)
+    orderApi
+      .quote(method)
+      .then(({ quote: fetched }) => {
+        if (!cancelled) setQuote(fetched)
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) setQuoting(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [user, method])
+
   async function pay(event: React.FormEvent) {
     event.preventDefault()
     setSubmitting(true)
     setError(null)
     try {
-      const result = await orderApi.checkout(cardNumber, idempotencyKey.current)
+      const result = await orderApi.checkout(cardNumber, idempotencyKey.current, method)
       setOrder(result.order)
       idempotencyKey.current = crypto.randomUUID()
       await refresh()
@@ -116,40 +137,93 @@ export default function CheckoutPage() {
           <form onSubmit={pay} className="space-y-4">
             <Card className="space-y-4 p-5">
               <div className="flex items-center justify-between">
-                <h2 className="font-display text-lg font-extrabold text-white">Card details</h2>
+                <h2 className="font-display text-lg font-extrabold text-white">Payment method</h2>
                 <Badge tone="neutral">Simulated</Badge>
               </div>
-              <Field label="Cardholder name">
-                <Input
-                  value={cardName}
-                  onChange={(e) => setCardName(e.target.value)}
-                  placeholder="Demo Buyer"
-                  autoComplete="name"
-                />
-              </Field>
-              <Field
-                label="Card number"
-                hint="Test mode: any number succeeds. Use a number ending in 0002 to see the decline path."
-              >
-                <Input
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
-                  inputMode="numeric"
-                  autoComplete="cc-number"
-                  required
-                />
-              </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Expiry">
-                  <Input defaultValue="12 / 30" autoComplete="cc-exp" />
-                </Field>
-                <Field label="CVC">
-                  <Input defaultValue="123" inputMode="numeric" autoComplete="cc-csc" />
-                </Field>
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                {([
+                  { value: "card", label: "Card", hint: "Taxes apply" },
+                  { value: "wallet", label: "Shop wallet", hint: "No taxes" },
+                ] as const).map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    aria-pressed={method === option.value}
+                    onClick={() => setMethod(option.value)}
+                    className={`rounded-[2px] border px-3 py-2.5 text-left transition ${
+                      method === option.value
+                        ? "border-accent-500 bg-accent-500/15"
+                        : "border-line hover:border-white/40"
+                    }`}
+                  >
+                    <span className="block text-sm font-extrabold text-white">{option.label}</span>
+                    <span className="block text-xs text-brand-200">{option.hint}</span>
+                  </button>
+                ))}
               </div>
+
+              {method === "wallet" ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-brand-100">
+                    Balance:{" "}
+                    <span className="font-extrabold text-white">
+                      {formatMoney(quote?.walletBalanceCents ?? 0)}
+                    </span>
+                  </p>
+                  {quote && quote.walletBalanceCents < quote.totalCents && (
+                    <Notice tone="warning">
+                      Not enough for this order.{" "}
+                      <Link to="/account/wallet" className="underline">Top up your wallet</Link> or pay by card.
+                    </Notice>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <Field label="Cardholder name">
+                    <Input
+                      value={cardName}
+                      onChange={(e) => setCardName(e.target.value)}
+                      placeholder="Demo Buyer"
+                      autoComplete="name"
+                    />
+                  </Field>
+                  <Field
+                    label="Card number"
+                    hint="Test mode: any number succeeds. Use a number ending in 0002 to see the decline path."
+                  >
+                    <Input
+                      value={cardNumber}
+                      onChange={(e) => setCardNumber(e.target.value)}
+                      inputMode="numeric"
+                      autoComplete="cc-number"
+                      required
+                    />
+                  </Field>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Expiry">
+                      <Input defaultValue="12 / 30" autoComplete="cc-exp" />
+                    </Field>
+                    <Field label="CVC">
+                      <Input defaultValue="123" inputMode="numeric" autoComplete="cc-csc" />
+                    </Field>
+                  </div>
+                </>
+              )}
+
               <ErrorNote message={error} />
-              <Button type="submit" size="lg" className="w-full" loading={submitting} disabled={!user.isVerified}>
-                {user.isVerified ? `Pay ${formatMoney(cart.subtotalCents)}` : 'Verify your e-mail first'}
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full"
+                loading={submitting}
+                disabled={!user.isVerified || quoting}
+              >
+                {!user.isVerified
+                  ? "Verify your e-mail first"
+                  : `Pay ${formatMoney(quote?.totalCents ?? cart.subtotalCents)} ${
+                      method === "wallet" ? "from wallet" : "by card"
+                    }`}
               </Button>
             </Card>
           </form>
@@ -171,11 +245,28 @@ export default function CheckoutPage() {
               ))}
             </div>
             <div className="border-t border-line pt-3">
-              <div className="flex justify-between font-display text-base font-extrabold text-white">
+              <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between text-brand-100">
+                  <span>Subtotal</span>
+                  <span>{formatMoney(quote?.subtotalCents ?? cart.subtotalCents)}</span>
+                </div>
+                {quote && quote.taxCents > 0 && (
+                  <div className="flex justify-between text-brand-100">
+                    <span>Tax ({(quote.taxBasisPoints / 100).toFixed(2).replace(/\.00$/, "")}%)</span>
+                    <span>{formatMoney(quote.taxCents)}</span>
+                  </div>
+                )}
+              </div>
+              <div className="mt-2 flex justify-between font-display text-base font-extrabold text-white">
                 <span>Total</span>
-                <span>{formatMoney(cart.subtotalCents)}</span>
+                <span>{formatMoney(quote?.totalCents ?? cart.subtotalCents)}</span>
               </div>
             </div>
+            <p className="text-xs text-brand-200">
+              {method === "wallet"
+                ? "Paid from your shop wallet — no transaction tax."
+                : "Tax is added on card payments only; a wallet top-up is the tax-free alternative."}
+            </p>
             <p className="text-xs text-ink-500">
               Keys are reserved and assigned inside a single database transaction. If any key runs out,
               nothing is charged and your cart is kept.
@@ -194,7 +285,7 @@ function OrderConfirmation({ order, onOrderChange }: { order: Order; onOrderChan
       <PageBand
         eyebrow="Order confirmed"
         title="Payment complete"
-        subtitle={`Order ${order.reference} · ${formatMoney(order.totalCents)}`}
+        subtitle={`Order ${order.reference} · ${formatMoney(order.totalCents)}${order.taxCents > 0 ? ` (includes ${formatMoney(order.taxCents)} tax)` : ""}`}
       />
 
       <div className="container-page py-8">

@@ -26,6 +26,7 @@ var (
 	ErrInsufficientStock = errors.New("not enough keys in stock")
 	ErrPaymentDeclined   = errors.New("payment declined")
 	ErrUnavailableOffer  = errors.New("offer is no longer available")
+	ErrInsufficientFunds = errors.New("wallet balance is too low")
 )
 
 // Checkout owns the purchase transaction.
@@ -135,7 +136,24 @@ func (c *Checkout) Pay(ctx context.Context, in PaymentInput) (models.Order, bool
 		subtotal += l.priceCents * l.quantity
 	}
 
-	if declined(in.CardNumber) {
+	// Taxes are admin-configured in basis points and apply to card payments only;
+	// a prepaid wallet is the tax-free path in this demo. Read inside the
+	// transaction so the rate used is the one in force when the order is written.
+	var purchaseTaxBP int
+	var applyOnPurchase bool
+	if err := tx.QueryRow(ctx, `
+		SELECT purchase_tax_bp, apply_on_purchase FROM tax_settings WHERE id`,
+	).Scan(&purchaseTaxBP, &applyOnPurchase); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return models.Order{}, false, fmt.Errorf("read tax settings: %w", err)
+	}
+	payingByWallet := in.Method == "wallet"
+	tax := 0
+	if !payingByWallet && applyOnPurchase {
+		tax = int(math.Round(float64(subtotal) * float64(purchaseTaxBP) / 10000))
+	}
+	total := subtotal + tax
+
+	if !payingByWallet && declined(in.CardNumber) {
 		return models.Order{}, false, ErrPaymentDeclined
 	}
 
@@ -152,11 +170,11 @@ func (c *Checkout) Pay(ctx context.Context, in PaymentInput) (models.Order, bool
 	var createdAt time.Time
 	var paidAt time.Time
 	err = tx.QueryRow(ctx, `
-		INSERT INTO orders (reference, user_id, status, subtotal_cents, total_cents,
+		INSERT INTO orders (reference, user_id, status, subtotal_cents, tax_cents, total_cents,
 		                    payment_method, payment_ref, idempotency_key, paid_at)
-		VALUES ($1, $2, 'paid', $3, $3, $4, $5, $6, now())
+		VALUES ($1, $2, 'paid', $3, $4, $5, $6, $7, $8, now())
 		RETURNING id, created_at, paid_at`,
-		reference, in.UserID, subtotal, in.Method, "sim_"+reference, idempotency,
+		reference, in.UserID, subtotal, tax, total, in.Method, "sim_"+reference, idempotency,
 	).Scan(&orderID, &createdAt, &paidAt)
 	if err != nil {
 		return models.Order{}, false, fmt.Errorf("create order: %w", err)
@@ -235,6 +253,25 @@ func (c *Checkout) Pay(ctx context.Context, in PaymentInput) (models.Order, bool
 		}
 	}
 
+	// A wallet payment moves money from the balance inside this transaction, so a
+	// failed order can never leave the buyer short.
+	if payingByWallet {
+		tag, err := tx.Exec(ctx, `
+			UPDATE wallets SET balance_cents = balance_cents - $2, updated_at = now()
+			WHERE user_id = $1 AND balance_cents >= $2`, in.UserID, subtotal)
+		if err != nil {
+			return models.Order{}, false, fmt.Errorf("debit wallet: %w", err)
+		}
+		if tag.RowsAffected() == 0 {
+			return models.Order{}, false, ErrInsufficientFunds
+		}
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO wallet_transactions (user_id, kind, amount_cents, tax_cents, reference)
+			VALUES ($1, 'purchase', $2, 0, $3)`, in.UserID, subtotal, reference); err != nil {
+			return models.Order{}, false, fmt.Errorf("record wallet purchase: %w", err)
+		}
+	}
+
 	if _, err := tx.Exec(ctx, `DELETE FROM cart_items WHERE user_id = $1`, in.UserID); err != nil {
 		return models.Order{}, false, fmt.Errorf("clear cart: %w", err)
 	}
@@ -269,4 +306,54 @@ func newReference() (string, error) {
 		return "", err
 	}
 	return "KF-" + strings.ToUpper(hex.EncodeToString(buf)), nil
+}
+
+// Quote returns what the buyer would pay right now for their cart, for the chosen
+// payment method. The storefront shows the tax line only at checkout, so this is
+// the one place a buyer learns what the tax adds.
+func (c *Checkout) Quote(ctx context.Context, userID int64, method string) (models.CheckoutQuote, error) {
+	quote := models.CheckoutQuote{Method: method}
+
+	if err := c.pool.QueryRow(ctx, `
+		SELECT COALESCE(SUM(o.price_cents * ci.quantity), 0)::int
+		FROM cart_items ci
+		JOIN offers o ON o.id = ci.offer_id
+		WHERE ci.user_id = $1 AND o.is_active`, userID).Scan(&quote.SubtotalCents); err != nil {
+		return quote, fmt.Errorf("quote subtotal: %w", err)
+	}
+
+	var purchaseTaxBP int
+	var applyOnPurchase bool
+	err := c.pool.QueryRow(ctx,
+		`SELECT purchase_tax_bp, apply_on_purchase FROM tax_settings WHERE id`,
+	).Scan(&purchaseTaxBP, &applyOnPurchase)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return quote, fmt.Errorf("quote tax settings: %w", err)
+	}
+
+	if method != "wallet" && applyOnPurchase {
+		quote.TaxBasisPoints = purchaseTaxBP
+		quote.TaxCents = int(math.Round(float64(quote.SubtotalCents) * float64(purchaseTaxBP) / 10000))
+	}
+	quote.TotalCents = quote.SubtotalCents + quote.TaxCents
+
+	balance, err := repo.NewWallet(c.pool).Balance(ctx, userID)
+	if err != nil {
+		return quote, err
+	}
+	quote.WalletBalanceCents = balance
+	return quote, nil
+}
+
+// DeclinedCard reports whether a test card number should fail, so top-ups and
+// purchases share one decline rule.
+func DeclinedCard(cardNumber string) bool { return declined(cardNumber) }
+
+// NewTopupReference labels a wallet top-up in the ledger.
+func NewTopupReference() (string, error) {
+	buf := make([]byte, 4)
+	if _, err := rand.Read(buf); err != nil {
+		return "", err
+	}
+	return "TOP-" + strings.ToUpper(hex.EncodeToString(buf)), nil
 }

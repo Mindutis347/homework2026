@@ -33,10 +33,10 @@ func LoadOrder(ctx context.Context, q Querier, orderID int64) (models.Order, err
 	o.Items = []models.OrderItem{}
 
 	err := q.QueryRow(ctx, `
-		SELECT id, reference, status, subtotal_cents, total_cents, currency,
+		SELECT id, reference, status, subtotal_cents, tax_cents, total_cents, currency,
 		       payment_method, created_at, paid_at
 		FROM orders WHERE id = $1`, orderID,
-	).Scan(&o.ID, &o.Reference, &o.Status, &o.SubtotalCents, &o.TotalCents, &o.Currency,
+	).Scan(&o.ID, &o.Reference, &o.Status, &o.SubtotalCents, &o.TaxCents, &o.TotalCents, &o.Currency,
 		&o.PaymentMethod, &o.CreatedAt, &o.PaidAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {

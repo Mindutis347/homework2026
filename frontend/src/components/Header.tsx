@@ -160,6 +160,7 @@ function AccountMenu() {
             <p className="mt-1 label-caps text-accent-500">{user?.role}</p>
           </div>
           <MenuLink to="/account/orders" onNavigate={close}>Your library</MenuLink>
+          <MenuLink to="/account/wallet" onNavigate={close}>Shop wallet</MenuLink>
           <MenuLink to="/account/support" onNavigate={close}>Support</MenuLink>
           {(user?.role === 'merchant' || user?.role === 'admin') && (
             <MenuLink to="/merchant" onNavigate={close}>Merchant portal</MenuLink>

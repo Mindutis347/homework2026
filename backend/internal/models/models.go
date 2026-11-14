@@ -195,6 +195,7 @@ type Order struct {
 	Reference     string      `json:"reference"`
 	Status        string      `json:"status"`
 	SubtotalCents int         `json:"subtotalCents"`
+	TaxCents      int         `json:"taxCents"`
 	TotalCents    int         `json:"totalCents"`
 	Currency      string      `json:"currency"`
 	PaymentMethod string      `json:"paymentMethod"`
@@ -202,3 +203,6 @@ type Order struct {
 	PaidAt        *time.Time  `json:"paidAt"`
 	Items         []OrderItem `json:"items"`
 }
+
+// TaxCents is the tax charged on this order. It is folded into TotalCents and
+// kept separately so a receipt can show it on its own.

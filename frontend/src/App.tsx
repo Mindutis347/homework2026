@@ -4,6 +4,7 @@ import { Layout } from '@/components/Layout'
 import { Button, EmptyState } from '@/components/ui'
 import AdminBlocks from '@/features/admin/AdminBlocks'
 import AdminCatalog from '@/features/admin/AdminCatalog'
+import AdminSettings from '@/features/admin/AdminSettings'
 import AdminLayout from '@/features/admin/AdminLayout'
 import AdminOrders from '@/features/admin/AdminOrders'
 import AdminOverview from '@/features/admin/AdminOverview'
@@ -12,6 +13,7 @@ import AdminTickets from '@/features/admin/AdminTickets'
 import AdminUsers from '@/features/admin/AdminUsers'
 import OrdersPage from '@/features/account/OrdersPage'
 import SupportPage from '@/features/account/SupportPage'
+import WalletPage from '@/features/account/WalletPage'
 import { AuthProvider } from '@/features/auth/AuthContext'
 import SignInPage from '@/features/auth/SignInPage'
 import SignUpPage from '@/features/auth/SignUpPage'
@@ -43,6 +45,7 @@ export default function App() {
             <Route path="verify" element={<VerifyPage />} />
             <Route path="account/orders" element={<OrdersPage />} />
             <Route path="account/support" element={<SupportPage />} />
+            <Route path="account/wallet" element={<WalletPage />} />
 
             <Route path="merchant" element={<MerchantLayout />}>
               <Route index element={<MerchantOverview />} />
@@ -58,6 +61,7 @@ export default function App() {
               <Route path="tickets" element={<AdminTickets />} />
               <Route path="catalog" element={<AdminCatalog />} />
               <Route path="blocks" element={<AdminBlocks />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
 
             <Route

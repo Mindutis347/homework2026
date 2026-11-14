@@ -56,6 +56,9 @@ Product `description` accepts a small Markdown subset, rendered by the storefron
 | Method | Path | Notes |
 |---|---|---|
 | POST | `/api/checkout` | verified users only. Header `Idempotency-Key`. Body `{cardNumber?, method?}`. 201 new order, 200 replayed, 402 decline, 409 out of stock |
+| GET | `/api/wallet` | prepaid balance plus the last 25 movements |
+| POST | `/api/wallet/topup` | `{amountCents, cardNumber}` → `{balanceCents, taxCents, chargedCents, reference}`. The admin top-up tax, if enabled, is charged on top |
+| POST | `/api/checkout/quote` | `{method: card\|wallet}` → `{subtotalCents, taxBasisPoints, taxCents, totalCents, walletBalanceCents}`. These numbers are shown only at checkout |
 | GET | `/api/orders` | own order history. Items carry key **metadata** (`id`, `displayedAt`) and never a key value |
 | GET | `/api/orders/{id}` | one order (404 unless you own it) |
 | POST | `/api/orders/{id}/items/{itemId}/reveal` | returns `{keys, displayedAt}` for that line and stamps the first display. The only response that carries a key value |
@@ -89,6 +92,8 @@ Product `description` accepts a small Markdown subset, rendered by the storefron
 | PATCH | `/api/admin/users/{id}/role` | `{role: customer\|merchant\|admin}`; self-demotion blocked |
 | GET | `/api/admin/requests?status=` | proposals |
 | POST | `/api/admin/requests/{id}/review` | `{approve, note}`; approval creates the product |
+| GET | `/api/admin/settings/taxes` | `{topupTaxBasisPoints, purchaseTaxBasisPoints, applyOnTopup, applyOnPurchase}` |
+| PATCH | `/api/admin/settings/taxes` | same shape; rates are basis points (500 = 5%) and must be 0–10000 |
 | GET | `/api/admin/summary` | gross, commission, payouts, top sellers, 14-day series |
 | GET | `/api/admin/catalog?q=` | catalogue entries with their editable fields, offer count and genres; hidden products included |
 | GET | `/api/admin/catalog/cards?ids=1,2,3` | store cards for a hand-picked product list, in the given order — used by the homepage block preview |

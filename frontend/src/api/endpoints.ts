@@ -2,6 +2,9 @@ import { api, queryString } from '@/api/client'
 import type {
   AdminBlock,
   AdminProduct,
+  CheckoutQuote,
+  TaxSettings,
+  Wallet,
   AdminOrder,
   AdminUser,
   Cart,
@@ -72,11 +75,13 @@ export const cartApi = {
 }
 
 export const orderApi = {
-  checkout: (cardNumber: string, idempotencyKey: string) =>
-    api.post<{ order: Order; replayed: boolean }>('/api/checkout', { cardNumber }, {
+  checkout: (cardNumber: string, idempotencyKey: string, method: 'card' | 'wallet' = 'card') =>
+    api.post<{ order: Order; replayed: boolean }>('/api/checkout', { cardNumber, method }, {
       'Idempotency-Key': idempotencyKey,
     }),
-  list: () => api.get<{ orders: Order[] }>('/api/orders'),
+  quote: (method: "card" | "wallet") =>
+    api.post<{ quote: CheckoutQuote }>("/api/checkout/quote", { method }),
+  list: () => api.get<{ orders: Order[] }>("/api/orders"),
   get: (id: number) => api.get<Order>(`/api/orders/${id}`),
   // Keys are disclosed one line at a time, on the buyer's explicit request.
   revealKeys: (orderId: number, itemId: number) =>
@@ -86,6 +91,15 @@ export const orderApi = {
     ),
   refundItem: (orderId: number, itemId: number) =>
     api.post<{ order: Order }>(`/api/orders/${orderId}/items/${itemId}/refund`, {}),
+}
+
+export const walletApi = {
+  get: () => api.get<{ wallet: Wallet }>("/api/wallet"),
+  topup: (amountCents: number, cardNumber: string) =>
+    api.post<{ balanceCents: number; taxCents: number; chargedCents: number; reference: string }>(
+      "/api/wallet/topup",
+      { amountCents, cardNumber },
+    ),
 }
 
 export const merchantApi = {
@@ -130,7 +144,14 @@ export const adminApi = {
     api.get<{ requests: ProductRequest[] }>(`/api/admin/requests${queryString({ status })}`),
   reviewRequest: (id: number, approve: boolean, note: string) =>
     api.post<{ request: ProductRequest }>(`/api/admin/requests/${id}/review`, { approve, note }),
-  summary: () => api.get<SalesSummary>('/api/admin/summary'),
+  summary: () => api.get<SalesSummary>("/api/admin/summary"),
+  taxes: () => api.get<{ taxes: TaxSettings }>("/api/admin/settings/taxes"),
+  updateTaxes: (payload: {
+    topupTaxBasisPoints: number
+    purchaseTaxBasisPoints: number
+    applyOnTopup: boolean
+    applyOnPurchase: boolean
+  }) => api.patch<{ taxes: TaxSettings }>("/api/admin/settings/taxes", payload),
   catalog: (term = '') => api.get<{ products: AdminProduct[] }>(`/api/admin/catalog${queryString({ q: term })}`),
   updateProduct: (id: number, payload: {
     title: string

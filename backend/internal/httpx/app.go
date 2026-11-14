@@ -27,6 +27,7 @@ type App struct {
 	cart     *repo.Cart
 	orders   *repo.Orders
 	checkout *service.Checkout
+	wallet   *repo.Wallet
 	merchant *repo.Merchant
 	admin    *repo.Admin
 }
@@ -42,6 +43,7 @@ func NewApp(cfg config.Config, pool *pgxpool.Pool) *App {
 		cart:     repo.NewCart(pool),
 		orders:   repo.NewOrders(pool),
 		checkout: service.NewCheckout(pool),
+		wallet:   repo.NewWallet(pool),
 		merchant: repo.NewMerchant(pool),
 		admin:    repo.NewAdmin(pool),
 	}
@@ -81,6 +83,9 @@ func (a *App) Routes() http.Handler {
 
 	// Checkout & order history — verified accounts only
 	mux.Handle("POST /api/checkout", verifiedUser(a.handleCheckout))
+	mux.Handle("GET /api/wallet", authUser(a.handleGetWallet))
+	mux.Handle("POST /api/wallet/topup", authUser(a.handleWalletTopup))
+	mux.Handle("POST /api/checkout/quote", authUser(a.handleCheckoutQuote))
 	mux.Handle("GET /api/orders", authUser(a.handleListOrders))
 	mux.Handle("GET /api/orders/{id}", authUser(a.handleGetOrder))
 	mux.Handle("POST /api/orders/{id}/items/{itemId}/reveal", authUser(a.handleRevealKeys))
@@ -111,6 +116,8 @@ func (a *App) Routes() http.Handler {
 	mux.Handle("GET /api/admin/catalog", adminOnly(a.handleAdminCatalog))
 	mux.Handle("GET /api/admin/catalog/cards", adminOnly(a.handleAdminBlockCards))
 	mux.Handle("PATCH /api/admin/catalog/{id}", adminOnly(a.handleAdminUpdateProduct))
+	mux.Handle("GET /api/admin/settings/taxes", adminOnly(a.handleAdminTaxSettings))
+	mux.Handle("PATCH /api/admin/settings/taxes", adminOnly(a.handleAdminUpdateTaxSettings))
 	mux.Handle("GET /api/admin/summary", adminOnly(a.handleAdminSummary))
 	mux.Handle("GET /api/admin/orders", adminOnly(a.handleAdminOrders))
 	mux.Handle("GET /api/admin/tickets", adminOnly(a.handleAdminTickets))

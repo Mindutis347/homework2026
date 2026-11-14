@@ -150,6 +150,8 @@ export type Order = {
   status: 'pending' | 'paid' | 'failed' | 'refunded'
   subtotalCents: number
   taxCents: number
+  /** The rate that produced taxCents (0 for tax-free orders or pre-migration rows). */
+  taxBasisPoints: number
   totalCents: number
   currency: string
   paymentMethod: string

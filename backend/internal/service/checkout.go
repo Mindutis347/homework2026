@@ -148,7 +148,9 @@ func (c *Checkout) Pay(ctx context.Context, in PaymentInput) (models.Order, bool
 	}
 	payingByWallet := in.Method == "wallet"
 	tax := 0
+	appliedTaxBP := 0
 	if !payingByWallet && applyOnPurchase {
+		appliedTaxBP = purchaseTaxBP
 		tax = int(math.Round(float64(subtotal) * float64(purchaseTaxBP) / 10000))
 	}
 	total := subtotal + tax
@@ -170,11 +172,11 @@ func (c *Checkout) Pay(ctx context.Context, in PaymentInput) (models.Order, bool
 	var createdAt time.Time
 	var paidAt time.Time
 	err = tx.QueryRow(ctx, `
-		INSERT INTO orders (reference, user_id, status, subtotal_cents, tax_cents, total_cents,
+		INSERT INTO orders (reference, user_id, status, subtotal_cents, tax_cents, tax_bp, total_cents,
 		                    payment_method, payment_ref, idempotency_key, paid_at)
-		VALUES ($1, $2, 'paid', $3, $4, $5, $6, $7, $8, now())
+		VALUES ($1, $2, 'paid', $3, $4, $5, $6, $7, $8, $9, now())
 		RETURNING id, created_at, paid_at`,
-		reference, in.UserID, subtotal, tax, total, in.Method, "sim_"+reference, idempotency,
+		reference, in.UserID, subtotal, tax, appliedTaxBP, total, in.Method, "sim_"+reference, idempotency,
 	).Scan(&orderID, &createdAt, &paidAt)
 	if err != nil {
 		return models.Order{}, false, fmt.Errorf("create order: %w", err)

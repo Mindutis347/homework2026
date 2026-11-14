@@ -285,7 +285,7 @@ function OrderConfirmation({ order, onOrderChange }: { order: Order; onOrderChan
       <PageBand
         eyebrow="Order confirmed"
         title="Payment complete"
-        subtitle={`Order ${order.reference} · ${formatMoney(order.totalCents)}${order.taxCents > 0 ? ` (includes ${formatMoney(order.taxCents)} tax)` : ""}`}
+        subtitle={`Order ${order.reference}`}
       />
 
       <div className="container-page py-8">
@@ -308,8 +308,21 @@ function OrderConfirmation({ order, onOrderChange }: { order: Order; onOrderChan
             ))}
           </div>
 
+          <div className="mt-4 flex flex-wrap items-baseline justify-end gap-x-3 gap-y-1 border-t border-line pt-3">
+            <span className="text-sm text-brand-200">Total</span>
+            <span className="font-display text-lg font-extrabold text-white">{formatMoney(order.totalCents)}</span>
+            <span className="w-full text-right text-xs text-brand-200 sm:w-auto">
+              {order.taxCents > 0
+                ? `incl. ${formatMoney(order.taxCents)} tax${order.taxBasisPoints > 0 ? ` (${order.taxBasisPoints / 100}%)` : ""}`
+                : order.paymentMethod === "wallet"
+                  ? "no transaction tax (paid from wallet)"
+                  : "no transaction tax"}
+            </span>
+          </div>
+
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link to="/account/orders"><Button>View order history</Button></Link>
+            <Link to={`/account/orders/${order.id}/receipt`}><Button>Print receipt</Button></Link>
+            <Link to="/account/orders"><Button variant="ghost">View order history</Button></Link>
             <Link to="/store"><Button variant="ghost">Keep shopping</Button></Link>
           </div>
         </Card>

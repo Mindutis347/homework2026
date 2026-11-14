@@ -59,7 +59,7 @@ Product `description` accepts a small Markdown subset, rendered by the storefron
 | GET | `/api/wallet` | prepaid balance plus the last 25 movements |
 | POST | `/api/wallet/topup` | `{amountCents, cardNumber}` → `{balanceCents, taxCents, chargedCents, reference}`. The admin top-up tax, if enabled, is charged on top |
 | POST | `/api/checkout/quote` | `{method: card\|wallet}` → `{subtotalCents, taxBasisPoints, taxCents, totalCents, walletBalanceCents}`. These numbers are shown only at checkout |
-| GET | `/api/orders` | own order history. Items carry key **metadata** (`id`, `displayedAt`) and never a key value |
+| GET | `/api/orders` | own order history. Items carry key **metadata** (`id`, `displayedAt`) and never a key value. Each order exposes `subtotalCents`, `taxCents`, `taxBasisPoints` and `totalCents`, so a receipt can reconcile |
 | GET | `/api/orders/{id}` | one order (404 unless you own it) |
 | POST | `/api/orders/{id}/items/{itemId}/reveal` | returns `{keys, displayedAt}` for that line and stamps the first display. The only response that carries a key value |
 | POST | `/api/orders/{id}/items/{itemId}/refund` | refunds an undisplayed line, returns the recomputed order. 409 once a key has been displayed |

@@ -13,6 +13,7 @@ import AdminTickets from '@/features/admin/AdminTickets'
 import AdminUsers from '@/features/admin/AdminUsers'
 import OrdersPage from '@/features/account/OrdersPage'
 import SupportPage from '@/features/account/SupportPage'
+import ReceiptPage from '@/features/account/ReceiptPage'
 import WalletPage from '@/features/account/WalletPage'
 import { AuthProvider } from '@/features/auth/AuthContext'
 import SignInPage from '@/features/auth/SignInPage'
@@ -34,6 +35,8 @@ export default function App() {
     <AuthProvider>
       <CartProvider>
         <Routes>
+          {/* Receipt lives outside Layout: printing should not include the site chrome. */}
+          <Route path="/account/orders/:id/receipt" element={<ReceiptPage />} />
           <Route element={<Layout />}>
             <Route index element={<HomePage />} />
             <Route path="store" element={<StorePage />} />

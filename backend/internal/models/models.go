@@ -191,17 +191,18 @@ type OrderItem struct {
 
 // Order is the buyer-facing purchase record.
 type Order struct {
-	ID            int64       `json:"id"`
-	Reference     string      `json:"reference"`
-	Status        string      `json:"status"`
-	SubtotalCents int         `json:"subtotalCents"`
-	TaxCents      int         `json:"taxCents"`
-	TotalCents    int         `json:"totalCents"`
-	Currency      string      `json:"currency"`
-	PaymentMethod string      `json:"paymentMethod"`
-	CreatedAt     time.Time   `json:"createdAt"`
-	PaidAt        *time.Time  `json:"paidAt"`
-	Items         []OrderItem `json:"items"`
+	ID             int64       `json:"id"`
+	Reference      string      `json:"reference"`
+	Status         string      `json:"status"`
+	SubtotalCents  int         `json:"subtotalCents"`
+	TaxCents       int         `json:"taxCents"`
+	TaxBasisPoints int         `json:"taxBasisPoints"`
+	TotalCents     int         `json:"totalCents"`
+	Currency       string      `json:"currency"`
+	PaymentMethod  string      `json:"paymentMethod"`
+	CreatedAt      time.Time   `json:"createdAt"`
+	PaidAt         *time.Time  `json:"paidAt"`
+	Items          []OrderItem `json:"items"`
 }
 
 // TaxCents is the tax charged on this order. It is folded into TotalCents and

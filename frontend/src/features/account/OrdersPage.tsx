@@ -134,7 +134,21 @@ function OrderCard({
         <Link to={supportHref(order)} className="text-xs font-extrabold uppercase tracking-wide text-accent-500 hover:underline">
           Contact support
         </Link>
-        <p className="ml-auto font-display text-lg font-extrabold text-white">{formatMoney(order.totalCents)}</p>
+        <div className="ml-auto text-right">
+          <p className="font-display text-lg font-extrabold text-white">{formatMoney(order.totalCents)}</p>
+          {order.taxCents > 0 && (
+            <p className="text-[0.6875rem] text-brand-200">
+              incl. {formatMoney(order.taxCents)} tax
+              {order.taxBasisPoints > 0 ? ` (${order.taxBasisPoints / 100}%)` : ""}
+            </p>
+          )}
+          <Link
+            to={`/account/orders/${order.id}/receipt`}
+            className="text-[0.6875rem] font-extrabold uppercase tracking-wide text-accent-500 hover:underline"
+          >
+            Receipt
+          </Link>
+        </div>
       </div>
 
       <div className="mt-4 space-y-4">

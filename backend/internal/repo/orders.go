@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -33,10 +34,10 @@ func LoadOrder(ctx context.Context, q Querier, orderID int64) (models.Order, err
 	o.Items = []models.OrderItem{}
 
 	err := q.QueryRow(ctx, `
-		SELECT id, reference, status, subtotal_cents, tax_cents, total_cents, currency,
+		SELECT id, reference, status, subtotal_cents, tax_cents, tax_bp, total_cents, currency,
 		       payment_method, created_at, paid_at
 		FROM orders WHERE id = $1`, orderID,
-	).Scan(&o.ID, &o.Reference, &o.Status, &o.SubtotalCents, &o.TaxCents, &o.TotalCents, &o.Currency,
+	).Scan(&o.ID, &o.Reference, &o.Status, &o.SubtotalCents, &o.TaxCents, &o.TaxBasisPoints, &o.TotalCents, &o.Currency,
 		&o.PaymentMethod, &o.CreatedAt, &o.PaidAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -299,15 +300,33 @@ func (r *Orders) RefundItem(ctx context.Context, orderID, itemID, userID int64) 
 		}
 	}
 
+	// Totals shrink with what is still bought, and the tax shrinks with them so
+	// subtotal + tax keeps equalling total on the receipt.
 	var remaining int
 	if err := tx.QueryRow(ctx, `
 		SELECT COALESCE(SUM(unit_price_cents * quantity), 0)
 		FROM order_items WHERE order_id = $1 AND status = 'paid'`, orderID).Scan(&remaining); err != nil {
 		return models.Order{}, err
 	}
+	var taxBP, oldSubtotal, oldTax int
+	if err := tx.QueryRow(ctx,
+		`SELECT tax_bp, subtotal_cents, tax_cents FROM orders WHERE id = $1`,
+		orderID).Scan(&taxBP, &oldSubtotal, &oldTax); err != nil {
+		return models.Order{}, fmt.Errorf("read order totals: %w", err)
+	}
+	tax := 0
+	switch {
+	case remaining == 0:
+		tax = 0
+	case taxBP > 0:
+		tax = int(math.Round(float64(remaining) * float64(taxBP) / 10000))
+	case oldSubtotal > 0 && oldTax > 0:
+		// Orders taken before the rate was stored: scale the charge we do have.
+		tax = int(math.Round(float64(oldTax) * float64(remaining) / float64(oldSubtotal)))
+	}
 	if _, err := tx.Exec(ctx,
-		`UPDATE orders SET subtotal_cents = $2, total_cents = $2 WHERE id = $1`,
-		orderID, remaining); err != nil {
+		`UPDATE orders SET subtotal_cents = $2, tax_cents = $3, total_cents = $4 WHERE id = $1`,
+		orderID, remaining, tax, remaining+tax); err != nil {
 		return models.Order{}, fmt.Errorf("recompute totals: %w", err)
 	}
 	if remaining == 0 {

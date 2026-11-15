@@ -31,6 +31,35 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Taxes | Admin sets two rates in percent — one for top-ups, one for card purchases — each with an on/off switch (`/admin/settings`). Tax is never baked into storefront prices; it appears only in the checkout summary and on the receipt. Wallet payments are always tax-free. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, **catalogue editor** (title, copy, art, developer/publisher, release date, content type, genres, visibility — slug stays fixed), sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, and a homepage block editor with a **product picker**, collapsed config JSON and a **live preview** of the block. Descriptions support light formatting (bold, italic, lists, headings). |
 
+### One page per version, one card per version (session 16)
+
+A platform+region combination is now a **product in its own right**. The catalogue had 82 games
+with offers carrying platform/region; the store now lists **299 versions** — Cyberpunk 2077 Steam
+EU, Steam GLOBAL and PlayStation GLOBAL are three cards, three prices, three pages.
+
+How it is built (option B from the plan: no schema change, no duplicated copy):
+
+- `variantAggCTE` groups offers by `(product, platform, region)`, so a store card carries its own
+  price, offer count and discount. `CatalogFilter.ByVariant` selects it; the merchant picker and
+  the homepage keep game-level cards.
+- Route `/products/:slug/:platform/:region` renders one version. The heading reads
+  *Elden Ring — Steam · Europe* with badges for content type (`GAME + DLC`), platform and region,
+  the facts strip says "Europe key", and the offer list, counts and buy box are that version only.
+- A "Other versions" row lists every version with stock and its price, linking to its page — this
+  replaces the region matrix on variant pages.
+- The bare `/products/:slug` URL redirects to the cheapest version, so old links, search results,
+  homepage rows and receipts keep working.
+- A version with no sellers says "No offers for that combination" and still shows the other
+  versions, rather than claiming the game is sold out.
+- The market preference now simply limits the list to your region plus GLOBAL; the "cheaper of the
+  two" collapse is gone because each card is one offer set.
+
+Verified in headless Chrome: the store shows `Steam · GLOBAL` and `PlayStation · GLOBAL` as separate
+cards with their own prices, `/products/elden-ring/steam/EU` renders €64.99 from ByteBazaar with the
+version in the heading and three other versions listed, `/products/elden-ring` redirects to
+`/products/elden-ring/steam/GLOBAL`, and `/products/elden-ring/steam/BR` explains that the version
+has no sellers. Backend suite (including the purchase flow and search tests) green.
+
 ### Product page follows its own filters (session 15)
 
 The facts strip under the title and the buy box were both pinned to the cheapest offer in the

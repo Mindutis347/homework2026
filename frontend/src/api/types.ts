@@ -34,6 +34,11 @@ export type ProductCard = {
   platforms: string[]
   regions: string[]
   bestDiscountPercent: number
+  /** Set when the card is one platform+region variant (the store lists these). */
+  platformSlug?: string
+  platformName?: string
+  regionCode?: string
+  regionName?: string
 }
 
 export type Paged<T> = { items: T[]; total: number; page: number; pageSize: number }

@@ -45,6 +45,9 @@ export default function App() {
               <Route index element={<HomePage />} />
               <Route path="store" element={<StorePage />} />
               <Route path="products/:slug" element={<ProductPage />} />
+              {/* One page per platform+region variant: Steam EU and Steam GLOBAL
+                  are different products with different prices. */}
+              <Route path="products/:slug/:platform/:region" element={<ProductPage />} />
               <Route path="cart" element={<CartPage />} />
               <Route path="checkout" element={<CheckoutPage />} />
               <Route path="sign-in" element={<SignInPage />} />

@@ -29,6 +29,13 @@ type ProductCard struct {
 	ContentType   string     `json:"contentType"`
 	Platforms     []string   `json:"platforms"`
 	Regions       []string   `json:"regions"`
+	// Set when the card stands for one platform+region variant of a game (the
+	// store lists each variant separately). Empty for game-level cards, which the
+	// homepage rows and the merchant picker still use.
+	PlatformSlug string `json:"platformSlug,omitempty"`
+	PlatformName string `json:"platformName,omitempty"`
+	RegionCode   string `json:"regionCode,omitempty"`
+	RegionName   string `json:"regionName,omitempty"`
 	// BestDiscountPercent is the deepest markdown across the product's offers.
 	BestDiscountPercent int `json:"bestDiscountPercent"`
 }

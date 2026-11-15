@@ -43,6 +43,9 @@ type CatalogFilter struct {
 	// aggregate takes MIN(), the cheaper of the two always wins. An empty value
 	// means "no market preference" (admin and merchant views).
 	MarketRegion string
+	// ByVariant makes each card one platform+region variant instead of one game.
+	// The store sets it; the merchant picker and the homepage keep game-level cards.
+	ByVariant bool
 	// IncludeUnlisted keeps products that have no live offers yet. The storefront
 	// never wants those, but a merchant listing a freshly approved catalogue entry
 	// does: that product exists before any offer points at it.
@@ -98,6 +101,32 @@ const offerAggCTE = `
 		GROUP BY o.product_id
 	)`
 
+// variantAggCTE is the storefront aggregate: one row per (product, platform,
+// region), because the store lists Cyberpunk 2077 Steam EU and Cyberpunk 2077
+// Steam GLOBAL as two separate cards with their own prices and offer counts.
+const variantAggCTE = `
+	variant_agg AS (
+		SELECT o.product_id,
+		       pl.slug AS platform_slug, pl.name AS platform_name,
+		       r.code  AS region_code,   r.name  AS region_name,
+		       MIN(o.price_cents) AS min_price,
+		       MAX(o.price_cents) AS max_price,
+		       COUNT(*)::int      AS offer_count,
+		       COALESCE(MAX(
+		           CASE WHEN o.base_price_cents IS NOT NULL AND o.base_price_cents > o.price_cents
+		                THEN ROUND((1 - o.price_cents::numeric / o.base_price_cents) * 100)
+		                ELSE 0 END), 0)::int AS best_discount
+		FROM offers o
+		JOIN platforms pl ON pl.id = o.platform_id
+		JOIN regions   r  ON r.id  = o.region_id
+		WHERE o.is_active
+		  AND o.stock > 0
+		  AND (cardinality(@platforms::text[]) = 0 OR pl.slug = ANY(@platforms::text[]))
+		  AND (cardinality(@regions::text[])   = 0 OR r.code  = ANY(@regions::text[]))
+		  AND (@market_region = '' OR r.code = @market_region OR r.code = 'GLOBAL')
+		GROUP BY o.product_id, pl.id, pl.slug, pl.name, r.id, r.code, r.name
+	)`
+
 // List returns one page of products plus the total match count.
 func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[models.ProductCard], error) {
 	pg := models.Paged[models.ProductCard]{Items: []models.ProductCard{}, Page: f.Page, PageSize: f.PageSize}
@@ -126,9 +155,28 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 	// The storefront only lists products that someone actually sells, so the
 	// aggregate is an inner join by default; the merchant picker flips it to a
 	// left join so an approved-but-unlisted product is selectable.
+	agg := offerAggCTE
+	aggName := "offer_agg"
 	join := "JOIN offer_agg a ON a.product_id = p.id"
+	// Empty strings for the game-level paths, the real columns for the store.
+	variantCols := "''::text, ''::text, ''::text, ''::text"
+	// A variant card has exactly one platform and one region; the game-level
+	// aggregate carries the arrays.
+	variantArrays := "COALESCE(a.platform_slugs, '{}'), COALESCE(a.region_codes, '{}')"
+	if f.ByVariant {
+		agg = variantAggCTE
+		aggName = "variant_agg"
+		join = "JOIN variant_agg a ON a.product_id = p.id"
+		variantCols = "a.platform_slug, a.platform_name, a.region_code, a.region_name"
+		variantArrays = "ARRAY[a.platform_slug]::text[], ARRAY[a.region_code]::text[]"
+	}
 	if f.IncludeUnlisted {
-		join = "LEFT JOIN offer_agg a ON a.product_id = p.id"
+		join = "LEFT JOIN " + aggName + " a ON a.product_id = p.id"
+	}
+
+	if f.ByVariant {
+		// Stable order inside a game: platform, then region.
+		order += ", a.platform_slug ASC, a.region_code ASC"
 	}
 
 	fuzzyMatchSprintf := forSprintf(fuzzyMatchExpr("@search"))
@@ -140,7 +188,8 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 		SELECT p.id, p.slug, p.title, p.cover_url, p.release_date, p.popularity,
 		       COALESCE(a.min_price, 0), COALESCE(a.max_price, 0),
 		       COALESCE(a.offer_count, 0), COALESCE(a.best_discount, 0),
-		       COALESCE(a.platform_slugs, '{}'), COALESCE(a.region_codes, '{}'),
+		       `+variantArrays+`,
+		       `+variantCols+`,
 		       p.content_type,
 		       COUNT(*) OVER() AS total,
 		       CASE WHEN @search = '' THEN 0 ELSE `+fuzzyScoreSprintf+` END AS score
@@ -159,7 +208,7 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 		  AND (@min_price::int IS NULL OR a.min_price >= @min_price)
 		  AND (@max_price::int IS NULL OR a.min_price <= @max_price)
 		ORDER BY %s
-		LIMIT @limit OFFSET @offset`, offerAggCTE, join, order)
+		LIMIT @limit OFFSET @offset`, agg, join, order)
 
 	args := pgx.NamedArgs{
 		"search":        strings.TrimSpace(f.Search),
@@ -187,7 +236,9 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 		if err := rows.Scan(
 			&item.ID, &item.Slug, &item.Title, &item.CoverURL, &item.ReleaseDate, &item.Popularity,
 			&item.MinPriceCents, &item.MaxPriceCents, &item.OfferCount, &item.BestDiscountPercent,
-			&item.Platforms, &item.Regions, &item.ContentType, &total, &score,
+			&item.Platforms, &item.Regions,
+			&item.PlatformSlug, &item.PlatformName, &item.RegionCode, &item.RegionName,
+			&item.ContentType, &total, &score,
 		); err != nil {
 			return pg, fmt.Errorf("scan product: %w", err)
 		}

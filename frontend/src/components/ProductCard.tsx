@@ -18,9 +18,19 @@ export function ProductCard({
 }) {
   const discount = discountPercent(product.minPriceCents, product.maxPriceCents)
   const preorder = isPreorder(product.releaseDate)
+  // A variant card names and links to one platform+region; a game-level card (the
+  // homepage rows, search) links to the game, which redirects to its cheapest
+  // version.
+  const platformSlug = product.platformSlug ?? ''
+  const regionCode = product.regionCode ?? ''
+  const variant = Boolean(platformSlug && regionCode)
+  const platformsLine = product.platforms.map(platformLabel).join(' · ')
+  const href = variant
+    ? `/products/${product.slug}/${product.platformSlug}/${product.regionCode}`
+    : `/products/${product.slug}`
   return (
     <Link
-      to={`/products/${product.slug}`}
+      to={href}
       className={`group relative flex flex-col overflow-hidden rounded-[2px] bg-brand-900 text-white transition hover:bg-brand-800 ${className}`}
     >
       {product.bestDiscountPercent > 0 && (
@@ -48,7 +58,13 @@ export function ProductCard({
       </div>
 
       <div className="flex flex-1 flex-col gap-1 p-3">
-        <p className="label-caps truncate text-brand-200">{product.platforms.map(platformLabel).join(' · ')}</p>
+          {/* A variant card names its own platform and region, which is the whole
+              point of listing Steam EU and Steam GLOBAL separately. */}
+          <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-brand-200">
+            {variant
+              ? `${platformLabel(platformSlug)} · ${regionCode}`
+              : platformsLine}
+          </p>
         <h3 className="line-clamp-2 text-sm font-bold leading-snug group-hover:text-accent-300">
           {preorder && <span className="mr-1 text-accent-500">Pre-order</span>}
           {product.title}

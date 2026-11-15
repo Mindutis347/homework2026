@@ -77,6 +77,8 @@ func (a *App) handleListProducts(w http.ResponseWriter, r *http.Request) {
 		Sort:         r.URL.Query().Get("sort"),
 		Page:         1,
 		PageSize:     24,
+		// The store shows every platform+region as its own card.
+		ByVariant: true,
 	}
 	if len(filter.Regions) == 0 {
 		filter.MarketRegion = marketParam(r)

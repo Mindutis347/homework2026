@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { catalogApi } from '@/api/endpoints'
 import type { Offer, ProductDetail } from '@/api/types'
@@ -29,10 +29,14 @@ import { formatDate, formatMoney, isPreorder } from '@/lib/format'
  * offer list, a region price grid and the specification follow.
  */
 export default function ProductPage() {
-  const { slug = '' } = useParams()
+  const { slug = '', platform = '', region: regionParam = '' } = useParams()
+  const navigate = useNavigate()
   const { add } = useCart()
   const { notify } = useToast()
   const { region } = useMarket()
+  // The store links to one platform+region version; the bare game URL keeps old
+  // links working by redirecting to the cheapest version.
+  const isVariant = Boolean(platform && regionParam)
 
   const [product, setProduct] = useState<ProductDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -75,38 +79,85 @@ export default function ProductPage() {
   const offers = useMemo(() => {
     if (!product) return []
     let list = product.offers
-    if (platformFilter) list = list.filter((o) => o.platformSlug === platformFilter)
-    if (regionFilter) list = list.filter((o) => o.regionCode === regionFilter)
+    if (isVariant) {
+      list = list.filter((o) => o.platformSlug === platform && o.regionCode === regionParam)
+    } else {
+      if (platformFilter) list = list.filter((o) => o.platformSlug === platformFilter)
+      if (regionFilter) list = list.filter((o) => o.regionCode === regionFilter)
+    }
     return [...list].sort((a, b) => {
       if ((a.stock === 0) !== (b.stock === 0)) return a.stock === 0 ? 1 : -1
       return sort === 'price' ? a.priceCents - b.priceCents : b.seller.rating - a.seller.rating
     })
-  }, [product, platformFilter, regionFilter, sort])
+  }, [product, isVariant, platform, regionParam, platformFilter, regionFilter, sort])
 
   const visibleInStock = useMemo(() => offers.filter((offer) => offer.stock > 0), [offers])
-  // The buy box follows the chips: pick a region and the headline price becomes
-  // that region's cheapest offer, not the global one.
   const cheapest = visibleInStock[0] ?? null
-  const filterLabel = [regionFilter, platformFilter && platformLabelFor(platformFilter)].filter(Boolean).join(' · ')
+  const filterLabel = isVariant
+    ? `${platformLabelFor(platform)} · ${variantRegionName(product, regionParam)}`
+    : [regionFilter, platformFilter && platformLabelFor(platformFilter)].filter(Boolean).join(' · ')
 
-  // The facts strip has to agree with what is on screen. With no chip active it
-  // follows the visitor's market when this game is sold there, otherwise the
-  // region of the cheapest offer.
+  // Every platform+region version of this game that has stock, cheapest first.
+  // It drives the "other versions" row and the redirect from the bare game URL.
+  const versions = useMemo(() => {
+    if (!product) return []
+    const byVariant = new Map<string, {
+      platformSlug: string
+      platformName: string
+      regionCode: string
+      regionName: string
+      priceCents: number
+      offerCount: number
+    }>()
+    for (const offer of product.offers) {
+      if (offer.stock === 0) continue
+      const key = `${offer.platformSlug}|${offer.regionCode}`
+      const existing = byVariant.get(key)
+      if (!existing) {
+        byVariant.set(key, {
+          platformSlug: offer.platformSlug,
+          platformName: offer.platformName,
+          regionCode: offer.regionCode,
+          regionName: offer.regionName,
+          priceCents: offer.priceCents,
+          offerCount: 1,
+        })
+        continue
+      }
+      existing.offerCount += 1
+      if (offer.priceCents < existing.priceCents) existing.priceCents = offer.priceCents
+    }
+    return [...byVariant.values()].sort((a, b) => a.priceCents - b.priceCents)
+  }, [product])
+
+  // Facts describe the version on screen. On a variant page that is the URL; on the
+  // bare game URL (only reachable when nothing is in stock) it falls back to the
+  // visitor's market, then to the cheapest offer.
   const facts = useMemo(() => {
     const pool = product ? (offers.length > 0 ? offers : product.offers) : []
-    let code = regionFilter
-    if (!code && region && pool.some((offer) => offer.regionCode === region && offer.stock > 0)) {
-      code = region
-    }
-    if (!code) code = (pool.find((offer) => offer.stock > 0) ?? pool[0])?.regionCode ?? 'GLOBAL'
+    const code = isVariant ? regionParam : regionFilter || (
+      region && pool.some((offer) => offer.regionCode === region && offer.stock > 0) ? region : ''
+    ) || (pool.find((offer) => offer.stock > 0) ?? pool[0])?.regionCode || 'GLOBAL'
     const regionName = pool.find((offer) => offer.regionCode === code)?.regionName || (code === 'GLOBAL' ? 'Global' : code)
+    const platforms = isVariant ? [platform] : [...new Set(pool.map((offer) => offer.platformSlug))]
     return {
       regionCode: code,
       regionName,
-      platforms: [...new Set(pool.map((offer) => offer.platformSlug))],
+      platforms,
       delivery: (pool.some((offer) => offer.delivery === 'instant') ? 'instant' : 'manual') as 'instant' | 'manual',
     }
-  }, [product, offers, regionFilter, region, cheapest])
+  }, [product, offers, isVariant, platform, regionParam, regionFilter, region, cheapest])
+
+  // The bare game URL redirects to its cheapest version, keeping old links working.
+  useEffect(() => {
+    if (!product || isVariant) return
+    const target = product.offers
+      .filter((offer) => offer.stock > 0)
+      .sort((a, b) => a.priceCents - b.priceCents)[0]
+    if (target) {
+      navigate(`/products/${product.slug}/${target.platformSlug}/${target.regionCode}`, { replace: true })
+    }
+  }, [product, isVariant, navigate])
 
   async function handleAdd(offer: Offer) {
     // Guests can fill a cart too; the sign-in prompt belongs at checkout.
@@ -190,14 +241,22 @@ export default function ProductPage() {
               />
             </div>
 
-            <div>
+          <div>
               <h1 className="font-display text-2xl font-extrabold leading-tight text-white sm:text-3xl">
-                {preorder && <span className="mr-2 text-accent-500">Pre-order</span>}
+                {isPreorder(product.releaseDate) && <span className="mr-2 text-accent-500">Pre-order</span>}
                 {product.title}
+                {isVariant && (
+                  <span className="mt-1 block text-base font-bold text-brand-100 sm:text-lg">
+                    {platformLabelFor(platform)} · {variantRegionName(product, regionParam)}
+                  </span>
+                )}
               </h1>
               <div className="mt-3 flex flex-wrap items-center gap-2">
+                {/* What this entry actually is: full game, DLC, or both. */}
                 <ContentTypeBadge type={product.contentType} />
-                {preorder && <Badge tone="accent">Pre-order</Badge>}
+                {isVariant && <Badge tone="accent">{platformLabelFor(platform)}</Badge>}
+                {isVariant && <Badge tone="accent">{regionParam}</Badge>}
+                {isPreorder(product.releaseDate) && <Badge tone="accent">Pre-order</Badge>}
                 {product.genres.map((genre) => (
                   <Badge key={genre} tone="neutral">{genre}</Badge>
                 ))}
@@ -237,7 +296,7 @@ export default function ProductPage() {
       </div>
 
       <div className="container-page pt-6">
-        <ProductTabs offerCount={product.offers.length} />
+        <ProductTabs offerCount={offers.length} />
 
         <section id="overview" className="scroll-mt-32">
           <SectionHeading
@@ -279,21 +338,51 @@ export default function ProductPage() {
             </div>
           </div>
 
-          <div className="mb-4 flex flex-wrap gap-1.5">
-            <Chip active={!platformFilter} onClick={() => setPlatformFilter('')}>All platforms</Chip>
-            {platforms.map((platform) => (
-              <Chip key={platform} active={platformFilter === platform} onClick={() => setPlatformFilter(platform)}>
-                {platformLabelFor(platform)}
-              </Chip>
-            ))}
-            <span className="mx-1 w-px self-stretch bg-line" aria-hidden />
-            <Chip active={!regionFilter} onClick={() => setRegionFilter('')}>All regions</Chip>
-            {regions.map((region) => (
-              <Chip key={region} active={regionFilter === region} onClick={() => setRegionFilter(region)}>
-                {region}
-              </Chip>
-            ))}
-          </div>
+          {/* On a variant page the platform and region are fixed by the URL, so the
+              row becomes a switcher between versions of the same game instead of a
+              filter. On the game URL (nothing in stock) it keeps the filter chips. */}
+          {isVariant ? (
+            versions.length > 1 && (
+              <div className="mb-4 flex flex-wrap gap-1.5">
+                <span className="self-center pr-1 text-xs font-bold uppercase tracking-wide text-brand-300">
+                  Other versions
+                </span>
+                {versions.map((version) => {
+                  const active = version.platformSlug === platform && version.regionCode === regionParam
+                  return (
+                    <Link
+                      key={`${version.platformSlug}-${version.regionCode}`}
+                      to={`/products/${product.slug}/${version.platformSlug}/${version.regionCode}`}
+                      aria-current={active ? 'page' : undefined}
+                      className={`rounded-[2px] border px-2.5 py-1 text-xs font-bold transition ${
+                        active
+                          ? 'border-accent-500 bg-accent-500 text-on-accent'
+                          : 'border-white/30 text-white hover:border-accent-500 hover:text-accent-500'
+                      }`}
+                    >
+                      {platformLabelFor(version.platformSlug)} · {version.regionCode} · {formatMoney(version.priceCents)}
+                    </Link>
+                  )
+                })}
+              </div>
+            )
+          ) : (
+            <div className="mb-4 flex flex-wrap gap-1.5">
+              <Chip active={!platformFilter} onClick={() => setPlatformFilter('')}>All platforms</Chip>
+              {platforms.map((platformSlug) => (
+                <Chip key={platformSlug} active={platformFilter === platformSlug} onClick={() => setPlatformFilter(platformSlug)}>
+                  {platformLabelFor(platformSlug)}
+                </Chip>
+              ))}
+              <span className="mx-1 w-px self-stretch bg-line" aria-hidden />
+              <Chip active={!regionFilter} onClick={() => setRegionFilter('')}>All regions</Chip>
+              {regions.map((regionCode) => (
+                <Chip key={regionCode} active={regionFilter === regionCode} onClick={() => setRegionFilter(regionCode)}>
+                  {regionCode}
+                </Chip>
+              ))}
+            </div>
+          )}
 
           <div className="space-y-2">
             {offers.map((offer) => (
@@ -324,17 +413,17 @@ export default function ProductPage() {
             )}
           </div>
 
+          {!isVariant && (
           <Card className="mt-6 hidden p-4 lg:block">
             <h3 className="mb-3 font-display text-base font-extrabold text-white">Cheapest by region</h3>
             <RegionMatrix
               offers={product.offers}
               onPick={(region, platform) => {
-                setRegionFilter(region)
-                setPlatformFilter(platform)
-                document.getElementById('offers')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                navigate(`/products/${product.slug}/${platform}/${region}`)
               }}
             />
           </Card>
+          )}
         </section>
 
         <section id="details" className="mt-10 scroll-mt-32">
@@ -410,6 +499,11 @@ export default function ProductPage() {
       )}
     </div>
   )
+}
+
+function variantRegionName(product: { offers: { regionCode: string; regionName: string }[] } | null, code: string): string {
+  const found = product?.offers.find((offer) => offer.regionCode === code)
+  return found?.regionName || (code === 'GLOBAL' ? 'Global' : code)
 }
 
 function platformLabelFor(slug: string): string {

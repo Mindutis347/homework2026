@@ -7,6 +7,14 @@ import { Cover } from '@/components/Cover'
 import { useMarket } from '@/features/market/MarketContext'
 import { formatMoney } from '@/lib/format'
 
+/** A suggestion opens the version search resolved it to; without one, the game
+ *  page, which redirects to its cheapest version. */
+function suggestionHref(item: SearchSuggestion): string {
+  return item.platformSlug && item.regionCode
+    ? `/products/${item.slug}/${item.platformSlug}/${item.regionCode}`
+    : `/products/${item.slug}`
+}
+
 /**
  * Global search with typo tolerance: the backend ranks by trigram similarity, so
  * "eleden ring" still finds Elden Ring. Input is debounced and in-flight
@@ -72,7 +80,7 @@ export function SearchBar({ initialValue = '' }: { initialValue?: string }) {
     } else if (event.key === 'Enter') {
       if (active >= 0 && items[active]) {
         setOpen(false)
-        navigate(`/products/${items[active].slug}`)
+        navigate(suggestionHref(items[active]))
       } else {
         submit()
       }
@@ -119,7 +127,7 @@ export function SearchBar({ initialValue = '' }: { initialValue?: string }) {
                     onMouseEnter={() => setActive(index)}
                     onClick={() => {
                       setOpen(false)
-                      navigate(`/products/${item.slug}`)
+                      navigate(suggestionHref(item))
                     }}
                     className={`flex w-full items-center gap-3 px-3 py-2.5 text-left ${
                       active === index ? 'bg-white/10' : 'hover:bg-canvas'
@@ -135,7 +143,17 @@ export function SearchBar({ initialValue = '' }: { initialValue?: string }) {
                       loading="lazy"
                       className="h-12 w-9 rounded object-cover"
                     />
-                    <span className="flex-1 text-sm font-medium text-ink-900">{item.title}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium text-ink-900">{item.title}</span>
+                      {/* Search resolves a game to one version; say which, since
+                          Steam EU and Steam GLOBAL are different products. */}
+                      {item.platformSlug && item.regionCode && (
+                        <span className="block truncate text-xs font-semibold text-ink-500">
+                          {item.platformName || item.platformSlug} · {item.regionCode}
+                          {item.priceCents ? ` · ${formatMoney(item.priceCents)}` : ''}
+                        </span>
+                      )}
+                    </span>
                     <span className="text-xs text-ink-300">{Math.round(item.score * 100)}% match</span>
                   </button>
                 </li>

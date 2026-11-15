@@ -39,7 +39,7 @@ filtering shallow, which is exactly where the assignment rewards depth.
 `pg_trgm` GIN indexes (`products_title_trgm_idx`, `products_title_norm_idx`,
 `products_search_text_idx` from migration 0009) plus `fuzzystrmatch` for edit distance.
 
-A query is split into **tokens** and every token must match, which is what makes a
+A query is split into **tokens**. Platform and region words (`steam`, `ps5`, `eu`, `global`) are pulled out as **qualifiers** first: they filter which version a suggestion resolves to and are not matched against titles. The remaining tokens must all match, which is what makes a
 multi-word slip work: `elden rnig` matches "elden" exactly and "rnig" as one edit away
 from "ring". Tokens are matched against two documents:
 
@@ -63,7 +63,7 @@ per-word trigram / Levenshtein       budget 2, same-length words only,
                                      and two edits require the same first letter
 ```
 
-The first-letter rule is the difference between a typo and a coincidence:
+Whole words are compared, so a letter dropped anywhere counts once ('rst' is one edit from 'rust'); a separate prefix comparison covers a slip in the first syllable ('syber' against 'cyberpunk'); punctuation splits words but apostrophes stay inside them, or a transposed 'bladurs' would be three edits from 'baldur's' instead of two. The first-letter rule is the difference between a typo and a coincidence:
 `hlao`→`halo` (same first letter, one transposition) matches; `hlao`→`play`
 (different first letter, two edits) does not. A token has to score **0.45** to count —
 above the 0.33–0.42 that unrelated words reach, below the 0.5 that a real typo earns.

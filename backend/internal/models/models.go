@@ -108,6 +108,13 @@ type SearchSuggestion struct {
 	Title    string  `json:"title"`
 	CoverURL string  `json:"coverUrl"`
 	Score    float64 `json:"score"`
+	// The version the suggestion points at: a game is sold as several
+	// platform+region variants, so the dropdown links straight to one of them.
+	PlatformSlug string `json:"platformSlug,omitempty"`
+	PlatformName string `json:"platformName,omitempty"`
+	RegionCode   string `json:"regionCode,omitempty"`
+	RegionName   string `json:"regionName,omitempty"`
+	PriceCents   int    `json:"priceCents,omitempty"`
 }
 
 type Platform struct {

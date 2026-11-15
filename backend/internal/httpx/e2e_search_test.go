@@ -43,16 +43,22 @@ func TestSearchToleratesTypos(t *testing.T) {
 	defer server.Close()
 
 	search := func(term string) []struct {
-		Title string  `json:"title"`
-		Slug  string  `json:"slug"`
-		Score float64 `json:"score"`
+		Title        string  `json:"title"`
+		Slug         string  `json:"slug"`
+		Score        float64 `json:"score"`
+		PlatformSlug string  `json:"platformSlug"`
+		RegionCode   string  `json:"regionCode"`
+		PriceCents   int     `json:"priceCents"`
 	} {
 		t.Helper()
 		var body struct {
 			Items []struct {
-				Title string  `json:"title"`
-				Slug  string  `json:"slug"`
-				Score float64 `json:"score"`
+				Title        string  `json:"title"`
+				Slug         string  `json:"slug"`
+				Score        float64 `json:"score"`
+				PlatformSlug string  `json:"platformSlug"`
+				RegionCode   string  `json:"regionCode"`
+				PriceCents   int     `json:"priceCents"`
 			} `json:"items"`
 		}
 		getJSON(t, http.DefaultClient, server.URL+"/api/search?q="+url.QueryEscape(term), &body)
@@ -93,6 +99,29 @@ func TestSearchToleratesTypos(t *testing.T) {
 		}
 		if results[0].Score < 0.5 || results[0].Score > 1 {
 			t.Errorf("%q scored %.2f, want between 0.5 and 1", tc.term, results[0].Score)
+		}
+		// Every suggestion resolves to one platform+region version, because a game
+		// is sold as several and the entry price belongs to exactly one.
+		if results[0].PlatformSlug == "" || results[0].RegionCode == "" || results[0].PriceCents <= 0 {
+			t.Errorf("%q suggestion has no version: %+v", tc.term, results[0])
+		}
+	}
+
+	// Platform and region words are qualifiers, not title words: the same game
+	// resolves to the version that was asked for.
+	versioned := search("elden ring steam eu")
+	if len(versioned) == 0 {
+		t.Fatal("\"elden ring steam eu\" returned nothing")
+	}
+	if versioned[0].Slug != "elden-ring" || versioned[0].PlatformSlug != "steam" || versioned[0].RegionCode != "EU" {
+		t.Errorf("versioned search resolved to %s %s/%s, want elden-ring steam/EU",
+			versioned[0].Slug, versioned[0].PlatformSlug, versioned[0].RegionCode)
+	}
+
+	// A bare qualifier lists what is sold there rather than failing on the words.
+	for _, qualifier := range []string{"steam", "eu"} {
+		if len(search(qualifier)) == 0 {
+			t.Errorf("%q alone should list games, got nothing", qualifier)
 		}
 	}
 }

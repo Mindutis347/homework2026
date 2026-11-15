@@ -31,6 +31,26 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Taxes | Admin sets two rates in percent — one for top-ups, one for card purchases — each with an on/off switch (`/admin/settings`). Tax is never baked into storefront prices; it appears only in the checkout summary and on the receipt. Wallet payments are always tax-free. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, **catalogue editor** (title, copy, art, developer/publisher, release date, content type, genres, visibility — slug stays fixed), sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, and a homepage block editor with a **product picker**, collapsed config JSON and a **live preview** of the block. Descriptions support light formatting (bold, italic, lists, headings). |
 
+### Search resolves versions, and forgives one mistake anywhere (session 17)
+
+The dropdown used to return games. It now returns the **version** a game resolves to: each suggestion
+carries `platformSlug`, `regionCode` and `priceCents`, and clicking it opens that variant page directly.
+
+- Platform and region words in a query are treated as qualifiers, not title words: `elden ring steam eu`
+  finds Steam/EU, `cyberpunk playstation` the PlayStation version, and a bare `steam` or `eu` lists what
+  is sold there instead of returning nothing.
+- The version attached to a suggestion is the one asked for, else the visitor's market region, else the
+  cheapest in stock — so the price in the dropdown is the price on the page.
+- Typo tolerance now guarantees **one mistake of any kind**: substitution, a dropped letter, an extra
+  letter or a transposition, in any title word. Word matching compares whole words (a letter dropped
+  anywhere counts once), keeps a prefix comparison for a slip in the first syllable ('syber' →
+  'cyberpunk'), splits on punctuation but keeps apostrophes ('baldur's' stays one token), and
+  initialisms still resolve (`gta`, `bg3`, `rdr2`).
+
+Measured: 180 one-mistake queries — every catalogue title × {substitution, dropped, transposed, extra} —
+find their game, 180/180; `battlefield`, `randomword` and `12345` still return nothing. Two regressions
+introduced while rewriting the word matcher (initialisms, prefix typos) were caught by the same tests
+and fixed before shipping.
 ### One page per version, one card per version (session 16)
 
 A platform+region combination is now a **product in its own right**. The catalogue had 82 games

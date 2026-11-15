@@ -103,6 +103,12 @@ export type SearchSuggestion = {
   title: string
   coverUrl: string
   score: number
+  /** The version the suggestion opens: search resolves a game to one platform+region. */
+  platformSlug?: string
+  platformName?: string
+  regionCode?: string
+  regionName?: string
+  priceCents?: number
 }
 
 export type User = {

@@ -34,6 +34,7 @@ session — the deliverable must be complete, not summarised.
 | Session 1 | `/export` of `session_c8f42f7f…`, 675 messages |
 | Session 2, turns 1–9 | `/export` of `session_7fa15e15…` at 00:23 (943 messages) |
 | Session 2, turns 10–39 | generated 2026-11-15 from the CLI event log (`agents/main/wire.jsonl`), because `/export` can only be typed into the terminal |
+| Session 2, turns 40–46 | same generator, appended later the same day |
 
 In the generated block, prose, prompts and tool calls are verbatim; each tool result is capped at
 5,000 characters and each call's arguments at 6,000, with the omitted length stated inline. The

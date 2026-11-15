@@ -449,9 +449,9 @@ The Render API key that was pasted into this chat has been **revoked** and every
 transcript is key-free (the paste reads "render api key redacted"; 0 occurrences of the key pattern
 across the merged log). Both sessions are merged into `agent-chat-history.md`.
 
-Session 2 ran to thirty-nine turns, so the log now carries it in two blocks: turns 1–9 from the
-00:23 `/export`, and turns 10–39 generated on 2026-11-15 from the CLI event log (that command can
-only be typed into the terminal). The whole file — old and new — passes one redaction pass:
+Session 2 ran past forty turns, so the log carries it in three blocks: turns 1–9 from the 00:23
+`/export`, turns 10–39 and turns 40–46 generated on 2026-11-15 from the CLI event log (that command
+can only be typed into the terminal). The whole file — old and new — passes one redaction pass:
 0 Neon tokens, 0 Render keys, 0 raw JWTs, 0 unmasked connection strings, 0 local dev secrets.
 Demo passwords stay in the clear because `README.md` publishes them for the evaluator. The raw
 `kimi-export-session_*.md` files were scrubbed too and are gitignored, so only the merged log can

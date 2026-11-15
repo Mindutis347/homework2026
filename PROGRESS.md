@@ -31,6 +31,29 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Taxes | Admin sets two rates in percent — one for top-ups, one for card purchases — each with an on/off switch (`/admin/settings`). Tax is never baked into storefront prices; it appears only in the checkout summary and on the receipt. Wallet payments are always tax-free. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, **catalogue editor** (title, copy, art, developer/publisher, release date, content type, genres, visibility — slug stays fixed), sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, and a homepage block editor with a **product picker**, collapsed config JSON and a **live preview** of the block. Descriptions support light formatting (bold, italic, lists, headings). |
 
+### Fuzzy search that actually forgives typos (session 13)
+
+Two typos a shopper really types — `syber` and `skrim` — returned nothing. The measured cause:
+whole-title trigrams score them 0.11 and 0.10, and the only word-level predicate demanded
+`word_similarity > 0.5`, which `syber` (0.33) cannot reach.
+
+The replacement scores every product on six signals — exact, prefix, substring, initialism,
+trigram similarity, and a per-word match — and floors at **0.35**. The per-word matcher compares
+each title word against the term after stripping punctuation, over an equal-length prefix, with an
+edit budget of 2 and a length guard so a short word cannot be "a typo" of a much longer term. That
+needs Levenshtein, so migration `0008_fuzzy_search.sql` adds the standard `fuzzystrmatch`
+contribution module.
+
+Why trigrams alone were not enough: `syber`→"cyberpunk" and `battlefield`→"starfield" both score
+exactly 0.33, so any threshold that accepts one accepts the other. Edit distance separates them —
+1 edit against 5.
+
+Measured after the change: `syber` → Cyberpunk 2077 (0.80), `skrim` → Skyrim (0.60), `cyperpunk`
+(0.89), `bladurs` → Baldur's Gate 3 (0.71), while `battlefield`, `randomword` and `12345` return
+nothing. A coverage sweep that introduced a realistic typo into the first distinctive word of every
+catalogue entry found **80 of 80** products. `TestSearchToleratesTypos` pins six typo cases, the
+initialism path and two negative controls.
+
 ### Visual QA pass (sessions 10–12)
 
 A browser sweep of every route at 1440×900 and 390×844 — 44 page loads (22 routes × 2

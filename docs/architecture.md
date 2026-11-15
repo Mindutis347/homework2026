@@ -36,19 +36,33 @@ filtering shallow, which is exactly where the assignment rewards depth.
 
 ## Search
 
-`pg_trgm` GIN index on `products.title`. A query matches when:
+`pg_trgm` GIN index on `products.title`, plus `fuzzystrmatch` for edit distance. A
+query scores every product and keeps what clears the floor:
 
 ```
-title ILIKE '%term%'                     -- partial word ("cyberpunk")
-OR similarity(title, term) > 0.25        -- typo ("eleden ring")
-OR word_similarity(term, title) > 0.6    -- word-level typo
+1.00  title equals the term
+0.95  title starts with the term
+0.90  title contains the term            -- partial word ("cyberpunk")
+0.85  title initialism starts with term  -- "gta", "bg3", "rdr2"
+similarity(title, term)                  -- whole-title trigrams
+word_similarity(term, title)             -- term against the best substring
+fuzzyWordExpr                            -- best per-word trigram or Levenshtein match
 ```
 
-Ordering blends `GREATEST(similarity, word_similarity)` with `popularity`, so a
-near-exact hit on a famous game outranks a weak match on an obscure one. The
-suggestion endpoint returns a match score, which the UI shows as a percentage.
-The store list uses the same predicate so the dropdown and the results page can
-never disagree.
+`fuzzyWordExpr` is what makes a real typo findable. Trigrams alone cannot separate a
+misspelling from a coincidence: `syber`/`cyberpunk` and `battlefield`/`starfield` both
+score **0.33**. Levenshtein can — one substitution against five — so each title word
+is compared to the term (punctuation stripped, equal-length prefix, edit budget of 2,
+and only against words of similar length, so `spidr` cannot match `sid`). A hit scores
+`1 − distance/length`: `syber` → 0.80, `skrim` → 0.60.
+
+The floor is **0.35**, which is above trigram noise and below every typo the tests
+cover. An explicit substring or prefix match bypasses the floor. Ordering is
+`score DESC, popularity DESC`, so a fuzzy hit on an obscure title never outranks an
+exact one on a famous game. The suggestion endpoint returns the score, which the UI
+shows as a percentage; the store list uses the same market filter so the dropdown and
+the results page can never disagree. Costs are fine at this scale (81 products); a
+larger catalogue would move the edit-distance branch behind a trigram pre-filter.
 
 ## Checkout: one transaction, locked keys
 

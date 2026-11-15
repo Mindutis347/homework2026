@@ -301,8 +301,39 @@ func (c *Catalog) GetBySlug(ctx context.Context, slug string) (models.ProductDet
 }
 
 // Search returns fuzzy title suggestions for the global search dropdown.
-// Trigram similarity tolerates typos ("eleden ring"), ILIKE covers partial
-// words ("cyberpunk"), and popularity breaks ties so famous games surface first.
+// Trigram similarity tolerates typos ("eleden ring"), ILIKE covers partial words
+// ("cyberpunk"), an initialism covers abbreviations ("bg3"), and popularity breaks
+// ties so famous games surface first.
+//
+// fuzzyWordExpr scores the term against each word of the title: trigram similarity
+// on the word and on its equal-length prefix, plus Levenshtein distance when it is
+// inside a typo budget. Trigrams alone cannot separate a typo from a coincidence —
+// "syber"/"cyberpunk" and "battlefield"/"starfield" both score 0.33 — but one
+// substitution versus five edits can. Words shorter than three characters are
+// ignored: they match everything.
+const fuzzyWordExpr = `(
+	SELECT MAX(GREATEST(
+	           similarity(w.word, t.term),
+	           similarity(left(w.word, length(t.term)), t.term),
+	           CASE WHEN length(@term) >= 3
+	                     -- Only a word of roughly the term's own length can be a typo
+	                     -- of it: "spidr" is two edits from "sid", but "sid" is also
+	                     -- two characters shorter, which is another word entirely.
+	                     AND abs(length(left(w.word, length(t.term))) - length(t.term)) <= 1
+	                     AND levenshtein(t.term, left(w.word, length(t.term)))
+	                         <= CASE WHEN length(t.term) <= 3 THEN 0 ELSE 2 END
+	                THEN 1.0 - levenshtein(t.term, left(w.word, length(t.term)))::float8 / length(t.term)
+	                ELSE 0 END))
+	FROM (
+	    -- Punctuation is not a typo: "baldur's" and "bladurs" are one edit apart,
+	    -- not four, so both sides are reduced to letters and digits first.
+	    SELECT regexp_replace(lower(w), '[^a-z0-9]', '', 'g') AS word
+	    FROM unnest(string_to_array(p.title, ' ')) AS w
+	) AS w,
+	(SELECT regexp_replace(lower(@term), '[^a-z0-9]', '', 'g') AS term) AS t
+	WHERE length(w.word) >= 3 AND length(t.term) >= 2
+)`
+
 func (c *Catalog) Search(ctx context.Context, term, marketRegion string, limit int) ([]models.SearchSuggestion, error) {
 	term = strings.TrimSpace(term)
 	out := []models.SearchSuggestion{}
@@ -314,21 +345,34 @@ func (c *Catalog) Search(ctx context.Context, term, marketRegion string, limit i
 	}
 
 	rows, err := c.pool.Query(ctx, `
-		SELECT p.id, p.slug, p.title, p.cover_url,
-		       GREATEST(similarity(p.title, @term), word_similarity(@term, p.title),
-		                CASE WHEN `+titleAcronymExpr+` LIKE lower(@term) || '%' THEN 0.9 ELSE 0 END) AS score
-		FROM products p
-		WHERE p.is_active
-		  AND EXISTS (
-		        SELECT 1 FROM offers o
-		        JOIN regions r ON r.id = o.region_id
-		        WHERE o.product_id = p.id AND o.is_active AND o.stock > 0
-		          AND (@market_region = '' OR r.code = @market_region OR r.code = 'GLOBAL'))
-		  AND (p.title ILIKE '%' || @term || '%'
-		       OR similarity(p.title, @term) > 0.2
-		       OR word_similarity(@term, p.title) > 0.5
-		       OR `+titleAcronymExpr+` LIKE lower(@term) || '%')
-		ORDER BY score DESC, p.popularity DESC, p.title ASC
+		WITH scored AS (
+			SELECT p.id, p.slug, p.title, p.cover_url, p.popularity,
+			       GREATEST(
+			           CASE WHEN lower(p.title) = lower(@term) THEN 1.0 ELSE 0 END,
+			           CASE WHEN p.title ILIKE @term || '%' THEN 0.95 ELSE 0 END,
+			           CASE WHEN p.title ILIKE '%' || @term || '%' THEN 0.9 ELSE 0 END,
+			           CASE WHEN `+titleAcronymExpr+` LIKE lower(@term) || '%' THEN 0.85 ELSE 0 END,
+			           similarity(p.title, @term),
+			           word_similarity(@term, p.title),
+			           COALESCE(`+fuzzyWordExpr+`, 0)
+			       )::float8 AS score
+			FROM products p
+			WHERE p.is_active
+			  AND EXISTS (
+			        SELECT 1 FROM offers o
+			        JOIN regions r ON r.id = o.region_id
+			        WHERE o.product_id = p.id AND o.is_active AND o.stock > 0
+			          AND (@market_region = '' OR r.code = @market_region OR r.code = 'GLOBAL'))
+		)
+		SELECT id, slug, title, cover_url, score
+		FROM scored
+		-- 0.35 keeps coincidences out: "battlefield" tops out at 0.33 against the
+		-- catalogue, while a one-substitution typo scores 0.6 or better. An explicit
+		-- substring or prefix hit always counts, whatever its trigram score.
+		WHERE score >= 0.35
+		   OR title ILIKE '%' || @term || '%'
+		   OR title ILIKE @term || '%'
+		ORDER BY score DESC, popularity DESC, title ASC
 		LIMIT @limit`,
 		pgx.NamedArgs{"term": term, "limit": limit, "market_region": marketRegion},
 	)

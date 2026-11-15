@@ -36,33 +36,57 @@ filtering shallow, which is exactly where the assignment rewards depth.
 
 ## Search
 
-`pg_trgm` GIN index on `products.title`, plus `fuzzystrmatch` for edit distance. A
-query scores every product and keeps what clears the floor:
+`pg_trgm` GIN indexes (`products_title_trgm_idx`, `products_title_norm_idx`,
+`products_search_text_idx` from migration 0009) plus `fuzzystrmatch` for edit distance.
+
+A query is split into **tokens** and every token must match, which is what makes a
+multi-word slip work: `elden rnig` matches "elden" exactly and "rnig" as one edit away
+from "ring". Tokens are matched against two documents:
+
+| Document | Contents | matched by |
+|---|---|---|
+| name | title, developer, publisher | trigram similarity, `word_similarity`, exact substring, and Levenshtein |
+| facets | genres, platforms (Steam, PlayStation, Xbox…) | exact substring only |
+
+Facets are deliberately **not** fuzzy: `hlao` is two edits from `play`, and a fuzzy
+pass over facet words scored every PlayStation listing 0.5, burying Halo. Exact
+matching keeps `steam cyberpunk` and `fromsoftware` working without that noise.
+
+Per-token score is the best of:
 
 ```
-1.00  title equals the term
-0.95  title starts with the term
-0.90  title contains the term            -- partial word ("cyberpunk")
-0.85  title initialism starts with term  -- "gta", "bg3", "rdr2"
-similarity(title, term)                  -- whole-title trigrams
-word_similarity(term, title)             -- term against the best substring
-fuzzyWordExpr                            -- best per-word trigram or Levenshtein match
+similarity(token, title)             whole title
+word_similarity(token, title)        best substring of the title
+name ILIKE '%token%'  or
+facets ILIKE '%token%'               0.95, exact substring
+per-word trigram / Levenshtein       budget 2, same-length words only,
+                                     and two edits require the same first letter
 ```
 
-`fuzzyWordExpr` is what makes a real typo findable. Trigrams alone cannot separate a
-misspelling from a coincidence: `syber`/`cyberpunk` and `battlefield`/`starfield` both
-score **0.33**. Levenshtein can — one substitution against five — so each title word
-is compared to the term (punctuation stripped, equal-length prefix, edit budget of 2,
-and only against words of similar length, so `spidr` cannot match `sid`). A hit scores
-`1 − distance/length`: `syber` → 0.80, `skrim` → 0.60.
+The first-letter rule is the difference between a typo and a coincidence:
+`hlao`→`halo` (same first letter, one transposition) matches; `hlao`→`play`
+(different first letter, two edits) does not. A token has to score **0.45** to count —
+above the 0.33–0.42 that unrelated words reach, below the 0.5 that a real typo earns.
 
-The floor is **0.35**, which is above trigram noise and below every typo the tests
-cover. An explicit substring or prefix match bypasses the floor. Ordering is
-`score DESC, popularity DESC`, so a fuzzy hit on an obscure title never outranks an
-exact one on a famous game. The suggestion endpoint returns the score, which the UI
-shows as a percentage; the store list uses the same market filter so the dropdown and
-the results page can never disagree. Costs are fine at this scale (81 products); a
-larger catalogue would move the edit-distance branch behind a trigram pre-filter.
+Final ordering:
+
+```
+1. rank  = 3.0 exact title · 2.0 title prefix · 1.8 initialism (bg3, gta, rdr2)
+          1.5 title substring · + whole-query word similarity
+          + title similarity + 0.5 × average token score
+2. length(title) ASC     the query covers more of a shorter title
+3. popularity DESC
+4. cheapest live offer ASC
+```
+
+`score` in the payload is the 0–1 display value (best single similarity, at least the
+initialism boost), not the rank, which sums several boosts and would render as
+"365% match".
+
+Short input is handled before SQL: empty or whitespace-only returns `[]`, a single
+character searches the title prefix only, since a one-letter trigram matches
+everything. Costs are fine at this scale (81 products); a larger catalogue would move
+the edit-distance branch behind a trigram pre-filter.
 
 ## Checkout: one transaction, locked keys
 

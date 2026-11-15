@@ -110,7 +110,17 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 
 	order, ok := sortClauses[f.Sort]
 	if !ok {
-		order = sortClauses["popular"]
+		if strings.TrimSpace(f.Search) != "" {
+			order = "score DESC, p.popularity DESC, p.title ASC"
+		} else {
+			order = sortClauses["popular"]
+		}
+	}
+	cheapPrice := strings.ReplaceAll("COALESCE((SELECT MIN(off3.price_cents) FROM offers off3 WHERE off3.product_id = p.id AND off3.is_active AND off3.stock > 0), 2147483647)", "%", "%%")
+	if ok && f.Sort == "relevance" && strings.TrimSpace(f.Search) != "" {
+		// Rank sums several boosts, so it is not the number shown to the shopper;
+		// order by it here and keep `score` as the 0..1 display value.
+		order = forSprintf(fuzzyRankExpr("@search")) + " DESC, length(p.title) ASC, p.popularity DESC, " + cheapPrice + " ASC, p.title ASC"
 	}
 
 	// The storefront only lists products that someone actually sells, so the
@@ -121,6 +131,10 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 		join = "LEFT JOIN offer_agg a ON a.product_id = p.id"
 	}
 
+	fuzzyMatchSprintf := forSprintf(fuzzyMatchExpr("@search"))
+	fuzzyScoreSprintf := forSprintf(fuzzyScoreExpr("@search"))
+	titleAcronymSprintf := forSprintf(titleAcronymExpr)
+
 	query := fmt.Sprintf(`
 		WITH %s
 		SELECT p.id, p.slug, p.title, p.cover_url, p.release_date, p.popularity,
@@ -129,18 +143,14 @@ func (c *Catalog) List(ctx context.Context, f CatalogFilter) (models.Paged[model
 		       COALESCE(a.platform_slugs, '{}'), COALESCE(a.region_codes, '{}'),
 		       p.content_type,
 		       COUNT(*) OVER() AS total,
-		       CASE WHEN @search = '' THEN 0
-		            ELSE GREATEST(similarity(p.title, @search),
-		                 CASE WHEN `+titleAcronymExpr+` LIKE lower(@search) || '%%' THEN 0.9 ELSE 0 END)
-		       END AS score
+		       CASE WHEN @search = '' THEN 0 ELSE `+fuzzyScoreSprintf+` END AS score
 		FROM products p
 		%s
 		WHERE p.is_active
 		  AND (@search = ''
 		       OR p.title ILIKE '%%' || @search || '%%'
-		       OR similarity(p.title, @search) > 0.25
-		       OR word_similarity(@search, p.title) > 0.6
-		       OR `+titleAcronymExpr+` LIKE lower(@search) || '%%')
+		       OR `+fuzzyMatchSprintf+`
+		       OR `+titleAcronymSprintf+` LIKE lower(@search) || '%%')
 		  AND (cardinality(@content_types::text[]) = 0 OR p.content_type = ANY(@content_types::text[]))
 		  AND (cardinality(@genres::text[]) = 0 OR EXISTS (
 		       SELECT 1 FROM product_genres pg
@@ -300,79 +310,74 @@ func (c *Catalog) GetBySlug(ctx context.Context, slug string) (models.ProductDet
 	return d, nil
 }
 
-// Search returns fuzzy title suggestions for the global search dropdown.
-// Trigram similarity tolerates typos ("eleden ring"), ILIKE covers partial words
-// ("cyberpunk"), an initialism covers abbreviations ("bg3"), and popularity breaks
-// ties so famous games surface first.
+// Search returns fuzzy suggestions for the search bar and the store filter.
+// Scoring lives in search.go; this function only adds the offer/market gate and
+// the ordering: relevance, then popularity, then the cheapest live offer.
 //
-// fuzzyWordExpr scores the term against each word of the title: trigram similarity
-// on the word and on its equal-length prefix, plus Levenshtein distance when it is
-// inside a typo budget. Trigrams alone cannot separate a typo from a coincidence —
-// "syber"/"cyberpunk" and "battlefield"/"starfield" both score 0.33 — but one
-// substitution versus five edits can. Words shorter than three characters are
-// ignored: they match everything.
-const fuzzyWordExpr = `(
-	SELECT MAX(GREATEST(
-	           similarity(w.word, t.term),
-	           similarity(left(w.word, length(t.term)), t.term),
-	           CASE WHEN length(@term) >= 3
-	                     -- Only a word of roughly the term's own length can be a typo
-	                     -- of it: "spidr" is two edits from "sid", but "sid" is also
-	                     -- two characters shorter, which is another word entirely.
-	                     AND abs(length(left(w.word, length(t.term))) - length(t.term)) <= 1
-	                     AND levenshtein(t.term, left(w.word, length(t.term)))
-	                         <= CASE WHEN length(t.term) <= 3 THEN 0 ELSE 2 END
-	                THEN 1.0 - levenshtein(t.term, left(w.word, length(t.term)))::float8 / length(t.term)
-	                ELSE 0 END))
-	FROM (
-	    -- Punctuation is not a typo: "baldur's" and "bladurs" are one edit apart,
-	    -- not four, so both sides are reduced to letters and digits first.
-	    SELECT regexp_replace(lower(w), '[^a-z0-9]', '', 'g') AS word
-	    FROM unnest(string_to_array(p.title, ' ')) AS w
-	) AS w,
-	(SELECT regexp_replace(lower(@term), '[^a-z0-9]', '', 'g') AS term) AS t
-	WHERE length(w.word) >= 3 AND length(t.term) >= 2
-)`
-
+// Short queries are handled before any SQL runs: empty or whitespace-only returns
+// an empty list, and a single character searches the title prefix only, because a
+// one-letter trigram matches the entire catalogue.
 func (c *Catalog) Search(ctx context.Context, term, marketRegion string, limit int) ([]models.SearchSuggestion, error) {
-	term = strings.TrimSpace(term)
+	term = strings.Join(strings.Fields(term), " ")
 	out := []models.SearchSuggestion{}
-	if len([]rune(term)) < 2 {
+	if term == "" {
 		return out, nil
 	}
 	if limit < 1 || limit > 20 {
 		limit = 8
 	}
 
-	rows, err := c.pool.Query(ctx, `
-		WITH scored AS (
-			SELECT p.id, p.slug, p.title, p.cover_url, p.popularity,
-			       GREATEST(
-			           CASE WHEN lower(p.title) = lower(@term) THEN 1.0 ELSE 0 END,
-			           CASE WHEN p.title ILIKE @term || '%' THEN 0.95 ELSE 0 END,
-			           CASE WHEN p.title ILIKE '%' || @term || '%' THEN 0.9 ELSE 0 END,
-			           CASE WHEN `+titleAcronymExpr+` LIKE lower(@term) || '%' THEN 0.85 ELSE 0 END,
-			           similarity(p.title, @term),
-			           word_similarity(@term, p.title),
-			           COALESCE(`+fuzzyWordExpr+`, 0)
-			       )::float8 AS score
+	// One character: prefix only. There is no trigram in a single letter, and
+	// ILIKE %x% would return everything.
+	if len([]rune(term)) < 2 {
+		rows, err := c.pool.Query(ctx, `
+			SELECT p.id, p.slug, p.title, p.cover_url, 0.9::float8 AS score
 			FROM products p
 			WHERE p.is_active
+			  AND lower(p.title) LIKE lower(@term) || '%'
 			  AND EXISTS (
 			        SELECT 1 FROM offers o
 			        JOIN regions r ON r.id = o.region_id
 			        WHERE o.product_id = p.id AND o.is_active AND o.stock > 0
 			          AND (@market_region = '' OR r.code = @market_region OR r.code = 'GLOBAL'))
+			ORDER BY p.popularity DESC, p.title ASC
+			LIMIT @limit`,
+			pgx.NamedArgs{"term": term, "limit": limit, "market_region": marketRegion},
 		)
-		SELECT id, slug, title, cover_url, score
-		FROM scored
-		-- 0.35 keeps coincidences out: "battlefield" tops out at 0.33 against the
-		-- catalogue, while a one-substitution typo scores 0.6 or better. An explicit
-		-- substring or prefix hit always counts, whatever its trigram score.
-		WHERE score >= 0.35
-		   OR title ILIKE '%' || @term || '%'
-		   OR title ILIKE @term || '%'
-		ORDER BY score DESC, popularity DESC, title ASC
+		if err != nil {
+			return nil, fmt.Errorf("search prefix: %w", err)
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var s models.SearchSuggestion
+			if err := rows.Scan(&s.ID, &s.Slug, &s.Title, &s.CoverURL, &s.Score); err != nil {
+				return nil, err
+			}
+			out = append(out, s)
+		}
+		return out, rows.Err()
+	}
+
+	rank := fuzzyRankExpr("@term")
+	match := fuzzyMatchExpr("@term")
+	score := fuzzyScoreExpr("@term")
+	rows, err := c.pool.Query(ctx, `
+		SELECT p.id, p.slug, p.title, p.cover_url, `+score+` AS score
+		FROM products p
+		WHERE p.is_active
+		  AND EXISTS (
+		        SELECT 1 FROM offers o
+		        JOIN regions r ON r.id = o.region_id
+		        WHERE o.product_id = p.id AND o.is_active AND o.stock > 0
+		          AND (@market_region = '' OR r.code = @market_region OR r.code = 'GLOBAL'))
+		  -- every token matched, or the whole query appears in the title verbatim
+		  AND (`+match+`
+		       OR p.title ILIKE '%' || @term || '%'
+		       OR `+titleAcronymExpr+` LIKE lower(@term) || '%')
+		ORDER BY `+rank+` DESC, length(p.title) ASC, p.popularity DESC,
+		         COALESCE((SELECT MIN(off.price_cents) FROM offers off
+		                   WHERE off.product_id = p.id AND off.is_active AND off.stock > 0), 2147483647) ASC,
+		         p.title ASC
 		LIMIT @limit`,
 		pgx.NamedArgs{"term": term, "limit": limit, "market_region": marketRegion},
 	)

@@ -63,6 +63,8 @@ func (a *App) Routes() http.Handler {
 	mux.HandleFunc("GET /api/homepage", a.handleHomepage)
 	mux.HandleFunc("GET /api/products", a.handleListProducts)
 	mux.HandleFunc("GET /api/products/{slug}", a.handleGetProduct)
+	// Same engine as /api/search, under the path the assignment spec names.
+	mux.HandleFunc("GET /api/products/search", a.handleSearch)
 	mux.HandleFunc("GET /api/search", a.handleSearch)
 	mux.HandleFunc("GET /api/covers/{id}", a.handleCover)
 

@@ -31,6 +31,32 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Taxes | Admin sets two rates in percent — one for top-ups, one for card purchases — each with an on/off switch (`/admin/settings`). Tax is never baked into storefront prices; it appears only in the checkout summary and on the receipt. Wallet payments are always tax-free. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, **catalogue editor** (title, copy, art, developer/publisher, release date, content type, genres, visibility — slug stays fixed), sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, and a homepage block editor with a **product picker**, collapsed config JSON and a **live preview** of the block. Descriptions support light formatting (bold, italic, lists, headings). |
 
+### Hybrid token search (session 14)
+
+Search now scores **tokens**, not one string, against two documents: the game's name
+(title, developer, publisher) with typo tolerance, and facets (genres, platforms) by
+exact substring. Every token must match, so `elden rnig` and `witchr 3` work, and
+`steam cyberpunk` / `fromsoftware` find games through metadata.
+
+Measured decisions on the way:
+
+- Facets are matched exactly because `hlao` is two edits from `play`: a fuzzy pass over
+  platform words gave **every** PlayStation listing 0.5 and hid Halo entirely.
+- Two-edit matches require the same first letter, which is what separates a transposition
+  (`hlao` → "halo") from a different word ("play").
+- The token floor is 0.45: coincidences peak at 0.42, real typos start at 0.5.
+- The payload `score` is the 0–1 display value, kept separate from the ordering rank,
+  because the rank sums several boosts and rendered as "365% match" in the dropdown.
+- Tie-break by title length before popularity: for equal relevance the query covers more
+  of a shorter title.
+
+Migration 0009 adds the `pg_trgm` statement (already present since 0001), a GIN index on
+`lower(title)` and one on the concatenated name fields. `GET /api/products/search` is the
+path the brief names; `/api/search` stays for the UI and both run the same engine.
+Coverage: a typo of every catalogue title is found 80/80, multi-word variants 51/51. The
+e2e purchase test was still asserting `total == offer price` from before purchase tax
+existed; it now reconciles subtotal, tax and total.
+
 ### Fuzzy search that actually forgives typos (session 13)
 
 Two typos a shopper really types — `syber` and `skrim` — returned nothing. The measured cause:

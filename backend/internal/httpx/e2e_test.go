@@ -212,11 +212,14 @@ func TestEndToEndPurchaseFlow(t *testing.T) {
 	idempotencyKey := fmt.Sprintf("e2e-%d", time.Now().UnixNano())
 	var checkout struct {
 		Order struct {
-			ID         int64  `json:"id"`
-			Reference  string `json:"reference"`
-			Status     string `json:"status"`
-			TotalCents int    `json:"totalCents"`
-			Items      []struct {
+			ID             int64  `json:"id"`
+			Reference      string `json:"reference"`
+			Status         string `json:"status"`
+			SubtotalCents  int    `json:"subtotalCents"`
+			TaxCents       int    `json:"taxCents"`
+			TaxBasisPoints int    `json:"taxBasisPoints"`
+			TotalCents     int    `json:"totalCents"`
+			Items          []struct {
 				ID          int64      `json:"id"`
 				Refundable  bool       `json:"refundable"`
 				DisplayedAt *time.Time `json:"displayedAt"`
@@ -238,8 +241,20 @@ func TestEndToEndPurchaseFlow(t *testing.T) {
 	if len(checkout.Order.Items) != 1 || len(checkout.Order.Items[0].Keys) != 1 {
 		t.Fatalf("expected exactly one delivered key, got %+v", checkout.Order.Items)
 	}
-	if checkout.Order.TotalCents != offer.PriceCents {
-		t.Fatalf("order total %d != offer price %d", checkout.Order.TotalCents, offer.PriceCents)
+	// The subtotal is the seller's price; the total adds the configured purchase tax
+	// for a card payment (migration 0006 introduced it, so this assertion has to
+	// reconcile against the rate the order recorded rather than assume zero).
+	if checkout.Order.SubtotalCents != offer.PriceCents {
+		t.Fatalf("order subtotal %d != offer price %d", checkout.Order.SubtotalCents, offer.PriceCents)
+	}
+	// The API rounds the tax to the nearest cent; integer division would truncate.
+	wantTax := (offer.PriceCents*checkout.Order.TaxBasisPoints + 5000) / 10000
+	if checkout.Order.TaxCents != wantTax {
+		t.Fatalf("order tax %d != %d at %d bp", checkout.Order.TaxCents, wantTax, checkout.Order.TaxBasisPoints)
+	}
+	if checkout.Order.TotalCents != checkout.Order.SubtotalCents+checkout.Order.TaxCents {
+		t.Fatalf("order total %d != subtotal %d + tax %d",
+			checkout.Order.TotalCents, checkout.Order.SubtotalCents, checkout.Order.TaxCents)
 	}
 	item := checkout.Order.Items[0]
 	if !item.Refundable || item.DisplayedAt != nil || item.Keys[0].DisplayedAt != nil {

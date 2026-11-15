@@ -7,27 +7,50 @@ import { isPreorder } from '@/lib/format'
  * The buy box: one price, one button. A marketplace page can drown in seller
  * rows, so the cheapest in-stock offer is always reachable here without scroll,
  * and the full list is one anchor away.
+ *
+ * It reads the offers the page is currently showing, so choosing a region or a
+ * platform moves the headline price with it — a box that kept quoting a global
+ * key while the list showed European ones was the confusing part.
  */
 export function PriceSummary({
   offers,
+  totalOffers,
+  filterLabel,
+  onClearFilters,
   releaseDate,
   busy,
   onAdd,
 }: {
   offers: Offer[]
+  totalOffers: number
+  filterLabel?: string
+  onClearFilters: () => void
   releaseDate: string | null
   busy: boolean
   onAdd: (offer: Offer) => void
 }) {
   const inStock = offers.filter((offer) => offer.stock > 0)
   const cheapest = inStock[0]
+
+  // Nothing matches the chips: say that, and offer the way back, instead of
+  // claiming the game is sold out.
   if (!cheapest) {
+    const noMatch = offers.length === 0 && totalOffers > 0
     return (
-      <div className="mt-5 rounded-[2px] border border-white/20 bg-brand-800/60 p-4">
-        <p className="font-display text-lg font-extrabold text-white">Sold out</p>
-        <p className="mt-1 text-sm text-brand-200">
-          Every seller is out of stock right now. Check back, or browse similar games below.
+      <div className="mt-4 max-w-xl rounded-[2px] border border-white/20 bg-brand-800/60 p-4 lg:mt-5">
+        <p className="font-display text-lg font-extrabold text-white">
+          {noMatch ? 'No offers for that combination' : 'Sold out'}
         </p>
+        <p className="mt-1 text-sm text-brand-200">
+          {noMatch
+            ? `${filterLabel} has no sellers right now — ${totalOffers} offer${totalOffers === 1 ? '' : 's'} exist in other regions or platforms.`
+            : 'Every seller is out of stock right now. Check back, or browse similar games below.'}
+        </p>
+        {noMatch && (
+          <Button variant="onDark" size="sm" className="mt-3" onClick={onClearFilters}>
+            Clear filters
+          </Button>
+        )}
       </div>
     )
   }
@@ -52,8 +75,9 @@ export function PriceSummary({
         )}
       </div>
       <p className="mt-1 text-xs text-brand-200">
-        Cheapest of {offers.length} offer{offers.length === 1 ? '' : 's'} · {cheapest.seller.storeName} ·{' '}
+        Cheapest of {inStock.length} offer{inStock.length === 1 ? '' : 's'} · {cheapest.seller.storeName} ·{' '}
         {cheapest.platformName} · {cheapest.regionCode}
+        {filterLabel && ` — filtered to ${filterLabel}`}
       </p>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">

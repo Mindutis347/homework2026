@@ -31,6 +31,24 @@ Verification codes appear in-app (simulated inbox), no e-mail is sent.
 | Taxes | Admin sets two rates in percent — one for top-ups, one for card purchases — each with an on/off switch (`/admin/settings`). Tax is never baked into storefront prices; it appears only in the checkout summary and on the receipt. Wallet payments are always tax-free. |
 | Admin back-office | Users + role changes (verified-only promotion), request approve/reject, **catalogue editor** (title, copy, art, developer/publisher, release date, content type, genres, visibility — slug stays fixed), sales ledger (gross, commission, payouts, top sellers, 14-day series), orders, support tickets, and a homepage block editor with a **product picker**, collapsed config JSON and a **live preview** of the block. Descriptions support light formatting (bold, italic, lists, headings). |
 
+### Product page follows its own filters (session 15)
+
+The facts strip under the title and the buy box were both pinned to the cheapest offer in the
+whole catalogue, so choosing *Europe* in the offers list left a **Global key** headline above a
+list of European sellers, and the price did not move. Both now read the offers the page is showing:
+
+- region chip → "Europe key" and the headline price is that region's cheapest offer, with the
+  context line saying "filtered to EU"
+- platform chip → the platform fact narrows to the one selected
+- no chips → the strip follows the visitor's market when this game is sold there, otherwise the
+  region of the cheapest offer
+- a combination with no sellers says "No offers for that combination" with a Clear filters button
+  instead of calling the game sold out
+- platform chips now print "PlayStation" rather than the raw slug "playstation"
+
+Verified in headless Chrome: unfiltered shows "Global key", the EU chip turns it into "Europe key"
+and re-prices the box (€64.99, "filtered to EU"), the PlayStation chip narrows the fact and the box,
+and clearing the chips restores the unfiltered view.
 ### Hybrid token search (session 14)
 
 Search now scores **tokens**, not one string, against two documents: the game's name

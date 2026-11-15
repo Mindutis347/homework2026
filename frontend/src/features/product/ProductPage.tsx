@@ -70,11 +70,6 @@ export default function ProductPage() {
     }
   }, [slug, region])
 
-  const inStock = useMemo(
-    () => (product ? product.offers.filter((offer) => offer.stock > 0) : []),
-    [product],
-  )
-
   // Sorting keeps sold-out rows at the bottom: the API already orders that way,
   // and re-sorting here must not undo it.
   const offers = useMemo(() => {
@@ -88,7 +83,30 @@ export default function ProductPage() {
     })
   }, [product, platformFilter, regionFilter, sort])
 
-  const cheapest = inStock[0] ?? null
+  const visibleInStock = useMemo(() => offers.filter((offer) => offer.stock > 0), [offers])
+  // The buy box follows the chips: pick a region and the headline price becomes
+  // that region's cheapest offer, not the global one.
+  const cheapest = visibleInStock[0] ?? null
+  const filterLabel = [regionFilter, platformFilter && platformLabelFor(platformFilter)].filter(Boolean).join(' · ')
+
+  // The facts strip has to agree with what is on screen. With no chip active it
+  // follows the visitor's market when this game is sold there, otherwise the
+  // region of the cheapest offer.
+  const facts = useMemo(() => {
+    const pool = product ? (offers.length > 0 ? offers : product.offers) : []
+    let code = regionFilter
+    if (!code && region && pool.some((offer) => offer.regionCode === region && offer.stock > 0)) {
+      code = region
+    }
+    if (!code) code = (pool.find((offer) => offer.stock > 0) ?? pool[0])?.regionCode ?? 'GLOBAL'
+    const regionName = pool.find((offer) => offer.regionCode === code)?.regionName || (code === 'GLOBAL' ? 'Global' : code)
+    return {
+      regionCode: code,
+      regionName,
+      platforms: [...new Set(pool.map((offer) => offer.platformSlug))],
+      delivery: (pool.some((offer) => offer.delivery === 'instant') ? 'instant' : 'manual') as 'instant' | 'manual',
+    }
+  }, [product, offers, regionFilter, region, cheapest])
 
   async function handleAdd(offer: Offer) {
     // Guests can fill a cart too; the sign-in prompt belongs at checkout.
@@ -135,7 +153,6 @@ export default function ProductPage() {
   const regions = [...new Set(product.offers.map((o) => o.regionCode))]
   const sellerCount = new Set(product.offers.map((o) => o.seller.id)).size
   const preorder = isPreorder(product.releaseDate)
-  const deliveryModes = new Set(product.offers.map((o) => o.delivery))
 
   return (
     // The sticky buy bar floats over the page, so the page keeps room for it.
@@ -187,19 +204,21 @@ export default function ProductPage() {
               </div>
 
               <FactsStrip
-                regionCode={cheapest?.regionCode ?? regions[0] ?? 'GLOBAL'}
-                regionName={
-                  (cheapest?.regionCode ?? regions[0]) === 'GLOBAL'
-                    ? 'Global'
-                    : cheapest?.regionName ?? regions[0] ?? 'Global'
-                }
-                platforms={platforms}
-                delivery={deliveryModes.has('instant') ? 'instant' : 'manual'}
+                regionCode={facts.regionCode}
+                regionName={facts.regionName}
+                platforms={facts.platforms}
+                delivery={facts.delivery}
               />
 
               <div ref={buyBarSentinel}>
                 <PriceSummary
-                  offers={product.offers}
+                  offers={offers}
+                  totalOffers={product.offers.length}
+                  filterLabel={filterLabel}
+                  onClearFilters={() => {
+                    setPlatformFilter('')
+                    setRegionFilter('')
+                  }}
                   releaseDate={product.releaseDate}
                   busy={busyOffer === cheapest?.id}
                   onAdd={(offer) => void handleAdd(offer)}
@@ -264,7 +283,7 @@ export default function ProductPage() {
             <Chip active={!platformFilter} onClick={() => setPlatformFilter('')}>All platforms</Chip>
             {platforms.map((platform) => (
               <Chip key={platform} active={platformFilter === platform} onClick={() => setPlatformFilter(platform)}>
-                {platform === 'steam' ? 'Steam' : platform === 'nintendo' ? 'Switch' : platform}
+                {platformLabelFor(platform)}
               </Chip>
             ))}
             <span className="mx-1 w-px self-stretch bg-line" aria-hidden />
@@ -391,6 +410,13 @@ export default function ProductPage() {
       )}
     </div>
   )
+}
+
+function platformLabelFor(slug: string): string {
+  const labels: Record<string, string> = {
+    steam: 'Steam', playstation: 'PlayStation', xbox: 'Xbox', nintendo: 'Switch', epic: 'Epic Games', gog: 'GOG',
+  }
+  return labels[slug] ?? slug
 }
 
 function Detail({ label, value }: { label: string; value: string }) {

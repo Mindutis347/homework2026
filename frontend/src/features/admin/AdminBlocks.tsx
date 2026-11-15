@@ -348,6 +348,16 @@ function ProductPicker({ value, onChange }: { value: Picked[]; onChange: (next: 
   const [results, setResults] = useState<AdminProduct[]>([])
   const [searching, setSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [dragging, setDragging] = useState<number | null>(null)
+  const [over, setOver] = useState<number | null>(null)
+
+  function moveItem(from: number, to: number) {
+    if (from === to || to < 0 || to >= value.length || from < 0) return
+    const next = [...value]
+    const [moved] = next.splice(from, 1)
+    next.splice(to, 0, moved)
+    onChange(next)
+  }
 
   useEffect(() => {
     const query = term.trim()
@@ -400,23 +410,90 @@ function ProductPicker({ value, onChange }: { value: Picked[]; onChange: (next: 
           Nothing attached yet — search below and click a game to add it.
         </p>
       ) : (
-        <ul className="mt-2 flex flex-wrap gap-2">
-          {value.map((item, index) => (
-            <li key={item.id} className="flex items-center gap-2 rounded-[2px] border border-line bg-surface px-2 py-1">
-              <span className="text-[0.625rem] font-bold text-brand-300">{index + 1}</span>
-              <CoverThumb productId={item.id} url={item.coverUrl} className="h-8 w-6 rounded-[2px] object-cover" label="" />
-              <span className="max-w-40 truncate text-xs font-semibold text-white">{item.title}</span>
-              <button
-                type="button"
-                aria-label={`Remove ${item.title}`}
-                onClick={() => onChange(value.filter((entry) => entry.id !== item.id))}
-                className="text-sm leading-none text-brand-300 hover:text-danger"
+        <>
+          {value.length > 1 && (
+            <p className="mt-2 text-xs text-brand-300">
+              Position 1 shows first. Drag a handle, or use the arrows, to reorder.
+            </p>
+          )}
+          <ol className="mt-2 space-y-1.5">
+            {value.map((item, index) => (
+              <li
+                key={item.id}
+                draggable
+                onDragStart={(event) => {
+                  setDragging(index)
+                  event.dataTransfer.effectAllowed = 'move'
+                  // Firefox will not start a drag without data on the transfer.
+                  event.dataTransfer.setData('text/plain', String(index))
+                }}
+                onDragOver={(event) => {
+                  event.preventDefault()
+                  event.dataTransfer.dropEffect = 'move'
+                  if (over !== index) setOver(index)
+                }}
+                onDragLeave={() => setOver((current) => (current === index ? null : current))}
+                onDrop={(event) => {
+                  event.preventDefault()
+                  const from = Number(event.dataTransfer.getData('text/plain'))
+                  moveItem(Number.isNaN(from) ? -1 : from, index)
+                  setDragging(null)
+                  setOver(null)
+                }}
+                onDragEnd={() => {
+                  setDragging(null)
+                  setOver(null)
+                }}
+                className={`flex items-center gap-2 rounded-[2px] border bg-surface px-2 py-1 transition ${
+                  dragging === index ? 'opacity-40' : ''
+                } ${
+                  over === index && dragging !== null && dragging !== index
+                    ? 'border-accent-500 ring-1 ring-accent-500/40'
+                    : 'border-line'
+                }`}
               >
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
+                <span
+                  aria-hidden
+                  title="Drag to reorder"
+                  className="cursor-grab select-none text-sm leading-none text-brand-300"
+                >
+                  ⠿
+                </span>
+                <span className="w-4 text-center text-[0.625rem] font-bold text-brand-300">{index + 1}</span>
+                <CoverThumb productId={item.id} url={item.coverUrl} className="h-8 w-6 rounded-[2px] object-cover" label="" />
+                <span className="min-w-0 flex-1 truncate text-xs font-semibold text-white">{item.title}</span>
+                <span className="flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    aria-label={`Move ${item.title} earlier`}
+                    disabled={index === 0}
+                    onClick={() => moveItem(index, index - 1)}
+                    className="grid size-7 place-items-center rounded-[2px] text-brand-200 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Move ${item.title} later`}
+                    disabled={index === value.length - 1}
+                    onClick={() => moveItem(index, index + 1)}
+                    className="grid size-7 place-items-center rounded-[2px] text-brand-200 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Remove ${item.title}`}
+                    onClick={() => onChange(value.filter((entry) => entry.id !== item.id))}
+                    className="grid size-7 place-items-center rounded-[2px] text-brand-300 hover:bg-white/10 hover:text-danger"
+                  >
+                    ×
+                  </button>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </>
       )}
 
       <div className="mt-3">

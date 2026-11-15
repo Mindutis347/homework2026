@@ -59,6 +59,8 @@ Bugs it caught and closed:
   space before the first product on a phone.
 - Portal section strip fades at both edges while scrolled; a phone also scrolls the active
   tab into view.
+- Homepage block editor: products can be reordered by dragging a row or with the arrow
+  buttons (touch and keyboard), and the saved order is the order the homepage renders.
 - Homepage rows rendered `products.slice(0, 5)`, so a block curated with ten titles showed five
   everywhere. Rows now show the whole curated list, capped at two full rows (10) on wide screens
   and at six on a phone, which is also what the admin preview renders.

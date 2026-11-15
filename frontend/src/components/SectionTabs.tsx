@@ -28,11 +28,18 @@ export function SectionTabs({ tabs, label }: { tabs: SectionTab[]; label: string
   }, [pathname])
 
   return (
-    <div className="relative mt-5">
-      <nav ref={navRef} aria-label={label} className="-mx-1 overflow-x-auto pb-0.5">
+    <div className="mt-5">
+      {/* Below `sm` the strip scrolls, so its own content is masked at both ends:
+          the tabs fade to nothing instead of sliding under a translucent overlay,
+          which left half-cut labels still legible through the gradient. */}
+      <nav
+        ref={navRef}
+        aria-label={label}
+        className="-mx-1 snap-x snap-proximity overflow-x-auto pb-0.5 [mask-image:linear-gradient(to_right,transparent_0,black_32px,black_calc(100%_-_32px),transparent_100%)] [-webkit-mask-image:linear-gradient(to_right,transparent_0,black_32px,black_calc(100%_-_32px),transparent_100%)] sm:[mask-image:none] sm:[-webkit-mask-image:none]"
+      >
         <ul className="flex w-max min-w-full gap-1 rounded-[2px] border border-white/15 bg-brand-800/60 p-1 shadow-[inset_0_1px_0_rgb(255_255_255_/_0.06)] backdrop-blur">
           {tabs.map((tab) => (
-            <li key={tab.to} className="shrink-0">
+            <li key={tab.to} className="shrink-0 snap-start scroll-ml-3">
               <NavLink
                 to={tab.to}
                 end={tab.end}
@@ -50,10 +57,6 @@ export function SectionTabs({ tabs, label }: { tabs: SectionTab[]; label: string
           ))}
         </ul>
       </nav>
-      {/* Edges fade while the strip scrolls, so a half-visible label reads as
-          "there is more this way" instead of a clipped one. */}
-      <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-brand-600 via-brand-600/80 to-transparent sm:hidden" />
-      <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-brand-600 via-brand-600/80 to-transparent sm:hidden" />
     </div>
   )
 }
